@@ -7,7 +7,7 @@ class CalendarScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('캘린더')),
-      body: const Center(child: Text('캘린더 화면(시안용)')),
+      body: const Center(child: Text('캘린더 화면(테스트용)')),
     );
   }
 }
