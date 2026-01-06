@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/auth_entry_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   runApp(const JikgwanMateMockApp());
@@ -12,7 +13,7 @@ class JikgwanMateMockApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AuthEntryScreen(), // 🔥 여기서 바로 시작
+      home: const SplashScreen(), // 🔥 여기서 바로 시작
     );
   }
 }

@@ -25,20 +25,24 @@ class _TeamSelectScreenState extends State<TeamSelectScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('응원하는 구단을 선택해주세요!'),
-        backgroundColor: AppColors.brandRed,
+        backgroundColor: AppColors.brandRed, //
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(14),
         child: GridView.count(
           crossAxisCount: 3,
-          childAspectRatio: 0.92,
+          childAspectRatio: 0.75, // 로고와 버튼 비율을 위해 살짝 조정
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
           children: teamThemes.values.map((t) {
             final isSel = selected == t.id;
             return GestureDetector(
               onTap: () => setState(() => selected = t.id),
               child: Card(
                 elevation: 0,
+                color: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                   side: BorderSide(
@@ -51,22 +55,41 @@ class _TeamSelectScreenState extends State<TeamSelectScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // 로고 이미지는 팀별로 아직 없으니까 텍스트로 대체
+                      // ✅ 수정된 부분: 야구공 아이콘 대신 Image.asset 사용
                       Container(
-                        width: 46,
-                        height: 46,
+                        width: 50,
+                        height: 50,
                         decoration: BoxDecoration(
-                          color: t.primary.withOpacity(0.12),
+                          color: Colors.white, // 로고 배경은 흰색이 깔끔합니다
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.sports_baseball, color: t.primary),
+                        child: ClipOval(
+                          child: Image.asset(
+                            t.logoPath, // ✅ team_theme.dart의 logoPath 변수 사용
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              // 이미지가 없을 때를 대비한 대체 아이콘
+                              return Icon(
+                                Icons.sports_baseball,
+                                color: t.primary,
+                              );
+                            },
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Text(
                         t.nameKo,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1, // 한 줄 고정
+                        overflow: TextOverflow.ellipsis, // 넘치면 '...' 처리
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
+                      // Follow 버튼 디자인
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
@@ -81,7 +104,8 @@ class _TeamSelectScreenState extends State<TeamSelectScreen> {
                           isSel ? 'Following' : 'Follow',
                           style: TextStyle(
                             color: isSel ? Colors.white : t.primary,
-                            fontSize: 12,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -97,31 +121,38 @@ class _TeamSelectScreenState extends State<TeamSelectScreen> {
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: SizedBox(
-            height: 46,
+            height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: selected == null
                     ? Colors.grey
-                    : AppColors.brandRed,
+                    : AppColors.brandRed, //
                 foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: selected == null
                   ? null
                   : () {
-                      if (widget.returnSelectedTeamId) {
-                        Navigator.pop(context, selected); // ✅ 선택값 반환
-                      } else {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                MainShell(uid: 'mock', teamId: selected!),
-                          ),
-                        );
-                      }
-                    },
-
-              child: const Text('선택 완료'),
+                if (widget.returnSelectedTeamId) {
+                  Navigator.pop(context, selected);
+                } else {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MainShell(
+                        uid: widget.uid,
+                        teamId: selected!,
+                      ), // ✅ uid 연결
+                    ),
+                  );
+                }
+              },
+              child: const Text(
+                '선택 완료',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ),

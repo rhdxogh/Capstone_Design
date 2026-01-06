@@ -43,10 +43,10 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Image.asset(
-                'assets/logo_red.png',
+                'assets/logo_black_font.png',
                 width: 140,
-                color: Colors.black,
-                colorBlendMode: BlendMode.srcIn,
+                // color: Colors.black,
+                // colorBlendMode: BlendMode.srcIn,
               ),
               const SizedBox(height: 24),
               const Text(

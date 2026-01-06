@@ -13,30 +13,44 @@ class AuthEntryScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 80),
-            // 같은 로고 파일을 검정처럼 보이게(가능하면). 안 먹히면 그냥 그대로 두고 나중에 검정 로고 추가.
+            // ✅ 상단 여백 (iOS 감성 포인트)
+            const SizedBox(height: 220),
+
+            // ✅ 로고 크게
             Image.asset(
-              'assets/logo_red.png',
-              width: 170,
-              color: Colors.black,
-              colorBlendMode: BlendMode.srcIn,
+              'assets/logo_black_font.png',
+              width: 250,
+              fit: BoxFit.contain,
             ),
-            const SizedBox(height: 60),
-            _AuthButton(
-              text: 'Log In',
-              color: AppColors.brandRed,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              ),
-            ),
-            const SizedBox(height: 14),
-            _AuthButton(
-              text: 'Sign Up',
-              color: AppColors.brandRed.withOpacity(0.75),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SignUpScreen()),
+
+            const SizedBox(height: 80),
+
+            // ✅ 버튼 영역을 Center로
+            Center(
+              child: Column(
+                children: [
+                  _AuthButton(
+                    text: 'Log In',
+                    color: AppColors.brandRed,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LoginScreen(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  _AuthButton(
+                    text: 'Sign Up',
+                    color: AppColors.brandRed.withOpacity(0.75),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SignUpScreen(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -50,6 +64,7 @@ class _AuthButton extends StatelessWidget {
   final String text;
   final Color color;
   final VoidCallback onTap;
+
   const _AuthButton({
     required this.text,
     required this.color,
@@ -59,8 +74,8 @@ class _AuthButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 220,
-      height: 44,
+      width: 260, // ✅ 버튼 폭 증가
+      height: 52, // ✅ 버튼 높이 증가
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
@@ -71,9 +86,17 @@ class _AuthButton extends StatelessWidget {
         onPressed: onTap,
         child: Text(
           text,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
   }
 }
+
+
+
+
+

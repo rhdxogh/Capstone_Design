@@ -31,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: GestureDetector(
           onTap: goNext,
-          child: Image.asset('assets/logo_red.png', width: 180),
+          child: Image.asset('assets/logo_white_font.png', width: 250),
         ),
       ),
     );

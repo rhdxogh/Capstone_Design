@@ -47,10 +47,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Image.asset(
-                'assets/logo_red.png',
+                'assets/logo_black_font.png',
                 width: 140,
-                color: Colors.black,
-                colorBlendMode: BlendMode.srcIn,
+                // color: Colors.black,
+                // colorBlendMode: BlendMode.srcIn,
               ),
               const SizedBox(height: 18),
               const Text(
