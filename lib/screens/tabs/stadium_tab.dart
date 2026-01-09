@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../stadium_detail_screen.dart';
 
 class StadiumTab extends StatefulWidget {
   final Color teamColor;
@@ -11,24 +12,68 @@ class StadiumTab extends StatefulWidget {
 class _StadiumTabState extends State<StadiumTab> {
   String? selectedId;
 
-  // ✅ 너가 가진 assets/stadium_img 경로 기준
+  // ✅ assets/stadium_img 경로 기준
   final List<_StadiumItem> stadiums = const [
-    _StadiumItem(id: 'gocheok', nameKo: '고척스카이돔', asset: 'assets/stadium_img/gocheok.png'),
-    _StadiumItem(id: 'jamsil', nameKo: '잠실야구장', asset: 'assets/stadium_img/jamsil.png'),
-    _StadiumItem(id: 'daegu', nameKo: '대구 삼성 라이온즈파크', asset: 'assets/stadium_img/daegu.png'),
-    _StadiumItem(id: 'daejeon', nameKo: '대전 한화생명 볼파크', asset: 'assets/stadium_img/daejeon.png'),
-    _StadiumItem(id: 'sajik', nameKo: '사직 야구장', asset: 'assets/stadium_img/sajik.png'),
-    _StadiumItem(id: 'munhak', nameKo: '인천 SSG 랜더스필드', asset: 'assets/stadium_img/munhak.png'),
-    _StadiumItem(id: 'suwon', nameKo: '수원 케이티 위즈파크', asset: 'assets/stadium_img/suwon.png'),
-    _StadiumItem(id: 'changwon', nameKo: '창원NC파크', asset: 'assets/stadium_img/changwon.png'),
-    _StadiumItem(id: 'gwangju', nameKo: '광주-기아 챔피언스필드', asset: 'assets/stadium_img/gwangju.png'),
+    _StadiumItem(
+      id: 'gocheok',
+      nameKo: '고척스카이돔',
+      asset: 'assets/stadium_img/gocheok.png',
+    ),
+    _StadiumItem(
+      id: 'jamsil',
+      nameKo: '잠실야구장',
+      asset: 'assets/stadium_img/jamsil.png',
+    ),
+    _StadiumItem(
+      id: 'daegu',
+      nameKo: '대구 삼성 라이온즈파크',
+      asset: 'assets/stadium_img/daegu.png',
+    ),
+    _StadiumItem(
+      id: 'daejeon',
+      nameKo: '대전 한화생명 볼파크',
+      asset: 'assets/stadium_img/daejeon.png',
+    ),
+    _StadiumItem(
+      id: 'sajik',
+      nameKo: '사직 야구장',
+      asset: 'assets/stadium_img/sajik.png',
+    ),
+    _StadiumItem(
+      id: 'munhak',
+      nameKo: '인천 SSG 랜더스필드',
+      asset: 'assets/stadium_img/munhak.png',
+    ),
+    _StadiumItem(
+      id: 'suwon',
+      nameKo: '수원 케이티 위즈파크',
+      asset: 'assets/stadium_img/suwon.png',
+    ),
+    _StadiumItem(
+      id: 'changwon',
+      nameKo: '창원NC파크',
+      asset: 'assets/stadium_img/changwon.png',
+    ),
+    _StadiumItem(
+      id: 'gwangju',
+      nameKo: '광주-기아 챔피언스필드',
+      asset: 'assets/stadium_img/gwangju.png',
+    ),
   ];
 
-  void _onSelect(_StadiumItem s) {
+  void _openDetail(_StadiumItem s) {
     setState(() => selectedId = s.id);
 
-    // 나중에 여기서 상세 화면으로 이동하면 됨
-    // 지금은 선택만 반영
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StadiumDetailScreen(
+          stadiumId: s.id, // gocheok/munhak...
+          stadiumName: s.nameKo,
+          themeColor: widget.teamColor,
+        ),
+      ),
+    );
   }
 
   @override
@@ -68,7 +113,7 @@ class _StadiumTabState extends State<StadiumTab> {
 
                     return InkWell(
                       borderRadius: BorderRadius.circular(18),
-                      onTap: () => _onSelect(s),
+                      onTap: () => _openDetail(s), // ✅ 여기서 상세로 이동
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -91,13 +136,13 @@ class _StadiumTabState extends State<StadiumTab> {
                               padding: const EdgeInsets.all(14),
                               child: Column(
                                 children: [
-                                  // 이미지 영역
+                                  // ✅ 이미지 영역
                                   Expanded(
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(14),
                                       child: Container(
                                         color: const Color(0xFFF1F1F1),
-                                        alignment: Alignment.center,
+                                        alignment: Alignment.center, // ✅ 중앙 정렬 핵심
                                         child: Image.asset(
                                           s.asset,
                                           fit: BoxFit.contain,
@@ -107,7 +152,7 @@ class _StadiumTabState extends State<StadiumTab> {
                                   ),
                                   const SizedBox(height: 10),
 
-                                  // 이름
+                                  // ✅ 이름
                                   Text(
                                     s.nameKo,
                                     textAlign: TextAlign.center,
@@ -134,7 +179,11 @@ class _StadiumTabState extends State<StadiumTab> {
                                     color: widget.teamColor,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.check, size: 16, color: Colors.white),
+                                  child: const Icon(
+                                    Icons.check,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                           ],
@@ -145,14 +194,15 @@ class _StadiumTabState extends State<StadiumTab> {
                 ),
               ),
 
-              // ✅ 선택 완료 버튼(원하면)
+              // ✅ 선택 완료 버튼: 선택된 구장 상세로 이동
               const SizedBox(height: 10),
               SizedBox(
                 height: 50,
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: selectedId == null ? Colors.grey : widget.teamColor,
+                    backgroundColor:
+                    selectedId == null ? Colors.grey : widget.teamColor,
                     foregroundColor: Colors.white,
                     shape: const StadiumBorder(),
                     elevation: 0,
@@ -160,10 +210,9 @@ class _StadiumTabState extends State<StadiumTab> {
                   onPressed: selectedId == null
                       ? null
                       : () {
-                    final picked = stadiums.firstWhere((s) => s.id == selectedId);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${picked.nameKo} 선택됨 (상세 화면은 다음 단계)')),
-                    );
+                    final picked =
+                    stadiums.firstWhere((s) => s.id == selectedId);
+                    _openDetail(picked);
                   },
                   child: const Text(
                     '선택 완료',
@@ -183,5 +232,10 @@ class _StadiumItem {
   final String id;
   final String nameKo;
   final String asset;
-  const _StadiumItem({required this.id, required this.nameKo, required this.asset});
+  const _StadiumItem({
+    required this.id,
+    required this.nameKo,
+    required this.asset,
+  });
 }
+
