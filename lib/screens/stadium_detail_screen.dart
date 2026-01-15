@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'seat_guide_screen.dart'; // ✅ 좌석안내 화면 import (경로는 파일 위치에 맞게 수정)
 
 class StadiumDetailScreen extends StatelessWidget {
   /// 예: 'munhak', 'jamsil', 'gocheok' ...
@@ -80,13 +81,21 @@ class StadiumDetailScreen extends StatelessWidget {
               iconPath: 'assets/etc/chair.png',
               title: '좌석정보',
               onTap: () {
-                // TODO: 좌석 오버레이 상세 화면 연결
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('좌석정보(다음 단계에서 연결)')),
+                // ✅ 여기서 SeatGuideScreen으로 이동
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SeatGuideScreen(
+                      stadiumId: stadiumId,
+                      stadiumName: stadiumName,
+                      themeColor: themeColor,
+                    ),
+                  ),
                 );
               },
             ),
             const SizedBox(height: 12),
+
             _MenuCard(
               iconPath: 'assets/etc/chicken.png',
               title: '먹거리정보',
@@ -97,6 +106,7 @@ class StadiumDetailScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 12),
+
             _MenuCard(
               iconPath: 'assets/etc/bus.png',
               title: '교통안내',
@@ -166,7 +176,10 @@ class _MenuCard extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
 
