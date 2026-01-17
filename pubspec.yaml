@@ -64,6 +64,7 @@ flutter:
     - assets/view_img/
     - assets/etc/
     - assets/data/
+    ###############################################
     - assets/overlays/
     - assets/overlays/MUNHAK/
     - assets/overlays/CHANGWON/
@@ -74,6 +75,17 @@ flutter:
     - assets/overlays/JAMSIL/
     - assets/overlays/SAJIK/
     - assets/overlays/SUWON/
+    #################################################
+    - assets/food_img/
+    - assets/food_img/MUNHAK/
+    - assets/food_img/CHANGWON/
+    - assets/food_img/DAEGU/
+    - assets/food_img/DAEJEON/
+    - assets/food_img/GOCHEOK/
+    - assets/food_img/GWANGJU/
+    - assets/food_img/JAMSIL/
+    - assets/food_img/SAJIK/
+    - assets/food_img/SUWON/
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
