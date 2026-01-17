@@ -35,7 +35,7 @@ class _MainShellState extends State<MainShell> {
     final teamColor = team.primary;
 
     final pages = [
-      HomeTab(uid: widget.uid, teamColor: teamColor),
+      HomeTab(uid: widget.uid, team: team), // team 객체를 직접 넘김
       StadiumTab(teamColor: teamColor),
       WeatherTab(teamColor: teamColor),
       MyTab(
@@ -48,19 +48,23 @@ class _MainShellState extends State<MainShell> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: teamColor,
         foregroundColor: Colors.white,
-        title: Text(team.nameKo),
+        elevation: 0,
+        centerTitle: false,
+        title: Text(
+          team.fullName,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           if (idx == 0)
             IconButton(
               icon: const Icon(Icons.calendar_month),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CalendarScreen()),
-                );
-              },
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CalendarScreen()),
+              ),
             ),
         ],
       ),

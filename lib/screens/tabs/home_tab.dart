@@ -1,106 +1,470 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../team_theme.dart';
+import 'package:jikgwan_mate/screens/lineup_screen.dart';
+import 'package:jikgwan_mate/screens/news_screen.dart';
 
-class HomeTab extends StatelessWidget {
+class HomeTab extends StatefulWidget {
   final String uid;
-  final Color teamColor;
-  const HomeTab({super.key, required this.uid, required this.teamColor});
+  final TeamTheme team;
+
+  const HomeTab({super.key, required this.uid, required this.team});
+
+  @override
+  State<HomeTab> createState() => _HomeTabState();
+}
+
+class _HomeTabState extends State<HomeTab> {
+  late PageController _pageController;
+  final int _initialPage = 500;
+  double _currentPage = 500;
+
+  final DateTime _today = DateTime(2026, 3, 28);
+  late DateTime _baseDate;
+  late DateTime _selectedDate;
+  late Future<Map<String, List<dynamic>>> _gameData;
+
+  @override
+  void initState() {
+    super.initState();
+    _baseDate = DateTime(_today.year, _today.month, _today.day);
+    _selectedDate = _baseDate;
+
+    _pageController = PageController(
+      initialPage: _initialPage,
+      viewportFraction: 0.85,
+    );
+
+    _pageController.addListener(() {
+      setState(() {
+        _currentPage = _pageController.page!;
+      });
+    });
+
+    _gameData = _loadGamesFromCsv(_selectedDate);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onPageChanged(int index) {
+    setState(() {
+      _selectedDate = _baseDate.add(Duration(days: index - _initialPage));
+      _gameData = _loadGamesFromCsv(_selectedDate);
+    });
+  }
+
+  String _getLogo(String teamName) {
+    String logo = 'assets/team_logo_img/ssg.png';
+    teamThemes.forEach((k, v) {
+      if (v.nameKo == teamName ||
+          v.id.toUpperCase() == teamName.toUpperCase()) {
+        logo = v.logoPath;
+      }
+    });
+    return logo;
+  }
+
+  Future<Map<String, List<dynamic>>> _loadGamesFromCsv(DateTime date) async {
+    try {
+      final rawData = await rootBundle.loadString('assets/data/games.csv');
+      final lines = rawData.replaceAll('\r', '').split('\n');
+      final String targetDate = "${date.year}.${date.month}.${date.day}";
+
+      List<dynamic> myMatch = [];
+      List<dynamic> otherMatches = [];
+
+      for (int i = 1; i < lines.length; i++) {
+        final cells = lines[i].split(',');
+        if (cells.length < 5) continue;
+
+        final game = {
+          'date': cells[0].trim(),
+          'stadium': cells[1].trim(),
+          'away': cells[3].trim(),
+          'home': cells[4].trim(),
+          'time': (cells.length > 5 && cells[5].trim().isNotEmpty)
+              ? cells[5].trim()
+              : "18:30",
+        };
+
+        if (game['date'] == targetDate) {
+          bool isMyMatch =
+              game['away'].toString().toUpperCase() ==
+                  widget.team.id.toUpperCase() ||
+              game['home'].toString().toUpperCase() ==
+                  widget.team.id.toUpperCase() ||
+              game['away'] == widget.team.nameKo ||
+              game['home'] == widget.team.nameKo;
+
+          if (isMyMatch) {
+            myMatch.add(game);
+          } else {
+            otherMatches.add(game);
+          }
+        }
+      }
+      return {'my': myMatch, 'others': otherMatches};
+    } catch (e) {
+      return {'my': [], 'others': []};
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(14),
-      children: [
-        _todayCard(),
-        const SizedBox(height: 14),
-        const Text('타구단 경기', style: TextStyle(fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        _smallRow(),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            const Text('구단 소식', style: TextStyle(fontWeight: FontWeight.w700)),
-            const Spacer(),
-            TextButton(onPressed: () {}, child: const Text('See More')),
+    return FutureBuilder<Map<String, List<dynamic>>>(
+      future: _gameData,
+      builder: (context, snapshot) {
+        final myMatch = snapshot.data?['my']?.isNotEmpty == true
+            ? snapshot.data!['my']![0]
+            : null;
+        final otherMatches = snapshot.data?['others'] ?? [];
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              SizedBox(
+                height: 290, // ✅ 카드가 내려올 공간을 위해 전체 높이 증가
+                child: Stack(
+                  children: [
+                    Container(height: 145, color: widget.team.primary),
+                    PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: _onPageChanged,
+                      itemBuilder: (context, index) {
+                        double value = (index - _currentPage).abs();
+                        double scale = (1 - (value * 0.12)).clamp(0.85, 1.0);
+                        double verticalOffset = value * 25;
+
+                        return Transform.translate(
+                          offset: Offset(0, verticalOffset),
+                          child: Transform.scale(
+                            scale: scale,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 20,
+                              ),
+                              child: _buildMainCard(myMatch),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 0, 20, 15),
+                child: Text(
+                  '타구단 경기',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                ),
+              ),
+              _buildOtherGamesList(otherMatches),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 25, 10, 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '구단 소식',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => NewsScreen(
+                              teamName: widget.team.nameKo,
+                              themeColor: widget.team.primary,
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        '더보기 >',
+                        style: TextStyle(color: Colors.grey, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _buildNewsPlaceholder(),
+              const SizedBox(height: 40),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMainCard(dynamic game) {
+    bool isActuallyToday =
+        _selectedDate.year == _today.year &&
+        _selectedDate.month == _today.month &&
+        _selectedDate.day == _today.day;
+
+    return GestureDetector(
+      onTap: game != null
+          ? () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      LineupScreen(game: game, themeColor: widget.team.primary),
+                ),
+              );
+            }
+          : null,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          30,
+        ), // ✅ 하단 패딩을 살짝 늘려 밸런스 조정
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
-        _newsCard(),
+        child: Column(
+          children: [
+            // 상단 날짜 영역
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (isActuallyToday)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: widget.team.primary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Today',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                else
+                  const SizedBox(height: 27),
+
+                Text(
+                  "${_selectedDate.year}.${_selectedDate.month}.${_selectedDate.day}",
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+
+            // ✅ Spacer를 사용하여 경기 정보를 카드의 정중앙으로 밀어냄
+            const Spacer(flex: 1),
+
+            if (game == null)
+              const Center(child: Text("예정된 경기가 없습니다."))
+            else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center, // 수직 정중앙 정렬
+                children: [
+                  const Spacer(flex: 1),
+                  _teamInfo(game['away']),
+                  const Spacer(flex: 2),
+                  _vsInfo(game['stadium'], game['time']),
+                  const Spacer(flex: 2),
+                  _teamInfo(game['home']),
+                  const Spacer(flex: 1),
+                ],
+              ),
+
+            const Spacer(flex: 1), // ✅ 아래쪽에도 Spacer를 둬서 완벽한 수직 중앙 구현
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _teamInfo(String teamName) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset(
+          _getLogo(teamName),
+          width: 60,
+          height: 60,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.sports_baseball, size: 60),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          teamName,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+        ),
       ],
     );
   }
 
-  Widget _todayCard() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.grey.shade100,
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3)),
-        ],
-      ),
-      child: Column(
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: teamColor,
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: const Text(
-                'Today',
-                style: TextStyle(color: Colors.white, fontSize: 12),
-              ),
+  Widget _vsInfo(String stadium, String time) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 5), // ✅ VS를 로고 높이와 맞추기 위해 미세하게 아래로 조정
+        const Text(
+          'VS',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w900,
+            fontStyle: FontStyle.italic,
+            letterSpacing: -1,
+            height: 1.0, // 텍스트 고유 여백 제거
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          stadium,
+          style: TextStyle(
+            color: Colors.grey.shade600,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 14), // 시간 뱃지와의 간격
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Text(
+            time,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 10),
-          const Text(
-            'SSG  VS  KIA',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 6),
-          const Text('18:30', style: TextStyle(color: Colors.black54)),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _smallRow() {
-    return Row(
-      children: List.generate(3, (i) {
-        return Expanded(
-          child: Container(
-            margin: EdgeInsets.only(right: i == 2 ? 0 : 8),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: const Column(
-              children: [
-                Text('VS', style: TextStyle(fontWeight: FontWeight.w700)),
-                SizedBox(height: 6),
-                Text(
-                  '18:30',
-                  style: TextStyle(color: Colors.black54, fontSize: 12),
+  Widget _buildOtherGamesList(List<dynamic> games) {
+    if (games.isEmpty)
+      return const SizedBox(
+        height: 100,
+        child: Center(child: Text("경기 정보가 없습니다.")),
+      );
+    return SizedBox(
+      height: 145,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: games.length,
+        itemBuilder: (context, i) => Container(
+          width: 160,
+          margin: const EdgeInsets.only(right: 15, bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "${games[i]['stadium']} | ${games[i]['time']}",
+                style: const TextStyle(fontSize: 10, color: Colors.grey),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Image.asset(
+                    _getLogo(games[i]['away']),
+                    width: 35,
+                    height: 35,
+                  ),
+                  const Text(
+                    'VS',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black12,
+                    ),
+                  ),
+                  Image.asset(
+                    _getLogo(games[i]['home']),
+                    width: 35,
+                    height: 35,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${games[i]['away']} : ${games[i]['home']}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-      }),
+        ),
+      ),
     );
   }
 
-  Widget _newsCard() {
-    return Container(
-      height: 170,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.grey.shade200,
+  Widget _buildNewsPlaceholder() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        height: 180,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: const Center(
+          child: Icon(Icons.image, color: Colors.grey, size: 40),
+        ),
       ),
-      child: const Center(child: Text('뉴스 카드(추후 API 연동)')),
     );
   }
 }
