@@ -3,7 +3,7 @@ MUNHAK,burgerwonders,버거원더스,1루,1층,"#햄버거, #피자, #맥주",as
 MUNHAK,dream_bhc,드림마켓(BHC),1루,1층,"#치킨, #오징어",assets/food_img/MUNHAK/bhc.png
 MUNHAK,mimi,우리동네 미미네 ,1루,1층,"#치킨, #떡볶이, #크림새우, #오징어",assets/food_img/MUNHAK/mimi.png
 MUNHAK,kukdae,국대떡볶이,1루,1층,"#치킨, #떡볶이, #크림새우",assets/food_img/MUNHAK/kukdae.png
-MUNHAK,pickme31,픽미31,1루,1층,#주류,assets/food_img/MUNHAK/pickme31.png
+MUNHAK,pickme31,픽미31,1루,1층,#주류,assets/food_img/MUNHAK/default.png
 MUNHAK,starbucks,스타벅스,1루,1층,"#음료, #카페",assets/food_img/MUNHAK/starbucks.png
 MUNHAK,aloha,알로하커피앤바,1루,1층,"#음료, #주류",assets/food_img/MUNHAK/aloha.png
 MUNHAK,emart24_1f,이마트24,1루,1층,#편의점,assets/food_img/MUNHAK/emart24.png
@@ -40,27 +40,27 @@ CHANGWON,banolim,반올림피자,1루,1층,"#피자, #치즈볼",assets/food_img
 CHANGWON,altong_1,알통떡강정,1루,1층,"#떡강정, #치킨",assets/food_img/CHANGWON/altong.png
 CHANGWON,happycheese,해피치즈스마일,1루,1층,"#떡볶이, #순대, #야채곱창",assets/food_img/CHANGWON/happycheese.png
 CHANGWON,street,스트릿츄러스,1루,1층,"#츄러스, #아이스크림",assets/food_img/CHANGWON/street.png
-CHANGWON,altong_2,알통떡강정,중앙,1층,"#떡강정, #치킨",assets/food_img/CHANGWON/altong_2.png
+CHANGWON,altong_2,알통떡강정,중앙,1층,"#떡강정, #치킨",assets/food_img/CHANGWON/altong.png
 CHANGWON,seven_2,세븐일레븐,중앙,1층,#편의점,assets/food_img/CHANGWON/seven.png
 CHANGWON,bhc,bhc,중앙,1층,"#치킨, #주류",assets/food_img/CHANGWON/bhc.png
 CHANGWON,bookchon,북촌손만두,3루,1층,"#만두, #냉면, #닭강정",assets/food_img/CHANGWON/bookchon.png
 CHANGWON,norang,노랑통닭,3루,1층,"#치킨, #주류",assets/food_img/CHANGWON/norang.png
-CHANGWON,menya,멘야파이토,3루,1층,"#라멘, #주류",assets/food_img/CHAGWON/menya.png
+CHANGWON,menya,멘야파이토,3루,1층,"#라멘, #주류",assets/food_img/CHANGWON/menya.png
 CHANGWON,shrimp,쉬림프셰프,3루,1층,"#크림새우, #칠리새우",assets/food_img/CHANGWON/shrimp.png
 CHANGWON,koa,코아양과,3루,1층,"#밀크셰이크, #십원빵",assets/food_img/CHANGWON/koa.png
 CHANGWON,seven_3,세븐일레븐,3루,1층,#편의점,assets/food_img/CHANGWON/seven.png
 CHANGWON,banolim_2,반올림피자,3루,1층,"#피자, #치즈볼",assets/food_img/CHANGWON/banolim.png
 CHANGWON,starbucks,스타벅스,3루,1층,"#음료, #카페",assets/food_img/CHANGWON/starbucks.png
 CHANGWON,manjae,만재네,외야,1층,#고기,assets/food_img/CHANGWON/manjae.png
-CHANGWON,bhc_2,bhc,외야,1층,"#치킨, #주류",assets/food_img/CHANGWON/bhc_2.png
+CHANGWON,bhc_2,bhc,외야,1층,"#치킨, #주류",assets/food_img/CHANGWON/bhc.png
 CHANGWON,sunae,수내닭꼬치,외야,1층,#닭꼬치,assets/food_img/CHANGWON/sunae.png
 CHANGWON,brussels,브뤼셀프라이,외야,1층,#감자튀김,assets/food_img/CHANGWON/brussels.png
 CHANGWON,beerbat,비어배트,외야,1층,"#생맥주, #주류",assets/food_img/CHANGWON/beerbat.png
 CHANGWON,workster,윅스터,외야,1층,"#차오미엔, #치킨",assets/food_img/CHANGWON/workster.png
 CHANGWON,yogurtworld,요거트월드,외야,1층,#아이스크림,assets/food_img/CHANGWON/yogurtworld.png
-CHANGWON,starbucks_2f,스타벅스,3루,2층,"#음료, #카페",assets/food_img/CHANGWON/starbucks_2f.png
+CHANGWON,starbucks_2f,스타벅스,3루,2층,"#음료, #카페",assets/food_img/CHANGWON/starbucks.png
 CHANGWON,seven_4,세븐일레븐,중앙,2층,#편의점,assets/food_img/CHANGWON/seven.png
-CHANGWON,bhc_3,bhc,1루,2층,"#치킨, #주류",assets/food_img/CHANGWON/bhc_3.png
+CHANGWON,bhc_3,bhc,1루,2층,"#치킨, #주류",assets/food_img/CHANGWON/bhc.png
 DAEJEON,masung,마성떡볶이,3루,1층,"#떡볶이, #순대",assets/food_img/DAEJEON/masung.png
 DAEJEON,gurudak,구르닭,3루,1층,"#닭목살구이, #닭유린기, #초계국수",assets/food_img/DAEJEON/gurudak.png
 DAEJEON,yogurtworld,요아정,3루,1층,#아이스크림,assets/food_img/DAEJEON/yogurtworld.png
@@ -116,7 +116,7 @@ DAEGU,bluedong,블루도그,내야석,3층,"#타코, #핫도그",assets/food_img
 DAEGU,happycrepe,해피크레페,내야석,3층,"#와플, #슬러쉬, #소시지, #나초",assets/food_img/DAEGU/default.png
 DAEGU,legendsnack,전설스낵,내야석,3층,"#핫도그, #골뱅이, #옥수수",assets/food_img/DAEGU/default.png
 DAEGU,bookchon,북촌손만두,내야석,3층,"#만두, #냉면, #닭강정",assets/food_img/DAEGU/bookchon.png
-DAEGU,legendkkochi,전설꼬치,내야석,3층,"#닭꼬치, #소세지, #음료",assets/food_img/DAEGU/legendkkochi.png
+DAEGU,legendkkochi,전설꼬치,내야석,3층,"#닭꼬치, #소세지, #음료",assets/food_img/DAEGU/default.png
 DAEGU,altong_2,알통떡강정,내야석,3층,"#떡강정, #치킨",assets/food_img/DAEGU/altong.png
 DAEGU,5tteokbokki_1,5직떡볶이,내야석,3층,"#떡볶이, #모둠튀김, #빙수",assets/food_img/DAEGU/5tteokbokki.png
 DAEGU,happychheese_2,해피치즈스마일,내야석,3층,"#떡볶이, #아이스크림, #순대",assets/food_img/DAEGU/happycheese.png
