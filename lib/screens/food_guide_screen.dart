@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'food_detail_screen.dart';
 
 class FoodGuideScreen extends StatefulWidget {
   final String stadiumId;     // 예: 'munhak'
@@ -187,7 +188,9 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
                   return _FoodTile(
                     item: f,
                     themeColor: widget.themeColor,
+                    stadiumName: widget.stadiumName,
                   );
+
                 },
               ),
             ),
@@ -227,10 +230,12 @@ class FoodItem {
 class _FoodTile extends StatelessWidget {
   final FoodItem item;
   final Color themeColor;
+  final String stadiumName;
 
   const _FoodTile({
     required this.item,
     required this.themeColor,
+    required this.stadiumName,
   });
 
   @override
@@ -238,9 +243,16 @@ class _FoodTile extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: () {
-        // 나중에 상세 페이지 만들면 여기서 push 하면 됨
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${item.name} (상세는 추후 추가)')),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => FoodDetailScreen(
+              stadiumId: item.stadiumId.toLowerCase(), // 'MUNHAK' -> 'munhak'
+              stadiumName: stadiumName,
+              themeColor: themeColor,
+              food: item,
+            ),
+          ),
         );
       },
       child: Container(
@@ -251,83 +263,98 @@ class _FoodTile extends StatelessWidget {
           border: Border.all(color: Colors.grey.shade200),
           boxShadow: [
             BoxShadow(
-              blurRadius: 14,
+              blurRadius: 12,
               offset: const Offset(0, 6),
               color: Colors.black.withOpacity(0.05),
             ),
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 이미지
+            // ✅ 좌측: 음식 이미지
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               child: Container(
-                width: 62,
-                height: 62,
+                width: 64,
+                height: 64,
                 color: const Color(0xFFF2F2F2),
                 alignment: Alignment.center,
                 child: Image.asset(
                   item.foodImg,
-                  width: 62,
-                  height: 62,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.fastfood),
+                  width: 56,
+                  height: 56,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.fastfood,
+                    size: 28,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
             ),
+
             const SizedBox(width: 12),
 
-            // 텍스트
+            // ✅ 중앙: 텍스트 정보
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 매장명
                   Text(
                     item.name,
-                    style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w900),
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 4),
+
+                  // 위치 / 층
                   Text(
                     '${item.location} · ${item.floor}',
-                    style: TextStyle(fontSize: 12.5, color: Colors.grey.shade700),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade700,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+
+                  const SizedBox(height: 6),
+
+                  // 태그
                   Wrap(
                     spacing: 6,
-                    runSpacing: 6,
-                    children: item.tags.take(4).map((t) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: themeColor.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: themeColor.withOpacity(0.25)),
-                        ),
-                        child: Text(
-                          t,
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            color: themeColor,
-                            fontWeight: FontWeight.w700,
-                          ),
+                    runSpacing: -6,
+                    children: item.tags.map((t) {
+                      final tag = t.trim();
+                      return Text(
+                        tag.startsWith('#') ? tag : '#$tag',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: themeColor,
+                          fontWeight: FontWeight.w600,
                         ),
                       );
                     }).toList(),
                   ),
+
                 ],
               ),
             ),
 
-            const SizedBox(width: 10),
-            Icon(Icons.arrow_forward_ios, size: 16, color: themeColor),
+            // ✅ 우측 화살표
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 14,
+              color: Colors.grey,
+            ),
           ],
         ),
       ),
     );
   }
 }
+
 
 /// 매우 단순 CSV 파서 (따옴표 포함/쉼표 포함까지 “완벽”하진 않지만 일반적인 데이터는 잘 됨)
 List<List<String>> _parseCsv(String csv) {
