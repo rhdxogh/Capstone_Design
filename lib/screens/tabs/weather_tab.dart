@@ -1,16 +1,377 @@
 import 'package:flutter/material.dart';
 
-class WeatherTab extends StatelessWidget {
+import '../../data/stadium_locations.dart';
+import '../../models/stadium_weather.dart';
+import '../../services/weather_service.dart';
+
+class WeatherTab extends StatefulWidget {
   final Color teamColor;
   const WeatherTab({super.key, required this.teamColor});
 
   @override
+  State<WeatherTab> createState() => _WeatherTabState();
+}
+
+class _WeatherTabState extends State<WeatherTab> {
+  late Future<List<StadiumWeather>> _future;
+  DateTime? _lastUpdated;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  void _refresh() {
+    setState(() {
+      _future = WeatherService.fetchAll();
+      _lastUpdated = DateTime.now();
+    });
+  }
+
+  String _timeText(DateTime? dt) {
+    if (dt == null) return '';
+    final hh = dt.hour.toString().padLeft(2, '0');
+    final mm = dt.minute.toString().padLeft(2, '0');
+    return '$hh:$mm';
+  }
+
+  StadiumLoc _findStadium(String id) {
+    // fetchAll에서 stadiumId로 반환되므로 id로 다시 찾아서 이름/주소 가져옴
+    return stadiumLocations.firstWhere((s) => s.id == id);
+  }
+
+  String _iconUrl(String icon) {
+    // OpenWeather icon: 10d, 01n ...
+    return 'https://openweathermap.org/img/wn/$icon@2x.png';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        '날씨 탭(추후 구현)',
-        style: TextStyle(color: teamColor, fontWeight: FontWeight.w700),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F7F9),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async => _refresh(),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+            children: [
+              // ✅ 상단 카드
+              _TopWeatherCard(
+                teamColor: widget.teamColor,
+                onTap: _refresh,
+                lastUpdatedText: _timeText(_lastUpdated),
+              ),
+
+              const SizedBox(height: 14),
+
+              // ✅ 리스트 섹션 타이틀
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      '오늘의 구장별 날씨',
+                      style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  Text(
+                    _lastUpdated == null ? '' : '업데이트 ${_timeText(_lastUpdated)}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+
+              // ✅ 날씨 리스트
+              FutureBuilder<List<StadiumWeather>>(
+                future: _future,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _LoadingList();
+                  }
+
+                  if (snapshot.hasError) {
+                    return _ErrorBox(
+                      message: '날씨를 불러오지 못했어요.\n${snapshot.error}',
+                      onRetry: _refresh,
+                      teamColor: widget.teamColor,
+                    );
+                  }
+
+                  final list = snapshot.data ?? [];
+                  if (list.isEmpty) {
+                    return _ErrorBox(
+                      message: '데이터가 비어있어요. 다시 시도해 주세요.',
+                      onRetry: _refresh,
+                      teamColor: widget.teamColor,
+                    );
+                  }
+
+                  // 구장 id 기준으로 정렬(원하는 순서 있으면 여기서 정렬 바꿔도 됨)
+                  list.sort((a, b) => a.stadiumId.compareTo(b.stadiumId));
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Column(
+                      children: [
+                        for (int i = 0; i < list.length; i++) ...[
+                          _WeatherRow(
+                            teamColor: widget.teamColor,
+                            stadium: _findStadium(list[i].stadiumId),
+                            weather: list[i],
+                            iconUrl: _iconUrl(list[i].icon),
+                          ),
+                          if (i != list.length - 1)
+                            Divider(height: 1, color: Colors.grey.shade200),
+                        ],
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
+
+class _TopWeatherCard extends StatelessWidget {
+  final Color teamColor;
+  final VoidCallback onTap;
+  final String lastUpdatedText;
+
+  const _TopWeatherCard({
+    required this.teamColor,
+    required this.onTap,
+    required this.lastUpdatedText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          gradient: LinearGradient(
+            colors: [
+              teamColor.withOpacity(0.15),
+              teamColor.withOpacity(0.05),
+            ],
+          ),
+          border: Border.all(color: teamColor.withOpacity(0.25)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: teamColor.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(Icons.cloud, color: teamColor),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '실시간 날씨 보러가기',
+                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '각 구장별 현재 날씨를 확인해요',
+                    style: TextStyle(fontSize: 12.5, color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Icon(Icons.arrow_forward, color: teamColor),
+                const SizedBox(height: 6),
+                Text(
+                  lastUpdatedText.isEmpty ? '' : lastUpdatedText,
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeatherRow extends StatelessWidget {
+  final Color teamColor;
+  final StadiumLoc stadium;
+  final StadiumWeather weather;
+  final String iconUrl;
+
+  const _WeatherRow({
+    required this.teamColor,
+    required this.stadium,
+    required this.weather,
+    required this.iconUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tempText = '${weather.temp.toStringAsFixed(0)}°';
+    return InkWell(
+      onTap: () {
+        // 나중에 구장 상세로 이동시키고 싶으면 여기서 Navigator.push 연결
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${stadium.nameKo} 날씨: ${weather.description} $tempText')),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            // 왼쪽 위치 아이콘
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: teamColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.place, color: teamColor, size: 18),
+            ),
+            const SizedBox(width: 10),
+
+            // 구장 텍스트
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    stadium.nameKo,
+                    style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    stadium.address,
+                    style: TextStyle(fontSize: 11.5, color: Colors.grey.shade700),
+                  ),
+                ],
+              ),
+            ),
+
+            // 아이콘 + 온도
+            Row(
+              children: [
+                Image.network(
+                  iconUrl,
+                  width: 34,
+                  height: 34,
+                  errorBuilder: (_, __, ___) => Icon(Icons.cloud, color: teamColor),
+                ),
+                const SizedBox(width: 6),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      tempText,
+                      style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w900),
+                    ),
+                    Text(
+                      weather.description,
+                      style: TextStyle(fontSize: 11.5, color: Colors.grey.shade700),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LoadingList extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // 로딩 시 카드 느낌 유지
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: const Row(
+        children: [
+          SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          SizedBox(width: 10),
+          Text('날씨 불러오는 중...'),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorBox extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  final Color teamColor;
+
+  const _ErrorBox({
+    required this.message,
+    required this.onRetry,
+    required this.teamColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(message, style: TextStyle(color: Colors.grey.shade800)),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 42,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: teamColor,
+                foregroundColor: Colors.white,
+                shape: const StadiumBorder(),
+                elevation: 0,
+              ),
+              onPressed: onRetry,
+              child: const Text('다시 시도'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
