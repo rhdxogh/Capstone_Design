@@ -10,9 +10,6 @@ class StadiumTab extends StatefulWidget {
 }
 
 class _StadiumTabState extends State<StadiumTab> {
-  String? selectedId;
-
-  // ✅ assets/stadium_img 경로 기준
   final List<_StadiumItem> stadiums = const [
     _StadiumItem(
       id: 'gocheok',
@@ -62,8 +59,6 @@ class _StadiumTabState extends State<StadiumTab> {
   ];
 
   void _openDetail(_StadiumItem s) {
-    setState(() => selectedId = s.id);
-
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -109,8 +104,6 @@ class _StadiumTabState extends State<StadiumTab> {
                   ),
                   itemBuilder: (context, i) {
                     final s = stadiums[i];
-                    final isSel = selectedId == s.id;
-
                     return InkWell(
                       borderRadius: BorderRadius.circular(18),
                       onTap: () => _openDetail(s), // ✅ 여기서 상세로 이동
@@ -118,10 +111,6 @@ class _StadiumTabState extends State<StadiumTab> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: isSel ? widget.teamColor : Colors.transparent,
-                            width: isSel ? 2 : 1,
-                          ),
                           boxShadow: [
                             BoxShadow(
                               blurRadius: 16,
@@ -142,7 +131,8 @@ class _StadiumTabState extends State<StadiumTab> {
                                       borderRadius: BorderRadius.circular(14),
                                       child: Container(
                                         color: const Color(0xFFF1F1F1),
-                                        alignment: Alignment.center, // ✅ 중앙 정렬 핵심
+                                        alignment:
+                                            Alignment.center, // ✅ 중앙 정렬 핵심
                                         child: Image.asset(
                                           s.asset,
                                           fit: BoxFit.contain,
@@ -167,57 +157,11 @@ class _StadiumTabState extends State<StadiumTab> {
                                 ],
                               ),
                             ),
-
-                            // ✅ 선택 체크 뱃지
-                            if (isSel)
-                              Positioned(
-                                right: 10,
-                                top: 10,
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: widget.teamColor,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.check,
-                                    size: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
                           ],
                         ),
                       ),
                     );
                   },
-                ),
-              ),
-
-              // ✅ 선택 완료 버튼: 선택된 구장 상세로 이동
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 50,
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                    selectedId == null ? Colors.grey : widget.teamColor,
-                    foregroundColor: Colors.white,
-                    shape: const StadiumBorder(),
-                    elevation: 0,
-                  ),
-                  onPressed: selectedId == null
-                      ? null
-                      : () {
-                    final picked =
-                    stadiums.firstWhere((s) => s.id == selectedId);
-                    _openDetail(picked);
-                  },
-                  child: const Text(
-                    '선택 완료',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
                 ),
               ),
             ],
@@ -238,4 +182,3 @@ class _StadiumItem {
     required this.asset,
   });
 }
-
