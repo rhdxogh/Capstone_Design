@@ -4,6 +4,9 @@ import '../../data/stadium_locations.dart';
 import '../../models/stadium_weather.dart';
 import '../../services/weather_service.dart';
 
+// ✅ 추가: 상세 페이지로 이동
+import '../weather_detail_screen.dart';
+
 class WeatherTab extends StatefulWidget {
   final Color teamColor;
   const WeatherTab({super.key, required this.teamColor});
@@ -37,13 +40,25 @@ class _WeatherTabState extends State<WeatherTab> {
   }
 
   StadiumLoc _findStadium(String id) {
-    // fetchAll에서 stadiumId로 반환되므로 id로 다시 찾아서 이름/주소 가져옴
     return stadiumLocations.firstWhere((s) => s.id == id);
   }
 
   String _iconUrl(String icon) {
-    // OpenWeather icon: 10d, 01n ...
     return 'https://openweathermap.org/img/wn/$icon@2x.png';
+  }
+
+  /// ✅ 공통: 상세 화면 이동 함수 (오타/중복 방지용)
+  void _goDetail(StadiumLoc stadium) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WeatherDetailScreen(
+          stadium: stadium,
+          stadiumName: stadium.nameKo,
+          themeColor: widget.teamColor,
+        ),
+      ),
+    );
   }
 
   @override
@@ -56,16 +71,19 @@ class _WeatherTabState extends State<WeatherTab> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
             children: [
-              // ✅ 상단 카드
+              // ✅ 상단 카드: 이제 "상세페이지로 이동"
               _TopWeatherCard(
                 teamColor: widget.teamColor,
-                onTap: _refresh,
+                // 카드 눌렀을 때: (예시로) munhak으로 이동
+                onTap: () {
+                  final s = stadiumLocations.firstWhere((e) => e.id == 'munhak');
+                  _goDetail(s);
+                },
                 lastUpdatedText: _timeText(_lastUpdated),
               ),
 
               const SizedBox(height: 14),
 
-              // ✅ 리스트 섹션 타이틀
               Row(
                 children: [
                   const Expanded(
@@ -76,14 +94,13 @@ class _WeatherTabState extends State<WeatherTab> {
                   ),
                   Text(
                     _lastUpdated == null ? '' : '업데이트 ${_timeText(_lastUpdated)}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ),
 
               const SizedBox(height: 10),
 
-              // ✅ 날씨 리스트
               FutureBuilder<List<StadiumWeather>>(
                 future: _future,
                 builder: (context, snapshot) {
@@ -108,7 +125,6 @@ class _WeatherTabState extends State<WeatherTab> {
                     );
                   }
 
-                  // 구장 id 기준으로 정렬(원하는 순서 있으면 여기서 정렬 바꿔도 됨)
                   list.sort((a, b) => a.stadiumId.compareTo(b.stadiumId));
 
                   return Container(
@@ -125,6 +141,12 @@ class _WeatherTabState extends State<WeatherTab> {
                             stadium: _findStadium(list[i].stadiumId),
                             weather: list[i],
                             iconUrl: _iconUrl(list[i].icon),
+
+                            // ✅ row 누르면 해당 구장 상세로 이동
+                            onTap: () {
+                              final s = _findStadium(list[i].stadiumId);
+                              _goDetail(s);
+                            },
                           ),
                           if (i != list.length - 1)
                             Divider(height: 1, color: Colors.grey.shade200),
@@ -205,7 +227,7 @@ class _TopWeatherCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   lastUpdatedText.isEmpty ? '' : lastUpdatedText,
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
                 ),
               ],
             ),
@@ -221,29 +243,26 @@ class _WeatherRow extends StatelessWidget {
   final StadiumLoc stadium;
   final StadiumWeather weather;
   final String iconUrl;
+  final VoidCallback onTap;
 
   const _WeatherRow({
     required this.teamColor,
     required this.stadium,
     required this.weather,
     required this.iconUrl,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final tempText = '${weather.temp.toStringAsFixed(0)}°';
+
     return InkWell(
-      onTap: () {
-        // 나중에 구장 상세로 이동시키고 싶으면 여기서 Navigator.push 연결
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${stadium.nameKo} 날씨: ${weather.description} $tempText')),
-        );
-      },
+      onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
-            // 왼쪽 위치 아이콘
             Container(
               width: 34,
               height: 34,
@@ -255,7 +274,6 @@ class _WeatherRow extends StatelessWidget {
             ),
             const SizedBox(width: 10),
 
-            // 구장 텍스트
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,13 +285,12 @@ class _WeatherRow extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     stadium.address,
-                    style: TextStyle(fontSize: 11.5, color: Colors.grey.shade700),
+                    style: const TextStyle(fontSize: 11.5, color: Colors.grey),
                   ),
                 ],
               ),
             ),
 
-            // 아이콘 + 온도
             Row(
               children: [
                 Image.network(
@@ -292,7 +309,7 @@ class _WeatherRow extends StatelessWidget {
                     ),
                     Text(
                       weather.description,
-                      style: TextStyle(fontSize: 11.5, color: Colors.grey.shade700),
+                      style: const TextStyle(fontSize: 11.5, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -308,7 +325,6 @@ class _WeatherRow extends StatelessWidget {
 class _LoadingList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // 로딩 시 카드 느낌 유지
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -374,4 +390,5 @@ class _ErrorBox extends StatelessWidget {
     );
   }
 }
+
 
