@@ -149,7 +149,7 @@ class _StadiumTabState extends State<StadiumTab> {
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                      fontSize: 12.5,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w700,
                                       height: 1.2,
                                     ),

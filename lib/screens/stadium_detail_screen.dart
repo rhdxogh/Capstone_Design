@@ -73,7 +73,7 @@ class StadiumDetailScreen extends StatelessWidget {
 
             const Text(
               '무엇을 도와드릴까요?',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 12),
 
@@ -186,7 +186,7 @@ class _MenuCard extends StatelessWidget {
               child: Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 14.5,
+                  fontSize: 16,
                   fontWeight: FontWeight.w800,
                 ),
               ),

@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'seat_overlay_screen.dart'; // 파일 위치에 맞게 경로 수정
 
-
 class SeatGuideScreen extends StatefulWidget {
-  final String stadiumId;   // 'munhak'
+  final String stadiumId; // 'munhak'
   final String stadiumName; // '인천 SSG 랜더스필드'
   final Color themeColor;
 
@@ -22,7 +21,7 @@ class SeatGuideScreen extends StatefulWidget {
 class _SeatGuideScreenState extends State<SeatGuideScreen> {
   late Future<List<SeatSection>> sectionsFuture;
 
-  String get viewImagePath => 'assets/view_img/${widget.stadiumId}_view.png';
+  String get viewImagePath => 'assets/stadium_img/${widget.stadiumId}.png';
 
   @override
   void initState() {
@@ -34,7 +33,10 @@ class _SeatGuideScreenState extends State<SeatGuideScreen> {
     // ✅ CSV 파일 위치
     final raw = await rootBundle.loadString('assets/data/sections.csv');
 
-    final lines = raw.split(RegExp(r'\r?\n')).where((l) => l.trim().isNotEmpty).toList();
+    final lines = raw
+        .split(RegExp(r'\r?\n'))
+        .where((l) => l.trim().isNotEmpty)
+        .toList();
     if (lines.isEmpty) return [];
 
     // 1) 헤더 파싱
@@ -50,7 +52,14 @@ class _SeatGuideScreenState extends State<SeatGuideScreen> {
     final iOverlayAsset = idx('overlayAsset');
 
     // 필수 컬럼 체크
-    if ([iStadiumId, iSectionId, iSectionName, iColorHex, iSortOrder, iOverlayAsset].any((v) => v < 0)) {
+    if ([
+      iStadiumId,
+      iSectionId,
+      iSectionName,
+      iColorHex,
+      iSortOrder,
+      iOverlayAsset,
+    ].any((v) => v < 0)) {
       throw Exception('CSV 헤더에 필요한 컬럼이 없어요.\n현재 헤더: $headers');
     }
 
@@ -108,7 +117,10 @@ class _SeatGuideScreenState extends State<SeatGuideScreen> {
               children: [
                 Text(
                   widget.stadiumName,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -121,40 +133,38 @@ class _SeatGuideScreenState extends State<SeatGuideScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(14),
                   child: Container(
-                    height: 180,
+                    height: 260,
                     color: const Color(0xFFF2F2F2),
                     alignment: Alignment.center,
-                    child: Image.asset(
-                      viewImagePath,
-                      fit: BoxFit.cover,
-                    ),
+                    child: Image.asset(viewImagePath, fit: BoxFit.contain),
                   ),
                 ),
 
                 const SizedBox(height: 16),
                 const Text(
                   '좌석안내',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 10),
 
-                ...sections.map((s) => _SectionRow(
-                  section: s,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => SeatOverlayScreen(
-                          stadiumName: widget.stadiumName,
-                          sectionName: s.sectionName,
-                          overlayAsset: s.overlayAsset,
-                          themeColor: widget.themeColor,
+                ...sections.map(
+                  (s) => _SectionRow(
+                    section: s,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SeatOverlayScreen(
+                            stadiumName: widget.stadiumName,
+                            sectionName: s.sectionName,
+                            overlayAsset: s.overlayAsset,
+                            themeColor: widget.themeColor,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-
-                )),
+                      );
+                    },
+                  ),
+                ),
               ],
             );
           },
@@ -163,6 +173,8 @@ class _SeatGuideScreenState extends State<SeatGuideScreen> {
     );
   }
 }
+
+// lib/screens/seat_guide_screen.dart 내의 _SectionRow 수정
 
 class _SectionRow extends StatelessWidget {
   final SeatSection section;
@@ -174,27 +186,48 @@ class _SectionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final dotColor = _hexToColor(section.colorHex);
 
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(
-          children: [
-            Container(
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                section.sectionName,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 4,
+            ), // ListTile 자체 패딩 조절
+            child: ListTile(
+              // 1. 좌측 컬러 도트
+              leading: Container(
+                width: 25,
+                height: 25,
+                decoration: BoxDecoration(
+                  color: dotColor,
+                  shape: BoxShape.circle,
+                  // 도트가 흰색 계열일 때를 대비해 아주 연한 테두리 추가
+                  border: Border.all(color: Colors.black.withOpacity(0.05)),
+                ),
               ),
+              // 2. 구역 이름 (글씨 크기 키움)
+              title: Text(
+                section.sectionName,
+                style: const TextStyle(
+                  fontSize: 15, // 기존 14에서 증가
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF222222),
+                ),
+              ),
+              // 3. 우측 화살표 아이콘 추가
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: Color(0xFFBDBDBD),
+              ),
+              contentPadding: EdgeInsets.zero, // 좌우 여백 제거 (ListView 패딩에 의존)
             ),
-          ],
+          ),
         ),
-      ),
+        // 4. 구분선 추가
+        Divider(height: 1, thickness: 1, color: Colors.grey.shade100),
+      ],
     );
   }
 }
