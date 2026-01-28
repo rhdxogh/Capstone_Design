@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/stadium_locations.dart';
 import '../../models/stadium_weather.dart';
 import '../../services/weather_service.dart';
+import '../weather_map_screen.dart';
 
 // ✅ 추가: 상세 페이지로 이동
 import '../weather_detail_screen.dart';
@@ -74,13 +75,17 @@ class _WeatherTabState extends State<WeatherTab> {
               // ✅ 상단 카드: 이제 "상세페이지로 이동"
               _TopWeatherCard(
                 teamColor: widget.teamColor,
-                // 카드 눌렀을 때: (예시로) munhak으로 이동
                 onTap: () {
-                  final s = stadiumLocations.firstWhere((e) => e.id == 'munhak');
-                  _goDetail(s);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => WeatherMapScreen(themeColor: widget.teamColor),
+                    ),
+                  );
                 },
                 lastUpdatedText: _timeText(_lastUpdated),
               ),
+
 
               const SizedBox(height: 14),
 
