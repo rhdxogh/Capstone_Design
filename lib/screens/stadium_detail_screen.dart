@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'seat_guide_screen.dart'; // ✅ 좌석안내 화면 import (경로는 파일 위치에 맞게 수정)
 import 'food_guide_screen.dart';
+import 'traffic_guide_screen.dart';
 
 class StadiumDetailScreen extends StatelessWidget {
   /// 예: 'munhak', 'jamsil', 'gocheok' ...
@@ -120,8 +121,15 @@ class StadiumDetailScreen extends StatelessWidget {
               iconPath: 'assets/etc/bus.png',
               title: '교통안내',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('교통안내(다음 단계에서 연결)')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TrafficGuideScreen(
+                      stadiumId: stadiumId,
+                      stadiumName: stadiumName,
+                      themeColor: themeColor,
+                    ),
+                  ),
                 );
               },
             ),

@@ -135,20 +135,20 @@ class _TeamSelectScreenState extends State<TeamSelectScreen> {
               onPressed: selected == null
                   ? null
                   : () {
-                if (widget.returnSelectedTeamId) {
-                  Navigator.pop(context, selected);
-                } else {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MainShell(
-                        uid: widget.uid,
-                        teamId: selected!,
-                      ), // ✅ uid 연결
-                    ),
-                  );
-                }
-              },
+                      if (widget.returnSelectedTeamId) {
+                        Navigator.pop(context, selected);
+                      } else {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MainShell(
+                              uid: widget.uid,
+                              teamId: selected!,
+                            ), // ✅ uid 연결
+                          ),
+                        );
+                      }
+                    },
               child: const Text(
                 '선택 완료',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
