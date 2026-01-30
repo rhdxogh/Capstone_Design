@@ -66,6 +66,7 @@ flutter:
     - assets/team_logo_img/
     - assets/stadium_img/
     - assets/view_img/
+    - assets/lineup_img/
     - assets/etc/
     - assets/data/
     ###############################################

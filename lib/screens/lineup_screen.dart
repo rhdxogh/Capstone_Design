@@ -195,7 +195,7 @@ class _LineupScreenState extends State<LineupScreen>
           children: [
             // 🏟️ 새로 자른 세로형 배경 이미지 적용
             Image.asset(
-              'assets/stadiumbackground.png',
+              'assets/lineup_img/stadiumbackground.png',
               width: 320,
               fit: BoxFit.contain,
             ),
@@ -297,7 +297,7 @@ class _LineupScreenState extends State<LineupScreen>
           alignment: Alignment.center,
           children: [
             Image.asset(
-              'assets/$img',
+              'assets/lineup_img/$img',
               width: 85,
               fit: BoxFit.contain,
             ), // 배지 크기 살짝 키움
