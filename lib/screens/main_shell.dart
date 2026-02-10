@@ -5,6 +5,7 @@ import 'tabs/stadium_tab.dart';
 import 'tabs/weather_tab.dart';
 import 'tabs/my_tab.dart';
 import 'calendar_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MainShell extends StatefulWidget {
   final String uid;
@@ -25,8 +26,27 @@ class _MainShellState extends State<MainShell> {
     currentTeamId = widget.teamId;
   }
 
-  void changeTeam(String newTeamId) {
+  void changeTeam(String newTeamId) async {
+    // 1. 먼저 UI를 즉시 업데이트해서 사용자에게 보여줌
     setState(() => currentTeamId = newTeamId);
+
+    try {
+      // 2. Firestore의 'users' 컬렉션에서 해당 유저(uid)의 teamId를 업데이트
+      await FirebaseFirestore.instance.collection('users').doc(widget.uid).set({
+        'teamId': newTeamId,
+        'updatedAt': FieldValue.serverTimestamp(), // 업데이트 시간 기록 (선택사항)
+      }, SetOptions(merge: true)); // 기존 데이터는 유지하고 teamId만 덮어쓰기
+
+      print('업데이트 완료: $newTeamId');
+    } catch (e) {
+      // 에러 발생 시 처리
+      print('업데이트 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('팀 변경사항을 저장하지 못했습니다.')));
+      }
+    }
   }
 
   @override
@@ -63,7 +83,10 @@ class _MainShellState extends State<MainShell> {
                   icon: const Icon(Icons.calendar_month),
                   onPressed: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const CalendarScreen()),
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          CalendarScreen(currentTeamId: currentTeamId),
+                    ),
                   ),
                 ),
               ],

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart'; // 차트 패키지 필요
+import 'package:fl_chart/fl_chart.dart';
 import '../../team_theme.dart';
 import '../team_select_screen.dart';
+import '../auth_entry_screen.dart';
+import '../statistics_detail_screen.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MyTab extends StatelessWidget {
-  // ✅ main_shell.dart에서 넘겨주는 매개변수들 정의
   final String uid;
   final Color teamColor;
   final String currentTeamId;
@@ -20,49 +24,94 @@ class MyTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 현재 선택된 팀의 이름을 가져옴
     final teamName = teamThemes[currentTeamId]?.nameKo ?? '-';
-
-    // ✅ 임시 데이터 (나중에 캘린더 데이터와 연동)
-    const int wins = 5;
-    const int draws = 1;
-    const int losses = 6;
-    const double winRate = 45.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // 1. 상단 프로필 헤더 (전달받은 teamColor 사용)
-            _buildHeader(teamName),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('jikgwan_records')
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) return const Center(child: Text('데이터 로드 실패'));
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            const SizedBox(height: 20),
+          final docs = snapshot.data?.docs ?? [];
 
-            // 2. 직관 승률 통계 카드 (전달받은 teamColor 사용)
-            _buildWinRateCard(wins, draws, losses, winRate),
+          int wins = 0;
+          int draws = 0;
+          int losses = 0;
+          int totalGames = 0;
+          int reviewCount = 0;
 
-            const SizedBox(height: 20),
+          List<Map<String, dynamic>> rawRecords = [];
 
-            // 3. 하단 메뉴 리스트 (응원팀 변경 기능 포함)
-            _buildMenuSection(context),
+          for (var doc in docs) {
+            final data = doc.data() as Map<String, dynamic>;
 
-            const SizedBox(height: 30),
-          ],
-        ),
+            // ✅ [핵심] 현재 설정된 팀의 기록만 가져오기 (팀 세탁 방지)
+            // myTeamId가 없는 옛날 데이터는... 여기서 안 보이게 됩니다. (깔끔한 새 출발)
+            if (data['myTeamId'] != currentTeamId) continue;
+
+            rawRecords.add(data);
+
+            final result = data['result'];
+            final title = data['title'] as String?;
+
+            if (result == '승') {
+              wins++;
+              totalGames++;
+            } else if (result == '무') {
+              draws++;
+              totalGames++;
+            } else if (result == '패') {
+              losses++;
+              totalGames++;
+            }
+
+            if (title != null && title.isNotEmpty) {
+              reviewCount++;
+            }
+          }
+
+          double winRate = 0.0;
+          if ((wins + losses) > 0) {
+            winRate = (wins / (wins + losses)) * 100;
+          }
+
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildHeader(teamName, totalGames, reviewCount),
+                const SizedBox(height: 20),
+                _buildWinRateCard(
+                  context,
+                  wins,
+                  draws,
+                  losses,
+                  winRate,
+                  rawRecords,
+                ),
+                const SizedBox(height: 20),
+                _buildMenuSection(context),
+                const SizedBox(height: 30),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  // 상단 헤더 섹션
-  Widget _buildHeader(String teamName) {
+  Widget _buildHeader(String teamName, int totalGames, int reviewCount) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 60, 24, 30),
-      decoration: BoxDecoration(
-        color: teamColor, // ✅ main_shell에서 받은 색상 적용
-        borderRadius: BorderRadius.zero,
-      ),
+      decoration: BoxDecoration(color: teamColor),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -86,9 +135,9 @@ class MyTab extends StatelessWidget {
           const SizedBox(height: 20),
           Row(
             children: [
-              _buildHeaderInfo(Icons.edit_note, '작성 후기', '3개'),
+              _buildHeaderInfo(Icons.emoji_events, '기록된 직관', '${totalGames}경기'),
               const SizedBox(width: 20),
-              _buildHeaderInfo(Icons.stadium_outlined, '관람 경기', '12경기'),
+              _buildHeaderInfo(Icons.edit_note, '작성한 후기', '${reviewCount}개'),
             ],
           ),
         ],
@@ -117,11 +166,17 @@ class MyTab extends StatelessWidget {
     );
   }
 
-  // 승률 통계 카드
-  Widget _buildWinRateCard(int w, int d, int l, double rate) {
+  Widget _buildWinRateCard(
+    BuildContext context,
+    int w,
+    int d,
+    int l,
+    double rate,
+    List<Map<String, dynamic>> rawRecords,
+  ) {
+    bool isEmpty = (w + d + l) == 0;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -133,80 +188,134 @@ class MyTab extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(Icons.calculate_outlined, color: Colors.grey[700], size: 22),
-              const SizedBox(width: 8),
-              const Text(
-                '직관 승률은?',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 30),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // 도넛 차트
-              SizedBox(
-                height: 120,
-                width: 120,
-                child: Stack(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: isEmpty
+              ? null
+              : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => StatisticsDetailScreen(
+                        uid: uid,
+                        teamId: currentTeamId,
+                        records: rawRecords,
+                      ),
+                    ),
+                  );
+                },
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    PieChart(
-                      PieChartData(
-                        sectionsSpace: 0,
-                        centerSpaceRadius: 40,
-                        sections: [
-                          PieChartSectionData(
-                            color: teamColor,
-                            value: w.toDouble(),
-                            radius: 15,
-                            showTitle: false,
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.analytics_outlined,
+                          color: Colors.grey[700],
+                          size: 22,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          '직관 승률은?',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                          PieChartSectionData(
-                            color: const Color(0xFF4CAF50),
-                            value: d.toDouble(),
-                            radius: 15,
-                            showTitle: false,
+                        ),
+                      ],
+                    ),
+                    if (!isEmpty)
+                      const Icon(Icons.chevron_right, color: Colors.grey),
+                  ],
+                ),
+                const SizedBox(height: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    SizedBox(
+                      height: 120,
+                      width: 120,
+                      child: Stack(
+                        children: [
+                          PieChart(
+                            PieChartData(
+                              sectionsSpace: 0,
+                              centerSpaceRadius: 40,
+                              sections: isEmpty
+                                  ? [
+                                      PieChartSectionData(
+                                        color: Colors.grey[200],
+                                        value: 1,
+                                        radius: 15,
+                                        showTitle: false,
+                                      ),
+                                    ]
+                                  : [
+                                      if (w > 0)
+                                        PieChartSectionData(
+                                          color: const Color(0xFFC62828),
+                                          value: w.toDouble(),
+                                          radius: 15,
+                                          showTitle: false,
+                                        ),
+                                      if (d > 0)
+                                        PieChartSectionData(
+                                          color: const Color(0xFF4CAF50),
+                                          value: d.toDouble(),
+                                          radius: 15,
+                                          showTitle: false,
+                                        ),
+                                      if (l > 0)
+                                        PieChartSectionData(
+                                          color: const Color(0xFF2196F3),
+                                          value: l.toDouble(),
+                                          radius: 15,
+                                          showTitle: false,
+                                        ),
+                                    ],
+                            ),
                           ),
-                          PieChartSectionData(
-                            color: const Color(0xFF2196F3),
-                            value: l.toDouble(),
-                            radius: 15,
-                            showTitle: false,
+                          Center(
+                            child: Text(
+                              isEmpty ? '-' : '${rate.toStringAsFixed(1)}%',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    Center(
-                      child: Text(
-                        '${rate.toInt()}%',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLegendItem('승리 ($w)', const Color(0xFFC62828)),
+                        const SizedBox(height: 8),
+                        _buildLegendItem('무승부 ($d)', const Color(0xFF4CAF50)),
+                        const SizedBox(height: 8),
+                        _buildLegendItem('패배 ($l)', const Color(0xFF2196F3)),
+                      ],
                     ),
                   ],
                 ),
-              ),
-              // 범례
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildLegendItem('승리', teamColor),
-                  const SizedBox(height: 8),
-                  _buildLegendItem('무승부', const Color(0xFF4CAF50)),
-                  const SizedBox(height: 8),
-                  _buildLegendItem('패', const Color(0xFF2196F3)),
+                if (!isEmpty) ...[
+                  const SizedBox(height: 20),
+                  Text(
+                    '👆 카드를 눌러 상세 분석 확인하기',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  ),
                 ],
-              ),
-            ],
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -228,7 +337,6 @@ class MyTab extends StatelessWidget {
     );
   }
 
-  // 메뉴 섹션
   Widget _buildMenuSection(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -245,9 +353,6 @@ class MyTab extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _buildMenuTile('작성한 후기 관리', Icons.rate_review_outlined, () {}),
-          const Divider(height: 1, indent: 20, endIndent: 20),
-          // ✅ 응원팀 변경 로직 유지
           _buildMenuTile('응원하는 팀 변경하기', Icons.swap_horiz, () async {
             final selected = await Navigator.push<String?>(
               context,
@@ -259,14 +364,113 @@ class MyTab extends StatelessWidget {
             if (selected != null) onTeamChanged(selected);
           }),
           const Divider(height: 1, indent: 20, endIndent: 20),
-          _buildMenuTile('로그아웃', Icons.logout, () {}),
+          _buildMenuTile('로그아웃', Icons.logout, () async {
+            bool confirm =
+                await showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('로그아웃'),
+                    content: const Text('로그아웃하시겠습니까?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('취소'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: Text('로그아웃', style: TextStyle(color: teamColor)),
+                      ),
+                    ],
+                  ),
+                ) ??
+                false;
+            if (confirm) {
+              await FirebaseAuth.instance.signOut();
+              if (!context.mounted) return;
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const AuthEntryScreen()),
+                (route) => false,
+              );
+            }
+          }),
           const Divider(height: 1, indent: 20, endIndent: 20),
-          _buildMenuTile(
-            '회원탈퇴',
-            Icons.person_remove_outlined,
-            () {},
-            isLast: true,
-          ),
+          // ✅ 회원탈퇴 로직 수정됨
+          _buildMenuTile('회원탈퇴', Icons.person_remove_outlined, () async {
+            bool confirm =
+                await showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text(
+                      '회원 탈퇴',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    content: const Text(
+                      '정말로 탈퇴하시겠어요? 모든 직관 기록이 삭제되며 복구할 수 없습니다.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text(
+                          '취소',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text(
+                          '탈퇴',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ) ??
+                false;
+
+            if (confirm) {
+              try {
+                final user = FirebaseAuth.instance.currentUser;
+                if (user != null) {
+                  // 1. 하위 컬렉션(직관 기록) 먼저 모두 삭제
+                  final records = await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .collection('jikgwan_records')
+                      .get();
+
+                  for (var doc in records.docs) {
+                    await doc.reference.delete();
+                  }
+
+                  // 2. 유저 문서 삭제
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .delete();
+
+                  // 3. 인증 계정 삭제
+                  await user.delete();
+
+                  if (!context.mounted) return;
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AuthEntryScreen()),
+                    (route) => false,
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('탈퇴 오류: $e')));
+                }
+              }
+            }
+          }, isLast: true),
         ],
       ),
     );
@@ -294,7 +498,6 @@ class MyTab extends StatelessWidget {
       ),
       trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
     );
   }
 }

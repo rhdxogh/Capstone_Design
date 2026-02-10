@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'food_guide_screen.dart'; // FoodItem 재사용(같은 파일에 모델이 있으면)
 
 class FoodDetailScreen extends StatefulWidget {
-  final String stadiumId;     // 'munhak' 같은 id (너 스타일에 맞춰)
-  final String stadiumName;   // '인천 SSG 랜더스 필드'
+  final String stadiumId; // 'munhak' 같은 id (너 스타일에 맞춰)
+  final String stadiumName; // '인천 SSG 랜더스 필드'
   final Color themeColor;
   final FoodItem food;
 
@@ -124,7 +124,10 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: const StadiumBorder(),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                   ),
                   onPressed: _openWriteReview,
                   icon: const Icon(Icons.edit, size: 18),
@@ -139,7 +142,9 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
             const SizedBox(height: 10),
 
             // ✅ 후기 리스트
-            ...reviews.map((r) => _ReviewCard(review: r, themeColor: widget.themeColor)),
+            ...reviews.map(
+              (r) => _ReviewCard(review: r, themeColor: widget.themeColor),
+            ),
           ],
         ),
       ),
@@ -198,7 +203,10 @@ class _ReviewCard extends StatelessWidget {
                   children: [
                     Text(
                       review.nickname,
-                      style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w900),
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     _StarsRow(value: review.stars, color: themeColor),
@@ -246,8 +254,7 @@ class _StarsRow extends StatelessWidget {
 
     return Row(
       children: [
-        for (int i = 0; i < full; i++)
-          Icon(Icons.star, size: 16, color: color),
+        for (int i = 0; i < full; i++) Icon(Icons.star, size: 16, color: color),
         if (half) Icon(Icons.star_half, size: 16, color: color),
         for (int i = 0; i < (5 - full - (half ? 1 : 0)); i++)
           Icon(Icons.star_border, size: 16, color: color),
@@ -282,9 +289,9 @@ class _FoodReviewWriteSheetState extends State<_FoodReviewWriteSheet> {
     final body = bodyCtrl.text.trim();
 
     if (nick.isEmpty || body.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('닉네임과 내용을 입력해주세요.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('닉네임과 내용을 입력해주세요.')));
       return;
     }
 
@@ -305,14 +312,22 @@ class _FoodReviewWriteSheetState extends State<_FoodReviewWriteSheet> {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
-      padding: EdgeInsets.only(left: 16, right: 16, top: 14, bottom: bottom + 14),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 14,
+        bottom: bottom + 14,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Text('후기 작성', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+              const Text(
+                '후기 작성',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+              ),
               const Spacer(),
               IconButton(
                 onPressed: () => Navigator.pop(context),
@@ -322,18 +337,29 @@ class _FoodReviewWriteSheetState extends State<_FoodReviewWriteSheet> {
           ),
           const SizedBox(height: 8),
 
-          const Text('닉네임', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800)),
+          const Text(
+            '닉네임',
+            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 6),
           TextField(
             controller: nickCtrl,
             decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
           ),
           const SizedBox(height: 12),
 
-          const Text('별점', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800)),
+          const Text(
+            '별점',
+            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800),
+          ),
           Slider(
             value: stars,
             min: 0,
@@ -345,15 +371,23 @@ class _FoodReviewWriteSheetState extends State<_FoodReviewWriteSheet> {
           ),
 
           const SizedBox(height: 6),
-          const Text('내용', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800)),
+          const Text(
+            '내용',
+            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 6),
           TextField(
             controller: bodyCtrl,
             maxLines: 5,
             decoration: InputDecoration(
               hintText: '후기를 입력해주세요.',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
           ),
 
@@ -369,7 +403,10 @@ class _FoodReviewWriteSheetState extends State<_FoodReviewWriteSheet> {
                 elevation: 0,
               ),
               onPressed: submit,
-              child: const Text('등록하기', style: TextStyle(fontWeight: FontWeight.w900)),
+              child: const Text(
+                '등록하기',
+                style: TextStyle(fontWeight: FontWeight.w900),
+              ),
             ),
           ),
         ],

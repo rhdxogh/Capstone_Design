@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class TeamTheme {
   final String id;
   final String nameKo;
-  final String fullName; // 정식 명칭 (예: KIA 타이거즈)
+  final String fullName;
   final Color primary;
   final String logoPath;
 

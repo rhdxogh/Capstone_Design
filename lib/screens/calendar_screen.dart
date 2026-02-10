@@ -1,29 +1,179 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({super.key});
+  // ✅ 메인에서 현재 팀 ID를 받아옵니다.
+  final String currentTeamId;
+
+  const CalendarScreen({super.key, required this.currentTeamId});
 
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
+  final String? uid = FirebaseAuth.instance.currentUser?.uid;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  bool _isLoading = true;
 
-  // 일정 저장 맵
   final Map<DateTime, List<Map<String, dynamic>>> _events = {};
 
   @override
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
+    _loadMyRecordsFromFirestore();
   }
 
   List<Map<String, dynamic>> _getEventsForDay(DateTime day) {
     return _events[DateTime.utc(day.year, day.month, day.day)] ?? [];
+  }
+
+  Future<void> _loadMyRecordsFromFirestore() async {
+    if (uid == null) return;
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('jikgwan_records')
+          .orderBy('date')
+          .get();
+
+      final Map<DateTime, List<Map<String, dynamic>>> newEvents = {};
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+
+        // ✅ [핵심 수정] 캘린더 필터링 로직
+        String? recordTeamId = data['myTeamId'];
+
+        // 1. 기록에 팀 정보가 있는데, 현재 팀과 다르다면? -> 과감히 패스 (숨김)
+        if (recordTeamId != null && recordTeamId != widget.currentTeamId) {
+          continue;
+        }
+        // 2. 기록에 팀 정보가 없다면? (옛날 데이터)
+        // -> 일단 보여주거나, 혹은 이것도 숨길 수 있습니다.
+        // -> 여기서는 "팀 세탁"이 목적이므로, 확실하지 않은 옛날 데이터는 보여주되
+        //    나중에 수정하면 현재 팀으로 귀속되게 둡니다.
+
+        final DateTime date = (data['date'] as Timestamp).toDate();
+        final dateKey = DateTime.utc(date.year, date.month, date.day);
+
+        final event = {
+          'id': doc.id,
+          'title': data['title'],
+          'opponent': data['opponent'],
+          'stadium': data['stadium'],
+          'result': data['result'],
+          'date': date,
+          'myTeamId': recordTeamId, // 데이터 보존
+        };
+
+        if (newEvents[dateKey] == null) newEvents[dateKey] = [];
+        newEvents[dateKey]!.add(event);
+      }
+
+      if (mounted) {
+        setState(() {
+          _events.clear();
+          _events.addAll(newEvents);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('데이터 로드 실패: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _deleteEvent(String? docId) async {
+    if (docId == null || uid == null) return;
+
+    bool confirm =
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('삭제하시겠습니까?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('삭제', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (confirm) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('jikgwan_records')
+            .doc(docId)
+            .delete();
+
+        _loadMyRecordsFromFirestore();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('삭제 실패: $e')));
+        }
+      }
+    }
+  }
+
+  void _showAddScheduleSheet({Map<String, dynamic>? event}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AddScheduleBottomSheet(
+        initialDate: _selectedDay!,
+        editingEvent: event,
+        onEventAdded: (newData, newDate) async {
+          if (uid == null) return;
+
+          try {
+            final col = FirebaseFirestore.instance
+                .collection('users')
+                .doc(uid)
+                .collection('jikgwan_records');
+
+            // ✅ 저장/수정 시 현재 팀 ID(widget.currentTeamId)를 박제합니다.
+            final Map<String, dynamic> dataToSave = {
+              ...newData,
+              'date': Timestamp.fromDate(newDate),
+              'myTeamId': widget.currentTeamId,
+            };
+
+            if (event != null && event['id'] != null) {
+              await col.doc(event['id']).update(dataToSave);
+            } else {
+              dataToSave['createdAt'] = FieldValue.serverTimestamp();
+              await col.add(dataToSave);
+            }
+            _loadMyRecordsFromFirestore();
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
+            }
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -42,57 +192,58 @@ class _CalendarScreenState extends State<CalendarScreen> {
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
-      body: Column(
-        children: [
-          TableCalendar(
-            locale: 'ko_KR',
-            firstDay: DateTime.utc(2020, 1, 1),
-            lastDay: DateTime.utc(2030, 12, 31),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            eventLoader: _getEventsForDay,
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            },
-            headerStyle: const HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: true,
-              titleTextStyle: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                TableCalendar(
+                  locale: 'ko_KR',
+                  firstDay: DateTime.utc(2020, 1, 1),
+                  lastDay: DateTime.utc(2030, 12, 31),
+                  focusedDay: _focusedDay,
+                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                  eventLoader: _getEventsForDay,
+                  onDaySelected: (selectedDay, focusedDay) {
+                    setState(() {
+                      _selectedDay = selectedDay;
+                      _focusedDay = focusedDay;
+                    });
+                  },
+                  headerStyle: const HeaderStyle(
+                    formatButtonVisible: false,
+                    titleCentered: true,
+                    titleTextStyle: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  calendarStyle: const CalendarStyle(
+                    todayDecoration: BoxDecoration(
+                      color: Color(0x66C62828),
+                      shape: BoxShape.circle,
+                    ),
+                    selectedDecoration: BoxDecoration(
+                      color: Color(0xFFC62828),
+                      shape: BoxShape.circle,
+                    ),
+                    markerDecoration: BoxDecoration(
+                      color: Color(0xFFC62828),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                const Divider(thickness: 1, height: 1),
+                Expanded(child: _buildEventList()),
+              ],
             ),
-            calendarStyle: const CalendarStyle(
-              todayDecoration: BoxDecoration(
-                color: Color(0x66C62828),
-                shape: BoxShape.circle,
-              ),
-              selectedDecoration: BoxDecoration(
-                color: Color(0xFFC62828),
-                shape: BoxShape.circle,
-              ),
-              markerDecoration: BoxDecoration(
-                color: Color(0xFFC62828),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          const Divider(thickness: 1, height: 1),
-          Expanded(child: _buildEventList()),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFC62828),
-        onPressed: () => _showAddScheduleSheet(context),
+        onPressed: () => _showAddScheduleSheet(),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  // 일정 리스트 UI (수정/삭제 버튼 추가)
   Widget _buildEventList() {
     final events = _getEventsForDay(_selectedDay!);
     if (events.isEmpty) {
@@ -145,7 +296,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ],
                 ),
               ),
-              // 결과 배지 또는 "예정" 표시
               if (hasResult)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -170,16 +320,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   "예정",
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
-
               const SizedBox(width: 8),
-              // 더보기 메뉴 (수정/삭제)
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, color: Colors.grey),
                 onSelected: (value) {
                   if (value == 'edit') {
-                    _showAddScheduleSheet(context, event: event, index: index);
+                    _showAddScheduleSheet(event: event);
                   } else if (value == 'delete') {
-                    _deleteEvent(index);
+                    _deleteEvent(event['id']);
                   }
                 },
                 itemBuilder: (context) => [
@@ -196,83 +344,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
       },
     );
   }
-
-  // 삭제 로직
-  void _deleteEvent(int index) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('삭제하시겠습니까?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                final dateKey = DateTime.utc(
-                  _selectedDay!.year,
-                  _selectedDay!.month,
-                  _selectedDay!.day,
-                );
-                _events[dateKey]!.removeAt(index);
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('삭제', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAddScheduleSheet(
-    BuildContext context, {
-    Map<String, dynamic>? event,
-    int? index,
-  }) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => AddScheduleBottomSheet(
-        initialDate: _selectedDay!,
-        editingEvent: event, // 수정할 데이터 전달
-        onEventAdded: (newData, newDate) {
-          setState(() {
-            final oldDateKey = DateTime.utc(
-              _selectedDay!.year,
-              _selectedDay!.month,
-              _selectedDay!.day,
-            );
-            final newDateKey = DateTime.utc(
-              newDate.year,
-              newDate.month,
-              newDate.day,
-            );
-
-            if (event != null && index != null) {
-              // 수정 모드
-              _events[oldDateKey]!.removeAt(index); // 기존 데이터 삭제
-              if (_events[newDateKey] == null) _events[newDateKey] = [];
-              _events[newDateKey]!.add(newData); // 새 날짜(혹은 같은 날짜)에 추가
-            } else {
-              // 추가 모드
-              if (_events[newDateKey] == null) _events[newDateKey] = [];
-              _events[newDateKey]!.add(newData);
-            }
-          });
-        },
-      ),
-    );
-  }
 }
 
-// --- 일정 추가/수정 팝업창 ---
 class AddScheduleBottomSheet extends StatefulWidget {
   final DateTime initialDate;
-  final Map<String, dynamic>? editingEvent; // 수정 시 넘어오는 데이터
+  final Map<String, dynamic>? editingEvent;
   final Function(Map<String, dynamic>, DateTime) onEventAdded;
 
   const AddScheduleBottomSheet({
@@ -322,13 +398,12 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
   void initState() {
     super.initState();
     _selectedDate = widget.initialDate;
-
-    // 수정 모드인 경우 기존 데이터 채워넣기
     if (widget.editingEvent != null) {
       _titleController.text = widget.editingEvent!['title'];
       _selectedOpponent = widget.editingEvent!['opponent'];
       _selectedStadium = widget.editingEvent!['stadium'];
       _selectedResult = widget.editingEvent!['result'];
+      _selectedDate = widget.editingEvent!['date'];
     }
   }
 
@@ -366,7 +441,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               ),
             ),
             const SizedBox(height: 24),
-
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(
@@ -375,7 +449,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               ),
             ),
             const SizedBox(height: 16),
-
             DropdownButtonFormField<String>(
               value: _selectedOpponent,
               decoration: const InputDecoration(
@@ -388,7 +461,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               onChanged: (val) => setState(() => _selectedOpponent = val),
             ),
             const SizedBox(height: 16),
-
             DropdownButtonFormField<String>(
               value: _selectedStadium,
               decoration: const InputDecoration(
@@ -401,7 +473,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               onChanged: (val) => setState(() => _selectedStadium = val),
             ),
             const SizedBox(height: 16),
-
             InkWell(
               onTap: () async {
                 final picked = await showDatePicker(
@@ -432,7 +503,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               ),
             ),
             const SizedBox(height: 24),
-
             const Text(
               '직관 결과 기록',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -465,7 +535,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                   Expanded(child: _buildResultButton('패', Colors.blue)),
                 ],
               ),
-
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
@@ -482,7 +551,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                       _selectedOpponent == null ||
                       _selectedStadium == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('모든 항목을 입력/선택해주세요!')),
+                      const SnackBar(content: Text('모든 항목을 입력해 주세요!')),
                     );
                     return;
                   }
