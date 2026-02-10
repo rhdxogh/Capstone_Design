@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "979501622024",
+    "project_id": "jikgwan-mate",
+    "storage_bucket": "jikgwan-mate.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:979501622024:android:e41ceeaf850bbc7d36c2bd",
+        "android_client_info": {
+          "package_name": "com.example.jikgwan_mate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-cb5GtSl2YW51tDIv3SXieIki2mGjPOg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

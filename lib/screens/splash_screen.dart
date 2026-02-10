@@ -1,39 +1,44 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import '../app_colors.dart';
+import 'auth_gate.dart';
 import 'auth_entry_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  final VoidCallback? onDone;
-  const SplashScreen({super.key, this.onDone});
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  void goNext() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const AuthEntryScreen()),
+  @override
+  void initState() {
+    super.initState();
+    _goNext();
+  }
+
+  Future<void> _goNext() async {
+    // ✅ 스플래시 보여줄 시간 (원하는 값으로 조절)
+    await Future.delayed(const Duration(milliseconds: 900));
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const  AuthEntryScreen()),
     );
   }
 
   @override
-  void initState() {
-    super.initState();
-    Timer(const Duration(milliseconds: 900), goNext);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.brandRed,
+    return const Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
-        child: GestureDetector(
-          onTap: goNext,
-          child: Image.asset('assets/logo_white_font.png', width: 250),
+        child: Text(
+          '직관메이트',
+          style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
         ),
       ),
     );
   }
 }
+
