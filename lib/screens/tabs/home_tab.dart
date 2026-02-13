@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../../team_theme.dart';
+import '../../services/news_service.dart';
+import '../../models/news_article.dart';
+
 import 'package:jikgwan_mate/screens/lineup_screen.dart';
-import 'package:jikgwan_mate/screens/news_screen.dart';
+import 'package:jikgwan_mate/screens/team_news_screen.dart';
+import 'package:jikgwan_mate/widgets/news_article_tile.dart';
 
 class HomeTab extends StatefulWidget {
   final String uid;
@@ -24,6 +29,9 @@ class _HomeTabState extends State<HomeTab> {
   late DateTime _selectedDate;
   late Future<Map<String, List<dynamic>>> _gameData;
 
+  // ✅ 뉴스 프리뷰(메인에 1~2개만)
+  late Future<List<NewsArticle>> _newsFuture;
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +50,13 @@ class _HomeTabState extends State<HomeTab> {
     });
 
     _gameData = _loadGamesFromCsv(_selectedDate);
+
+    // ✅ 구단 소식(메인 프리뷰)
+    _newsFuture = NewsService.fetchTeamNews(
+      teamKeyword: widget.team.nameKo,
+      page: 1,
+      pageSize: 2, // 메인에서는 1~2개만 프리뷰
+    );
   }
 
   @override
@@ -60,8 +75,7 @@ class _HomeTabState extends State<HomeTab> {
   String _getLogo(String teamName) {
     String logo = 'assets/team_logo_img/ssg.png';
     teamThemes.forEach((k, v) {
-      if (v.nameKo == teamName ||
-          v.id.toUpperCase() == teamName.toUpperCase()) {
+      if (v.nameKo == teamName || v.id.toUpperCase() == teamName.toUpperCase()) {
         logo = v.logoPath;
       }
     });
@@ -86,19 +100,15 @@ class _HomeTabState extends State<HomeTab> {
           'stadium': cells[1].trim(),
           'away': cells[3].trim(),
           'home': cells[4].trim(),
-          'time': (cells.length > 5 && cells[5].trim().isNotEmpty)
-              ? cells[5].trim()
-              : "18:30",
+          'time': (cells.length > 5 && cells[5].trim().isNotEmpty) ? cells[5].trim() : "18:30",
         };
 
         if (game['date'] == targetDate) {
           bool isMyMatch =
-              game['away'].toString().toUpperCase() ==
-                  widget.team.id.toUpperCase() ||
-              game['home'].toString().toUpperCase() ==
-                  widget.team.id.toUpperCase() ||
-              game['away'] == widget.team.nameKo ||
-              game['home'] == widget.team.nameKo;
+              game['away'].toString().toUpperCase() == widget.team.id.toUpperCase() ||
+                  game['home'].toString().toUpperCase() == widget.team.id.toUpperCase() ||
+                  game['away'] == widget.team.nameKo ||
+                  game['home'] == widget.team.nameKo;
 
           if (isMyMatch) {
             myMatch.add(game);
@@ -118,9 +128,7 @@ class _HomeTabState extends State<HomeTab> {
     return FutureBuilder<Map<String, List<dynamic>>>(
       future: _gameData,
       builder: (context, snapshot) {
-        final myMatch = snapshot.data?['my']?.isNotEmpty == true
-            ? snapshot.data!['my']![0]
-            : null;
+        final myMatch = snapshot.data?['my']?.isNotEmpty == true ? snapshot.data!['my']![0] : null;
         final otherMatches = snapshot.data?['others'] ?? [];
 
         return Scaffold(
@@ -186,8 +194,8 @@ class _HomeTabState extends State<HomeTab> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => NewsScreen(
-                              teamName: widget.team.nameKo,
+                            builder: (_) => TeamNewsScreen(
+                              teamKeyword: widget.team.nameKo,
                               themeColor: widget.team.primary,
                             ),
                           ),
@@ -201,7 +209,10 @@ class _HomeTabState extends State<HomeTab> {
                   ],
                 ),
               ),
-              _buildNewsPlaceholder(),
+
+              // ✅ 뉴스 프리뷰(1~2개)
+              _buildNewsPreview(),
+
               const SizedBox(height: 40),
             ],
           ),
@@ -212,29 +223,21 @@ class _HomeTabState extends State<HomeTab> {
 
   Widget _buildMainCard(dynamic game) {
     bool isActuallyToday =
-        _selectedDate.year == _today.year &&
-        _selectedDate.month == _today.month &&
-        _selectedDate.day == _today.day;
+        _selectedDate.year == _today.year && _selectedDate.month == _today.month && _selectedDate.day == _today.day;
 
     return GestureDetector(
       onTap: game != null
           ? () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      LineupScreen(game: game, themeColor: widget.team.primary),
-                ),
-              );
-            }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => LineupScreen(game: game, themeColor: widget.team.primary),
+          ),
+        );
+      }
           : null,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(
-          24,
-          24,
-          24,
-          30,
-        ), // ✅ 하단 패딩을 살짝 늘려 밸런스 조정
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 30),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -254,10 +257,7 @@ class _HomeTabState extends State<HomeTab> {
               children: [
                 if (isActuallyToday)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: widget.team.primary,
                       borderRadius: BorderRadius.circular(8),
@@ -273,7 +273,6 @@ class _HomeTabState extends State<HomeTab> {
                   )
                 else
                   const SizedBox(height: 27),
-
                 Text(
                   "${_selectedDate.year}.${_selectedDate.month}.${_selectedDate.day}",
                   style: const TextStyle(
@@ -285,14 +284,13 @@ class _HomeTabState extends State<HomeTab> {
               ],
             ),
 
-            // ✅ Spacer를 사용하여 경기 정보를 카드의 정중앙으로 밀어냄
             const Spacer(flex: 1),
 
             if (game == null)
               const Center(child: Text("예정된 경기가 없습니다."))
             else
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center, // 수직 정중앙 정렬
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Spacer(flex: 1),
                   _teamInfo(game['away']),
@@ -304,7 +302,7 @@ class _HomeTabState extends State<HomeTab> {
                 ],
               ),
 
-            const Spacer(flex: 1), // ✅ 아래쪽에도 Spacer를 둬서 완벽한 수직 중앙 구현
+            const Spacer(flex: 1),
           ],
         ),
       ),
@@ -319,8 +317,7 @@ class _HomeTabState extends State<HomeTab> {
           _getLogo(teamName),
           width: 60,
           height: 60,
-          errorBuilder: (_, __, ___) =>
-              const Icon(Icons.sports_baseball, size: 60),
+          errorBuilder: (_, __, ___) => const Icon(Icons.sports_baseball, size: 60),
         ),
         const SizedBox(height: 8),
         Text(
@@ -335,7 +332,7 @@ class _HomeTabState extends State<HomeTab> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: 5), // ✅ VS를 로고 높이와 맞추기 위해 미세하게 아래로 조정
+        const SizedBox(height: 5),
         const Text(
           'VS',
           style: TextStyle(
@@ -343,7 +340,7 @@ class _HomeTabState extends State<HomeTab> {
             fontWeight: FontWeight.w900,
             fontStyle: FontStyle.italic,
             letterSpacing: -1,
-            height: 1.0, // 텍스트 고유 여백 제거
+            height: 1.0,
           ),
         ),
         const SizedBox(height: 6),
@@ -355,7 +352,7 @@ class _HomeTabState extends State<HomeTab> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 14), // 시간 뱃지와의 간격
+        const SizedBox(height: 14),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(
@@ -377,11 +374,13 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   Widget _buildOtherGamesList(List<dynamic> games) {
-    if (games.isEmpty)
+    if (games.isEmpty) {
       return const SizedBox(
         height: 100,
         child: Center(child: Text("경기 정보가 없습니다.")),
       );
+    }
+
     return SizedBox(
       height: 145,
       child: ListView.builder(
@@ -416,11 +415,7 @@ class _HomeTabState extends State<HomeTab> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Image.asset(
-                    _getLogo(games[i]['away']),
-                    width: 35,
-                    height: 35,
-                  ),
+                  Image.asset(_getLogo(games[i]['away']), width: 35, height: 35),
                   const Text(
                     'VS',
                     style: TextStyle(
@@ -429,11 +424,7 @@ class _HomeTabState extends State<HomeTab> {
                       color: Colors.black12,
                     ),
                   ),
-                  Image.asset(
-                    _getLogo(games[i]['home']),
-                    width: 35,
-                    height: 35,
-                  ),
+                  Image.asset(_getLogo(games[i]['home']), width: 35, height: 35),
                 ],
               ),
               const SizedBox(height: 8),
@@ -451,20 +442,108 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  Widget _buildNewsPlaceholder() {
+  // ✅ 홈 탭 뉴스 프리뷰(1~2개)
+  Widget _buildNewsPreview() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        height: 180,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: const Center(
-          child: Icon(Icons.image, color: Colors.grey, size: 40),
-        ),
+      child: FutureBuilder<List<NewsArticle>>(
+        future: _newsFuture,
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return Container(
+              height: 180,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: const Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          if (snap.hasError) {
+            return Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '구단 소식을 불러오지 못했어요.',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${snap.error}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: widget.team.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _newsFuture = NewsService.fetchTeamNews(
+                            teamKeyword: widget.team.nameKo,
+                            page: 1,
+                            pageSize: 2,
+                          );
+                        });
+                      },
+                      child: const Text('다시 시도'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final list = snap.data ?? [];
+          if (list.isEmpty) {
+            return Container(
+              height: 180,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: const Center(child: Text('표시할 구단 소식이 없어요.')),
+            );
+          }
+
+          return Column(
+            children: [
+              for (final a in list)
+                NewsArticleTile(
+                  article: a,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TeamNewsScreen(
+                          teamKeyword: widget.team.nameKo,
+                          themeColor: widget.team.primary,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          );
+        },
       ),
     );
   }
 }
+
