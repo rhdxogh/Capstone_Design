@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/review_widget.dart';
 
 class SeatOverlayScreen extends StatelessWidget {
   final String stadiumName;
@@ -61,17 +62,15 @@ class SeatOverlayScreen extends StatelessWidget {
               ),
             ),
 
-            // ✅ 아래 텍스트는 "나중에 추가" 예정이라면 일단 비워둠
+            const SizedBox(height: 24),
+
+            ReviewWidget(
+              category: 'seat', // 👈 핵심! 카테고리를 'seat'으로 설정
+              targetId: sectionName, // 👈 타겟을 구역 이름(예: 101구역)으로 설정
+              isEmbedded: true, // 스크롤 안에 넣을 거니까 true
+            ),
+
             const SizedBox(height: 20),
-            const Text(
-              '좌석안내',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              '※ 아래 안내 문구는 추후 추가 예정',
-              style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600),
-            ),
           ],
         ),
       ),

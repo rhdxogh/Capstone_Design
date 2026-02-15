@@ -4,6 +4,8 @@ import '../../team_theme.dart';
 import '../team_select_screen.dart';
 import '../auth_entry_screen.dart';
 import '../statistics_detail_screen.dart';
+import '../../screens/my_reviews_screen.dart';
+import '../../screens/my_records_list_screen.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -26,88 +28,120 @@ class MyTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final teamName = teamThemes[currentTeamId]?.nameKo ?? '-';
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .collection('jikgwan_records')
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) return const Center(child: Text('데이터 로드 실패'));
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final docs = snapshot.data?.docs ?? [];
-
-          int wins = 0;
-          int draws = 0;
-          int losses = 0;
-          int totalGames = 0;
-          int reviewCount = 0;
-
-          List<Map<String, dynamic>> rawRecords = [];
-
-          for (var doc in docs) {
-            final data = doc.data() as Map<String, dynamic>;
-
-            // ✅ [핵심] 현재 설정된 팀의 기록만 가져오기 (팀 세탁 방지)
-            // myTeamId가 없는 옛날 데이터는... 여기서 안 보이게 됩니다. (깔끔한 새 출발)
-            if (data['myTeamId'] != currentTeamId) continue;
-
-            rawRecords.add(data);
-
-            final result = data['result'];
-            final title = data['title'] as String?;
-
-            if (result == '승') {
-              wins++;
-              totalGames++;
-            } else if (result == '무') {
-              draws++;
-              totalGames++;
-            } else if (result == '패') {
-              losses++;
-              totalGames++;
-            }
-
-            if (title != null && title.isNotEmpty) {
-              reviewCount++;
-            }
-          }
-
-          double winRate = 0.0;
-          if ((wins + losses) > 0) {
-            winRate = (wins / (wins + losses)) * 100;
-          }
-
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildHeader(teamName, totalGames, reviewCount),
-                const SizedBox(height: 20),
-                _buildWinRateCard(
-                  context,
-                  wins,
-                  draws,
-                  losses,
-                  winRate,
-                  rawRecords,
-                ),
-                const SizedBox(height: 20),
-                _buildMenuSection(context),
-                const SizedBox(height: 30),
-              ],
-            ),
+    // ✅ 1. 사용자 정보(닉네임) 스트림 (users 컬렉션)
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .snapshots(),
+      builder: (context, userSnapshot) {
+        if (userSnapshot.hasError)
+          return const Center(child: Text('유저 정보 로드 실패'));
+        if (userSnapshot.connectionState == ConnectionState.waiting) {
+          // 사용자 정보 로딩 중일 때는 로딩 표시 혹은 기본 화면
+          return const Scaffold(
+            backgroundColor: Color(0xFFF5F5F5),
+            body: Center(child: CircularProgressIndicator()),
           );
-        },
-      ),
+        }
+
+        // 닉네임 가져오기 (없으면 기본값 '열혈야구팬')
+        final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
+        final String nickname = userData?['nickname'] ?? '열혈야구팬';
+
+        // ✅ 2. 직관 기록 스트림 (jikgwan_records 서브 컬렉션)
+        return Scaffold(
+          backgroundColor: const Color(0xFFF5F5F5),
+          body: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('users')
+                .doc(uid)
+                .collection('jikgwan_records')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError)
+                return const Center(child: Text('데이터 로드 실패'));
+              // 기록 로딩 중에도 헤더는 보여주기 위해 빈 리스트 처리 또는 로딩바
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final docs = snapshot.data?.docs ?? [];
+
+              int wins = 0;
+              int draws = 0;
+              int losses = 0;
+              int totalGames = 0;
+              int reviewCount = 0;
+
+              List<Map<String, dynamic>> rawRecords = [];
+
+              for (var doc in docs) {
+                final data = doc.data() as Map<String, dynamic>;
+
+                // 현재 설정된 팀의 기록만 가져오기
+                if (data['myTeamId'] != currentTeamId) continue;
+
+                rawRecords.add(data);
+
+                final result = data['result'];
+                final title = data['title'] as String?;
+
+                if (result == '승') {
+                  wins++;
+                  totalGames++;
+                } else if (result == '무') {
+                  draws++;
+                  totalGames++;
+                } else if (result == '패') {
+                  losses++;
+                  totalGames++;
+                }
+
+                if (title != null && title.isNotEmpty) {
+                  reviewCount++;
+                }
+              }
+
+              double winRate = 0.0;
+              if ((wins + losses) > 0) {
+                winRate = (wins / (wins + losses)) * 100;
+              }
+
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // ✅ 닉네임 전달
+                    _buildHeader(nickname, teamName, totalGames, reviewCount),
+                    const SizedBox(height: 20),
+                    _buildWinRateCard(
+                      context,
+                      wins,
+                      draws,
+                      losses,
+                      winRate,
+                      rawRecords,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildMenuSection(context),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildHeader(String teamName, int totalGames, int reviewCount) {
+  // ✅ nickname 파라미터 추가 및 적용
+  Widget _buildHeader(
+    String nickname,
+    String teamName,
+    int totalGames,
+    int reviewCount,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 60, 24, 30),
@@ -115,9 +149,9 @@ class MyTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '열혈야구팬 님,',
-            style: TextStyle(
+          Text(
+            '$nickname 님,', // ✅ 여기에 변수 적용
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 26,
               fontWeight: FontWeight.bold,
@@ -144,6 +178,8 @@ class MyTab extends StatelessWidget {
       ),
     );
   }
+
+  // ... (나머지 _buildHeaderInfo, _buildWinRateCard, _buildMenuSection 등은 기존 코드 그대로 유지)
 
   Widget _buildHeaderInfo(IconData icon, String label, String value) {
     return Row(
@@ -174,6 +210,7 @@ class MyTab extends StatelessWidget {
     double rate,
     List<Map<String, dynamic>> rawRecords,
   ) {
+    // (기존 코드와 동일)
     bool isEmpty = (w + d + l) == 0;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -338,6 +375,7 @@ class MyTab extends StatelessWidget {
   }
 
   Widget _buildMenuSection(BuildContext context) {
+    // (기존 코드와 동일)
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
@@ -353,6 +391,30 @@ class MyTab extends StatelessWidget {
       ),
       child: Column(
         children: [
+          // ✅ 1. 내가 쓴 후기 관리 (추가)
+          _buildMenuTile('내가 쓴 후기 관리', Icons.rate_review_outlined, () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    MyReviewsScreen(uid: uid, themeColor: teamColor),
+              ),
+            );
+          }),
+          const Divider(height: 1, indent: 20, endIndent: 20),
+
+          // ✅ 2. 직관 기록 모아보기 (추가)
+          _buildMenuTile('직관 기록 모아보기', Icons.format_list_bulleted, () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    MyRecordsListScreen(uid: uid, themeColor: teamColor),
+              ),
+            );
+          }),
+          const Divider(height: 1, indent: 20, endIndent: 20),
+
           _buildMenuTile('응원하는 팀 변경하기', Icons.swap_horiz, () async {
             final selected = await Navigator.push<String?>(
               context,
@@ -395,7 +457,6 @@ class MyTab extends StatelessWidget {
             }
           }),
           const Divider(height: 1, indent: 20, endIndent: 20),
-          // ✅ 회원탈퇴 로직 수정됨
           _buildMenuTile('회원탈퇴', Icons.person_remove_outlined, () async {
             bool confirm =
                 await showDialog(
