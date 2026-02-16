@@ -10,7 +10,7 @@ import '../../models/naver_news_article.dart';
 import 'package:jikgwan_mate/screens/lineup_screen.dart';
 // import 'package:jikgwan_mate/screens/team_news_screen1.dart'; // newsapi용
 import 'package:jikgwan_mate/screens/team_news_screen.dart';
-import 'package:jikgwan_mate/widgets/news_article_tile.dart';
+
 
 class HomeTab extends StatefulWidget {
   final String uid;
