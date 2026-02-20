@@ -121,7 +121,7 @@ class _TrafficGuideScreenState extends State<TrafficGuideScreen>
           : Stack(
               children: [
                 // ✅ 1. 배경 영역: 지도 플레이스홀더
-                Container(
+                /*Container(
                   width: double.infinity,
                   height: double.infinity,
                   color: Colors.grey[200],
@@ -151,6 +151,26 @@ class _TrafficGuideScreenState extends State<TrafficGuideScreen>
                         style: TextStyle(color: Colors.grey[500], fontSize: 12),
                       ),
                     ],
+                  ),
+                ),
+                */
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      // 💡 viewImagePath나 stadium_img 등 이미 있는 에셋 경로를 활용하세요!
+                      image: AssetImage(
+                        'assets/view_img/${widget.stadiumId}_view.png',
+                      ),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  // 사진 위에 살짝 어두운 필터를 깔아주면 하단 하얀색 패널이 더 돋보입니다.
+                  child: Container(
+                    color: Colors.black.withOpacity(0.3),
+                    padding: const EdgeInsets.only(bottom: 100),
+                    alignment: Alignment.center,
                   ),
                 ),
 

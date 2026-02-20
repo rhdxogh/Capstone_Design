@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'auth_gate.dart';
 import 'auth_entry_screen.dart';
+import '../app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -24,21 +25,20 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const  AuthEntryScreen()),
+      MaterialPageRoute(builder: (_) => const AuthEntryScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.white,
+    return Scaffold(
+      backgroundColor: AppColors.brandRed,
       body: Center(
-        child: Text(
-          '직관메이트',
-          style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [Image.asset('assets/logo_white_font.png', width: 250)],
         ),
       ),
     );
   }
 }
-

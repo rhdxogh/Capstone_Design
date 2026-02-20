@@ -11,7 +11,6 @@ import 'package:jikgwan_mate/screens/lineup_screen.dart';
 // import 'package:jikgwan_mate/screens/team_news_screen1.dart'; // newsapi용
 import 'package:jikgwan_mate/screens/team_news_screen.dart';
 
-
 class HomeTab extends StatefulWidget {
   final String uid;
   final TeamTheme team;
@@ -105,19 +104,19 @@ class _HomeTabState extends State<HomeTab> {
           'stadium': cells[1].trim(),
           'away': cells[3].trim(),
           'home': cells[4].trim(),
-          'time': (cells.length > 5 && cells[5]
-              .trim()
-              .isNotEmpty) ? cells[5].trim() : "18:30",
+          'time': (cells.length > 5 && cells[5].trim().isNotEmpty)
+              ? cells[5].trim()
+              : "18:30",
         };
 
         if (game['date'] == targetDate) {
           bool isMyMatch =
               game['away'].toString().toUpperCase() ==
                   widget.team.id.toUpperCase() ||
-                  game['home'].toString().toUpperCase() ==
-                      widget.team.id.toUpperCase() ||
-                  game['away'] == widget.team.nameKo ||
-                  game['home'] == widget.team.nameKo;
+              game['home'].toString().toUpperCase() ==
+                  widget.team.id.toUpperCase() ||
+              game['away'] == widget.team.nameKo ||
+              game['home'] == widget.team.nameKo;
 
           if (isMyMatch) {
             myMatch.add(game);
@@ -137,8 +136,9 @@ class _HomeTabState extends State<HomeTab> {
     return FutureBuilder<Map<String, List<dynamic>>>(
       future: _gameData,
       builder: (context, snapshot) {
-        final myMatch = snapshot.data?['my']?.isNotEmpty == true ? snapshot
-            .data!['my']![0] : null;
+        final myMatch = snapshot.data?['my']?.isNotEmpty == true
+            ? snapshot.data!['my']![0]
+            : null;
         final otherMatches = snapshot.data?['others'] ?? [];
 
         return Scaffold(
@@ -193,7 +193,7 @@ class _HomeTabState extends State<HomeTab> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      '구단 소식',
+                      '최신 KBO 소식',
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
@@ -204,11 +204,10 @@ class _HomeTabState extends State<HomeTab> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) =>
-                                TeamNewsScreen(
-                                  teamName: widget.team.nameKo,
-                                  themeColor: widget.team.primary,
-                                ),
+                            builder: (_) => TeamNewsScreen(
+                              teamName: widget.team.nameKo,
+                              themeColor: widget.team.primary,
+                            ),
                           ),
                         );
                       },
@@ -235,20 +234,20 @@ class _HomeTabState extends State<HomeTab> {
   Widget _buildMainCard(dynamic game) {
     bool isActuallyToday =
         _selectedDate.year == _today.year &&
-            _selectedDate.month == _today.month &&
-            _selectedDate.day == _today.day;
+        _selectedDate.month == _today.month &&
+        _selectedDate.day == _today.day;
 
     return GestureDetector(
       onTap: game != null
           ? () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                LineupScreen(game: game, themeColor: widget.team.primary),
-          ),
-        );
-      }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      LineupScreen(game: game, themeColor: widget.team.primary),
+                ),
+              );
+            }
           : null,
       child: Container(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 30),
@@ -272,7 +271,9 @@ class _HomeTabState extends State<HomeTab> {
                 if (isActuallyToday)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: widget.team.primary,
                       borderRadius: BorderRadius.circular(8),
@@ -289,8 +290,7 @@ class _HomeTabState extends State<HomeTab> {
                 else
                   const SizedBox(height: 27),
                 Text(
-                  "${_selectedDate.year}.${_selectedDate.month}.${_selectedDate
-                      .day}",
+                  "${_selectedDate.year}.${_selectedDate.month}.${_selectedDate.day}",
                   style: const TextStyle(
                     color: Colors.black54,
                     fontWeight: FontWeight.w600,
@@ -334,7 +334,7 @@ class _HomeTabState extends State<HomeTab> {
           width: 60,
           height: 60,
           errorBuilder: (_, __, ___) =>
-          const Icon(Icons.sports_baseball, size: 60),
+              const Icon(Icons.sports_baseball, size: 60),
         ),
         const SizedBox(height: 8),
         Text(
@@ -405,59 +405,64 @@ class _HomeTabState extends State<HomeTab> {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: games.length,
-        itemBuilder: (context, i) =>
-            Container(
-              width: 160,
-              margin: const EdgeInsets.only(right: 15, bottom: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.grey.shade100),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+        itemBuilder: (context, i) => Container(
+          width: 160,
+          margin: const EdgeInsets.only(right: 15, bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "${games[i]['stadium']} | ${games[i]['time']}",
+                style: const TextStyle(fontSize: 10, color: Colors.grey),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text(
-                    "${games[i]['stadium']} | ${games[i]['time']}",
-                    style: const TextStyle(fontSize: 10, color: Colors.grey),
+                  Image.asset(
+                    _getLogo(games[i]['away']),
+                    width: 35,
+                    height: 35,
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Image.asset(
-                          _getLogo(games[i]['away']), width: 35, height: 35),
-                      const Text(
-                        'VS',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black12,
-                        ),
-                      ),
-                      Image.asset(
-                          _getLogo(games[i]['home']), width: 35, height: 35),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${games[i]['away']} : ${games[i]['home']}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
+                  const Text(
+                    'VS',
+                    style: TextStyle(
                       fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black12,
                     ),
                   ),
+                  Image.asset(
+                    _getLogo(games[i]['home']),
+                    width: 35,
+                    height: 35,
+                  ),
                 ],
               ),
-            ),
+              const SizedBox(height: 8),
+              Text(
+                '${games[i]['away']} : ${games[i]['home']}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -555,11 +560,10 @@ class _HomeTabState extends State<HomeTab> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            TeamNewsScreen(
-                              teamName: widget.team.nameKo,
-                              themeColor: widget.team.primary,
-                            ),
+                        builder: (_) => TeamNewsScreen(
+                          teamName: widget.team.nameKo,
+                          themeColor: widget.team.primary,
+                        ),
                       ),
                     );
                   },
@@ -663,4 +667,3 @@ class _NaverNewsPreviewCard extends StatelessWidget {
     return uri.host.replaceFirst('www.', '');
   }
 }
-
