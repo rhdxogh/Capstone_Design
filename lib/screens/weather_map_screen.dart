@@ -8,7 +8,7 @@ import 'weather_detail_screen.dart';
 class WeatherMapScreen extends StatefulWidget {
   final Color themeColor;
 
-  /// 지도 이미지 에셋 경로 (너 프로젝트에 맞게 수정)
+  /// 지도 이미지 에셋 경로
   final String mapAsset;
 
   const WeatherMapScreen({
@@ -38,8 +38,6 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
     return stadiumLocations.firstWhere((s) => s.id == id);
   }
 
-  String _iconUrl(String icon) => 'https://openweathermap.org/img/wn/$icon@2x.png';
-
   // ✅ 지도에 표시할 "짧은 이름"으로 변환
   String _shortName(String fullName) {
     if (fullName.contains('수원')) return '수원';
@@ -54,7 +52,22 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
     return fullName;
   }
 
-  // ✅ 구장별 "미세 오프셋" (px 단위) - 겹치면 숫자만 조정
+  /// ✅ OpenWeather icon code(01d, 02n...) -> assets/weather_img 아이콘 매핑
+  String _assetIconPath(StadiumWeather w) {
+    final icon = w.icon.toLowerCase(); // ex) 01d, 02n...
+
+    if (icon.startsWith('01')) return 'assets/weather_img/sun.png';
+    if (icon.startsWith('02')) return 'assets/weather_img/sunandcloud.png';
+    if (icon.startsWith('03') || icon.startsWith('04')) return 'assets/weather_img/cloud.png';
+    if (icon.startsWith('09') || icon.startsWith('10')) return 'assets/weather_img/rain.png';
+    if (icon.startsWith('11')) return 'assets/weather_img/rain.png'; // thunderstorm 대체
+    if (icon.startsWith('13')) return 'assets/weather_img/snow.png';
+    if (icon.startsWith('50')) return 'assets/weather_img/cloud.png'; // mist/fog 대체
+
+    return 'assets/weather_img/sun.png';
+  }
+
+  // ✅ 구장별 "미세 오프셋"
   final Map<String, Offset> _markerOffsets = const {
     'munhak': Offset(-26, -10),
     'gocheok': Offset(-6, -42),
@@ -180,7 +193,7 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
                                               child: _MarkerCard(
                                                 themeColor: widget.themeColor,
                                                 label: m.label,
-                                                iconUrl: m.iconUrl,
+                                                assetIconPath: m.assetIconPath,
                                                 tempText: m.tempText,
                                                 onTap: m.onTap,
                                               ),
@@ -239,7 +252,7 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
         dx: dx,
         dy: dy,
         label: _shortName(s.nameKo),
-        iconUrl: _iconUrl(w.icon),
+        assetIconPath: _assetIconPath(w),
         tempText: '${w.temp.round()}°',
         onTap: () {
           Navigator.push(
@@ -278,7 +291,7 @@ class _MarkerModel {
   final double dx; // 0~1
   final double dy; // 0~1
   final String label;
-  final String iconUrl;
+  final String assetIconPath;
   final String tempText;
   final VoidCallback onTap;
 
@@ -287,24 +300,24 @@ class _MarkerModel {
     required this.dx,
     required this.dy,
     required this.label,
-    required this.iconUrl,
+    required this.assetIconPath,
     required this.tempText,
     required this.onTap,
   });
 }
 
-/// ✅ 여기만 바뀜! (아이콘 → 온도 → 지역이름 세로 배치)
+/// ✅ 아이콘 → 온도 → 지역이름 세로 배치 (asset 아이콘 버전)
 class _MarkerCard extends StatelessWidget {
   final Color themeColor;
   final String label;
-  final String iconUrl;
+  final String assetIconPath;
   final String tempText;
   final VoidCallback onTap;
 
   const _MarkerCard({
     required this.themeColor,
     required this.label,
-    required this.iconUrl,
+    required this.assetIconPath,
     required this.tempText,
     required this.onTap,
   });
@@ -317,7 +330,7 @@ class _MarkerCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Container(
-          width: 58, // 🔽 70 → 58
+          width: 58,
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -334,18 +347,15 @@ class _MarkerCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 1️⃣ 아이콘
-              Image.network(
-                iconUrl,
+              Image.asset(
+                assetIconPath,
                 width: 22,
                 height: 22,
+                fit: BoxFit.contain,
                 errorBuilder: (_, __, ___) =>
                     Icon(Icons.cloud, size: 18, color: themeColor),
               ),
-
               const SizedBox(height: 2),
-
-              // 2️⃣ 온도
               Text(
                 tempText,
                 style: const TextStyle(
@@ -353,10 +363,7 @@ class _MarkerCard extends StatelessWidget {
                   fontWeight: FontWeight.w900,
                 ),
               ),
-
               const SizedBox(height: 2),
-
-              // 3️⃣ 지역명
               Text(
                 label,
                 maxLines: 1,
@@ -374,7 +381,6 @@ class _MarkerCard extends StatelessWidget {
     );
   }
 }
-
 
 class _ErrorView extends StatelessWidget {
   final Color themeColor;

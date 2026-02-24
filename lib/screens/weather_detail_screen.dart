@@ -31,20 +31,31 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
   DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
   String _weekdayKo(int weekday) {
-    // DateTime: Mon=1..Sun=7
     const w = ['월', '화', '수', '목', '금', '토', '일'];
     return w[weekday - 1];
   }
 
   String _timeLabel(DateTime dt) {
-    // "오전 9시" / "오후 3시"
     final h = dt.hour;
     final ap = h < 12 ? '오전' : '오후';
     final hh = h % 12 == 0 ? 12 : h % 12;
     return '$ap ${hh}시';
   }
 
-  String _iconUrl(String icon) => 'https://openweathermap.org/img/wn/$icon@2x.png';
+  /// ✅ ForecastPoint.icon (예: 01d, 02n...) -> assets/weather_img 아이콘 매핑
+  String _assetIconPathFromCode(String iconCode) {
+    final icon = iconCode.toLowerCase();
+
+    if (icon.startsWith('01')) return 'assets/weather_img/sun.png';
+    if (icon.startsWith('02')) return 'assets/weather_img/sunandcloud.png';
+    if (icon.startsWith('03') || icon.startsWith('04')) return 'assets/weather_img/cloud.png';
+    if (icon.startsWith('09') || icon.startsWith('10')) return 'assets/weather_img/rain.png';
+    if (icon.startsWith('11')) return 'assets/weather_img/rain.png'; // thunderstorm 대체
+    if (icon.startsWith('13')) return 'assets/weather_img/snow.png';
+    if (icon.startsWith('50')) return 'assets/weather_img/cloud.png'; // mist/fog 대체
+
+    return 'assets/weather_img/sun.png';
+  }
 
   // 오늘(금일) 3시간 간격 몇 개만 보여줄 리스트
   List<ForecastPoint> _todaySlots(List<ForecastPoint> all) {
@@ -56,12 +67,11 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
         .where((p) => p.time.isAfter(now.subtract(const Duration(minutes: 1))))
         .toList();
 
-    // 오늘 남은 예보가 너무 적으면 그냥 오늘 전체에서 앞쪽으로
     if (candidates.length < 3) {
       final fallback = all.where((p) => _dateOnly(p.time) == today).toList();
       return fallback.take(6).toList();
     }
-    return candidates.take(6).toList(); // 3시간 간격 6개 = 약 18시간
+    return candidates.take(6).toList();
   }
 
   // 주간(대략) = 날짜별로 그룹핑해서 min/max + 대표 icon/desc
@@ -105,7 +115,6 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
       ));
     }
 
-    // 오늘 포함해서 "가능한 만큼"만 (forecast는 최대 5일이라 7일 다 못 채움)
     return result.take(7).toList();
   }
 
@@ -144,7 +153,6 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
             final todaySlots = _todaySlots(all);
             final daily = _dailySummaries(all);
 
-            // ✅ 여기부터가 “무조건 안전한” ListView 구성
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
               children: [
@@ -156,7 +164,7 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                 const SizedBox(height: 10),
 
                 SizedBox(
-                  height: 116, // 살짝 여유를 줘서 overflow 방지
+                  height: 116,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: todaySlots.length,
@@ -165,8 +173,9 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                       final p = todaySlots[i];
                       return _TodayCard(
                         timeText: _timeLabel(p.time),
-                        iconUrl: _iconUrl(p.icon),
+                        assetIconPath: _assetIconPathFromCode(p.icon),
                         tempText: '${p.temp.round()}°',
+                        tintColor: widget.themeColor,
                       );
                     },
                   ),
@@ -203,7 +212,7 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                           themeColor: widget.themeColor,
                           summary: daily[i],
                           weekdayKo: _weekdayKo(daily[i].date.weekday),
-                          iconUrl: _iconUrl(daily[i].icon),
+                          assetIconPath: _assetIconPathFromCode(daily[i].icon),
                         ),
                         if (i != daily.length - 1)
                           Divider(height: 1, color: Colors.grey.shade200),
@@ -217,8 +226,6 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                   '※ OpenWeather 무료 예보는 3시간 간격/최대 5일치라, 7일은 “가능한 만큼”만 표시돼요.',
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
-
-                // ✅ 아래 여백을 넉넉히 줘서 기기별 하단 오버플로우 예방
                 const SizedBox(height: 12),
               ],
             );
@@ -229,17 +236,19 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
   }
 }
 
-// ===== 아래는 안전하게 만든 위젯들 =====
+// ===== 아래는 위젯들 =====
 
 class _TodayCard extends StatelessWidget {
   final String timeText;
-  final String iconUrl;
+  final String assetIconPath;
   final String tempText;
+  final Color tintColor;
 
   const _TodayCard({
     required this.timeText,
-    required this.iconUrl,
+    required this.assetIconPath,
     required this.tempText,
+    required this.tintColor,
   });
 
   @override
@@ -262,11 +271,12 @@ class _TodayCard extends StatelessWidget {
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 6),
-          Image.network(
-            iconUrl,
+          Image.asset(
+            assetIconPath,
             width: 44,
             height: 44,
-            errorBuilder: (_, __, ___) => const Icon(Icons.cloud, size: 34),
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => Icon(Icons.cloud, size: 34, color: tintColor),
           ),
           const SizedBox(height: 4),
           Text(
@@ -299,13 +309,13 @@ class _DailyRow extends StatelessWidget {
   final Color themeColor;
   final _DailySummary summary;
   final String weekdayKo;
-  final String iconUrl;
+  final String assetIconPath;
 
   const _DailyRow({
     required this.themeColor,
     required this.summary,
     required this.weekdayKo,
-    required this.iconUrl,
+    required this.assetIconPath,
   });
 
   @override
@@ -320,7 +330,6 @@ class _DailyRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
-          // 날짜(월/화)
           SizedBox(
             width: 78,
             child: Column(
@@ -342,20 +351,18 @@ class _DailyRow extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(width: 8),
 
-          // 아이콘
-          Image.network(
-            iconUrl,
+          Image.asset(
+            assetIconPath,
             width: 34,
             height: 34,
+            fit: BoxFit.contain,
             errorBuilder: (_, __, ___) => Icon(Icons.cloud, color: themeColor),
           ),
 
           const SizedBox(width: 8),
 
-          // 온도 범위 (오른쪽 정렬)
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,

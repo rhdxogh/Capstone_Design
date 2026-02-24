@@ -40,6 +40,7 @@ flutter:
     - assets/lineup_img/
     - assets/etc/
     - assets/data/
+    - assets/weather_img/
     # Overlays
     - assets/overlays/
     - assets/overlays/MUNHAK/

@@ -1,11 +1,11 @@
+
+
 import 'package:flutter/material.dart';
 
 import '../../data/stadium_locations.dart';
 import '../../models/stadium_weather.dart';
 import '../../services/weather_service.dart';
 import '../weather_map_screen.dart';
-
-// ✅ 추가: 상세 페이지로 이동
 import '../weather_detail_screen.dart';
 
 class WeatherTab extends StatefulWidget {
@@ -44,11 +44,47 @@ class _WeatherTabState extends State<WeatherTab> {
     return stadiumLocations.firstWhere((s) => s.id == id);
   }
 
-  String _iconUrl(String icon) {
-    return 'https://openweathermap.org/img/wn/$icon@2x.png';
+  /// ✅ OpenWeather icon code(01d, 02n...) 또는 description 기반으로
+  /// assets/weather_img/ 안의 아이콘으로 매핑
+  String _assetIconPath(StadiumWeather w) {
+    final icon = (w.icon).toLowerCase(); // ex) 01d, 02n...
+    final desc = (w.description).toLowerCase();
+
+    // --- OpenWeather 아이콘 코드 기반(가장 안정적) ---
+    // 01d/01n: clear sky
+    if (icon.startsWith('01')) return 'assets/weather_img/sun.png';
+
+    // 02d/02n: few clouds
+    if (icon.startsWith('02')) return 'assets/weather_img/sunandcloud.png';
+
+    // 03d/03n: scattered clouds, 04d/04n: broken/overcast clouds
+    if (icon.startsWith('03') || icon.startsWith('04')) {
+      return 'assets/weather_img/cloud.png';
+    }
+
+    // 09: shower rain, 10: rain
+    if (icon.startsWith('09') || icon.startsWith('10')) {
+      return 'assets/weather_img/rain.png';
+    }
+
+    // 11: thunderstorm → 지금 assets에 storm이 없으니 rain으로 대체
+    if (icon.startsWith('11')) return 'assets/weather_img/rain.png';
+
+    // 13: snow
+    if (icon.startsWith('13')) return 'assets/weather_img/snow.png';
+
+    // 50: mist/fog/haze → 지금 fog 아이콘이 없으니 cloud로 대체
+    if (icon.startsWith('50')) return 'assets/weather_img/cloud.png';
+
+    // --- 혹시 icon이 비었거나 예상 못한 값일 때 description으로 보정 ---
+    if (desc.contains('rain') || desc.contains('비')) return 'assets/weather_img/rain.png';
+    if (desc.contains('snow') || desc.contains('눈')) return 'assets/weather_img/snow.png';
+    if (desc.contains('cloud') || desc.contains('구름')) return 'assets/weather_img/cloud.png';
+
+    // 기본값: 맑음
+    return 'assets/weather_img/sun.png';
   }
 
-  /// ✅ 공통: 상세 화면 이동 함수 (오타/중복 방지용)
   void _goDetail(StadiumLoc stadium) {
     Navigator.push(
       context,
@@ -72,7 +108,6 @@ class _WeatherTabState extends State<WeatherTab> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
             children: [
-              // ✅ 상단 카드: 이제 "상세페이지로 이동"
               _TopWeatherCard(
                 teamColor: widget.teamColor,
                 onTap: () {
@@ -85,10 +120,7 @@ class _WeatherTabState extends State<WeatherTab> {
                 },
                 lastUpdatedText: _timeText(_lastUpdated),
               ),
-
-
               const SizedBox(height: 14),
-
               Row(
                 children: [
                   const Expanded(
@@ -99,13 +131,11 @@ class _WeatherTabState extends State<WeatherTab> {
                   ),
                   Text(
                     _lastUpdated == null ? '' : '업데이트 ${_timeText(_lastUpdated)}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ),
-
               const SizedBox(height: 10),
-
               FutureBuilder<List<StadiumWeather>>(
                 future: _future,
                 builder: (context, snapshot) {
@@ -136,7 +166,7 @@ class _WeatherTabState extends State<WeatherTab> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade200),
+                      border: Border.all(color: Colors.grey.shade400, width: 1.4),
                     ),
                     child: Column(
                       children: [
@@ -145,9 +175,8 @@ class _WeatherTabState extends State<WeatherTab> {
                             teamColor: widget.teamColor,
                             stadium: _findStadium(list[i].stadiumId),
                             weather: list[i],
-                            iconUrl: _iconUrl(list[i].icon),
-
-                            // ✅ row 누르면 해당 구장 상세로 이동
+                            // ✅ 네트워크 대신 asset 아이콘 경로 전달
+                            assetIconPath: _assetIconPath(list[i]),
                             onTap: () {
                               final s = _findStadium(list[i].stadiumId);
                               _goDetail(s);
@@ -186,55 +215,63 @@ class _TopWeatherCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(18),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        clipBehavior: Clip.antiAlias, // ✅ 배경 이미지가 둥근 모서리 밖으로 안 나가게
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-          gradient: LinearGradient(
-            colors: [
-              teamColor.withOpacity(0.15),
-              teamColor.withOpacity(0.05),
-            ],
-          ),
           border: Border.all(color: teamColor.withOpacity(0.25)),
         ),
-        child: Row(
+        child: Stack(
           children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: teamColor.withOpacity(0.18),
-                borderRadius: BorderRadius.circular(14),
+            // ✅ 배경 이미지
+            Positioned.fill(
+              child: Image.asset(
+                'assets/weather_img/weather_background.png',
+                fit: BoxFit.cover,
               ),
-              child: Icon(Icons.cloud, color: teamColor),
             ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+
+            // ✅ 가독성용 오버레이(필수는 아닌데 훨씬 예쁨)
+            Positioned.fill(
+              child: Container(
+                color: Colors.white.withOpacity(0.55), // 숫자 올리면 더 뿌옇게
+              ),
+            ),
+
+            // ✅ 기존 내용
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
                 children: [
-                  Text(
-                    '실시간 날씨 보러가기',
-                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '실시간 날씨 보러가기',
+                          style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          '각 구장별 현재 날씨를 확인해요',
+                          style: TextStyle(fontSize: 12.5, color: Colors.black54),
+                        ),
+                      ],
+                    ),
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    '각 구장별 현재 날씨를 확인해요',
-                    style: TextStyle(fontSize: 12.5, color: Colors.black54),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Icon(Icons.arrow_forward),
+                      SizedBox(height: 6),
+                      // lastUpdatedText 는 const 제거해야 사용 가능
+                      Text(
+                        lastUpdatedText.isEmpty ? '' : lastUpdatedText,
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Icon(Icons.arrow_forward, color: teamColor),
-                const SizedBox(height: 6),
-                Text(
-                  lastUpdatedText.isEmpty ? '' : lastUpdatedText,
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
-                ),
-              ],
             ),
           ],
         ),
@@ -247,14 +284,14 @@ class _WeatherRow extends StatelessWidget {
   final Color teamColor;
   final StadiumLoc stadium;
   final StadiumWeather weather;
-  final String iconUrl;
+  final String assetIconPath;
   final VoidCallback onTap;
 
   const _WeatherRow({
     required this.teamColor,
     required this.stadium,
     required this.weather,
-    required this.iconUrl,
+    required this.assetIconPath,
     required this.onTap,
   });
 
@@ -278,7 +315,6 @@ class _WeatherRow extends StatelessWidget {
               child: Icon(Icons.place, color: teamColor, size: 18),
             ),
             const SizedBox(width: 10),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,28 +331,42 @@ class _WeatherRow extends StatelessWidget {
                 ],
               ),
             ),
-
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.network(
-                  iconUrl,
-                  width: 34,
-                  height: 34,
-                  errorBuilder: (_, __, ___) => Icon(Icons.cloud, color: teamColor),
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: Center(
+                    child: Image.asset(
+                      assetIconPath,
+                      width: 30,
+                      height: 30,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) =>
+                          Icon(Icons.cloud, color: teamColor, size: 26),
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 6),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      tempText,
-                      style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w900),
-                    ),
-                    Text(
-                      weather.description,
-                      style: const TextStyle(fontSize: 11.5, color: Colors.grey),
-                    ),
-                  ],
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 56, // 글자 흔들리면 60까지 올려도 됨
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        tempText,
+                        style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w900),
+                      ),
+                      Text(
+                        weather.description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 11.5, color: Colors.grey),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -335,7 +385,7 @@ class _LoadingList extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Colors.grey.shade400, width: 1.4),
       ),
       child: const Row(
         children: [
@@ -370,7 +420,7 @@ class _ErrorBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Colors.grey.shade400, width: 1.4),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,5 +445,3 @@ class _ErrorBox extends StatelessWidget {
     );
   }
 }
-
-
