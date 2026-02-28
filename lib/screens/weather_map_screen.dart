@@ -43,7 +43,10 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
     if (fullName.contains('수원')) return '수원';
     if (fullName.contains('잠실')) return '잠실';
     if (fullName.contains('고척')) return '고척';
-    if (fullName.contains('문학') || fullName.contains('인천') || fullName.contains('SSG')) return '문학';
+    if (fullName.contains('문학') ||
+        fullName.contains('인천') ||
+        fullName.contains('SSG'))
+      return '문학';
     if (fullName.contains('대전')) return '대전';
     if (fullName.contains('대구')) return '대구';
     if (fullName.contains('창원')) return '창원';
@@ -58,11 +61,15 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
 
     if (icon.startsWith('01')) return 'assets/weather_img/sun.png';
     if (icon.startsWith('02')) return 'assets/weather_img/sunandcloud.png';
-    if (icon.startsWith('03') || icon.startsWith('04')) return 'assets/weather_img/cloud.png';
-    if (icon.startsWith('09') || icon.startsWith('10')) return 'assets/weather_img/rain.png';
-    if (icon.startsWith('11')) return 'assets/weather_img/rain.png'; // thunderstorm 대체
+    if (icon.startsWith('03') || icon.startsWith('04'))
+      return 'assets/weather_img/cloud.png';
+    if (icon.startsWith('09') || icon.startsWith('10'))
+      return 'assets/weather_img/rain.png';
+    if (icon.startsWith('11'))
+      return 'assets/weather_img/rain.png'; // thunderstorm 대체
     if (icon.startsWith('13')) return 'assets/weather_img/snow.png';
-    if (icon.startsWith('50')) return 'assets/weather_img/cloud.png'; // mist/fog 대체
+    if (icon.startsWith('50'))
+      return 'assets/weather_img/cloud.png'; // mist/fog 대체
 
     return 'assets/weather_img/sun.png';
   }
@@ -86,10 +93,13 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
       appBar: AppBar(
-        backgroundColor: widget.themeColor,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         elevation: 0,
-        title: const Text('실시간 레이더 영상 확인'),
+        title: const Text(
+          '실시간 레이더 영상 확인',
+          style: TextStyle(fontWeight: FontWeight.bold), // ✅ 타이틀 볼드체 적용
+        ),
         actions: [
           IconButton(
             onPressed: _refresh,
@@ -165,18 +175,27 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
                                         children: [
                                           Positioned.fill(
                                             child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(14),
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
                                               child: Image.asset(
                                                 widget.mapAsset,
                                                 fit: BoxFit.contain,
                                                 errorBuilder: (_, __, ___) {
                                                   return Center(
                                                     child: Padding(
-                                                      padding: const EdgeInsets.all(12),
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            12,
+                                                          ),
                                                       child: Text(
                                                         '지도 이미지를 찾을 수 없어요.\n${widget.mapAsset}\n\n(pubspec.yaml assets 등록/경로 확인)',
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(color: Colors.grey.shade700),
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                          color: Colors
+                                                              .grey
+                                                              .shade700,
+                                                        ),
                                                       ),
                                                     ),
                                                   );
@@ -188,8 +207,16 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
                                           // ✅ 마커들 (Fraction 기반 배치 + 오프셋 적용)
                                           for (final m in markers)
                                             Positioned(
-                                              left: (m.dx * mapWidth) + (_markerOffsets[m.stadiumId]?.dx ?? 0),
-                                              top: (m.dy * mapHeight) + (_markerOffsets[m.stadiumId]?.dy ?? 0),
+                                              left:
+                                                  (m.dx * mapWidth) +
+                                                  (_markerOffsets[m.stadiumId]
+                                                          ?.dx ??
+                                                      0),
+                                              top:
+                                                  (m.dy * mapHeight) +
+                                                  (_markerOffsets[m.stadiumId]
+                                                          ?.dy ??
+                                                      0),
                                               child: _MarkerCard(
                                                 themeColor: widget.themeColor,
                                                 label: m.label,
@@ -203,15 +230,24 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
                                     ),
                                     const SizedBox(height: 10),
                                     Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                      ),
                                       child: Row(
                                         children: [
-                                          Icon(Icons.info_outline, size: 16, color: Colors.grey.shade600),
+                                          Icon(
+                                            Icons.info_outline,
+                                            size: 16,
+                                            color: Colors.grey.shade600,
+                                          ),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
                                               '마커를 누르면 해당 구장 상세 날씨로 이동해요',
-                                              style: TextStyle(fontSize: 12.5, color: Colors.grey.shade700),
+                                              style: TextStyle(
+                                                fontSize: 12.5,
+                                                color: Colors.grey.shade700,
+                                              ),
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -430,6 +466,3 @@ class _ErrorView extends StatelessWidget {
     );
   }
 }
-
-
-

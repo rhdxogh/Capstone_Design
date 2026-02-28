@@ -27,27 +27,20 @@ class StadiumDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: themeColor,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.black,
         elevation: 0,
-        title: Text(stadiumName),
+        // ✅ 1. 앱 바 타이틀을 중앙으로 정렬하고, 글씨를 살짝 두껍게 처리합니다.
+        centerTitle: true,
+        title: Text(
+          stadiumName,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
           children: [
-            // ✅ 제목/부제
-            Text(
-              stadiumName,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '구장 정보를 한눈에 확인해보세요.',
-              style: TextStyle(fontSize: 12.5, color: Colors.grey.shade700),
-            ),
-            const SizedBox(height: 14),
-
             // ✅ 구장 뷰 이미지
             ClipRRect(
               borderRadius: BorderRadius.circular(14),
@@ -70,13 +63,13 @@ class StadiumDetailScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 25),
 
             const Text(
               '무엇을 도와드릴까요?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
 
             // ✅ 좌석정보 / 먹거리정보 / 교통안내 메뉴 카드
             _MenuCard(
@@ -200,7 +193,7 @@ class _MenuCard extends StatelessWidget {
               ),
             ),
 
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.red),
+            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black),
           ],
         ),
       ),

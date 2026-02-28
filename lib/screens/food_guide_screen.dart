@@ -4,8 +4,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'food_detail_screen.dart';
 
 class FoodGuideScreen extends StatefulWidget {
-  final String stadiumId;     // 예: 'munhak'
-  final String stadiumName;   // 예: '인천 SSG 랜더스 필드'
+  final String stadiumId; // 예: 'munhak'
+  final String stadiumName; // 예: '인천 SSG 랜더스 필드'
   final Color themeColor;
 
   const FoodGuideScreen({
@@ -69,7 +69,15 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
     final iFoodImg = idx('food_img');
 
     // 헤더가 없으면 방어
-    if ([iStadiumId, iFoodId, iName, iLocation, iFloor, iTags, iFoodImg].any((i) => i < 0)) {
+    if ([
+      iStadiumId,
+      iFoodId,
+      iName,
+      iLocation,
+      iFloor,
+      iTags,
+      iFoodImg,
+    ].any((i) => i < 0)) {
       setState(() {
         loading = false;
         all = [];
@@ -124,7 +132,10 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
         final tags = f.tags.join(' ').toLowerCase();
         final loc = f.location.toLowerCase();
         final floor = f.floor.toLowerCase();
-        return name.contains(q) || tags.contains(q) || loc.contains(q) || floor.contains(q);
+        return name.contains(q) ||
+            tags.contains(q) ||
+            loc.contains(q) ||
+            floor.contains(q);
       }).toList();
     });
   }
@@ -134,68 +145,77 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: widget.themeColor,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         elevation: 0,
-        title: Text(widget.stadiumName),
+        centerTitle: true,
+        title: Text(
+          widget.stadiumName,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: SafeArea(
         child: loading
             ? const Center(child: CircularProgressIndicator())
             : Column(
-          children: [
-            // 상단 제목/검색 영역
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /*
+                  // 상단 제목/검색 영역
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        /*
                   const Text(
                     '랜필 먹거리',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
                   ),
                    */
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _searchCtrl,
-                    decoration: InputDecoration(
-                      hintText: 'Search',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: _searchCtrl,
+                          decoration: InputDecoration(
+                            hintText: 'Search',
+                            prefixIcon: const Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+
+                  // 리스트
+                  Expanded(
+                    child: filtered.isEmpty
+                        ? Center(
+                            child: Text(
+                              '검색 결과가 없어요.',
+                              style: TextStyle(color: Colors.grey.shade600),
+                            ),
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            itemCount: filtered.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 10),
+                            itemBuilder: (context, i) {
+                              final f = filtered[i];
+                              return _FoodTile(
+                                item: f,
+                                themeColor: widget.themeColor,
+                                stadiumName: widget.stadiumName,
+                              );
+                            },
+                          ),
                   ),
                 ],
               ),
-            ),
-
-            // 리스트
-            Expanded(
-              child: filtered.isEmpty
-                  ? Center(
-                child: Text(
-                  '검색 결과가 없어요.',
-                  style: TextStyle(color: Colors.grey.shade600),
-                ),
-              )
-                  : ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                itemCount: filtered.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, i) {
-                  final f = filtered[i];
-                  return _FoodTile(
-                    item: f,
-                    themeColor: widget.themeColor,
-                    stadiumName: widget.stadiumName,
-                  );
-
-                },
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -206,9 +226,9 @@ class FoodItem {
   final String foodId;
   final String name;
   final String location; // 예: 1루
-  final String floor;    // 예: 1층
-  final String tagsRaw;  // 예: #햄버거, #피자
-  final String foodImg;  // 예: assets/food_img/MUNHAK/burgerwonders.png
+  final String floor; // 예: 1층
+  final String tagsRaw; // 예: #햄버거, #피자
+  final String foodImg; // 예: assets/food_img/MUNHAK/burgerwonders.png
 
   FoodItem({
     required this.stadiumId,
@@ -284,11 +304,8 @@ class _FoodTile extends StatelessWidget {
                   width: 56,
                   height: 56,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.fastfood,
-                    size: 28,
-                    color: Colors.grey,
-                  ),
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.fastfood, size: 28, color: Colors.grey),
                 ),
               ),
             ),
@@ -313,10 +330,7 @@ class _FoodTile extends StatelessWidget {
                   // 위치 / 층
                   Text(
                     '${item.location} · ${item.floor}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade700,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                   ),
 
                   const SizedBox(height: 6),
@@ -337,24 +351,18 @@ class _FoodTile extends StatelessWidget {
                       );
                     }).toList(),
                   ),
-
                 ],
               ),
             ),
 
             // ✅ 우측 화살표
-            const Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
-              color: Colors.grey,
-            ),
+            const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
           ],
         ),
       ),
     );
   }
 }
-
 
 /// 매우 단순 CSV 파서 (따옴표 포함/쉼표 포함까지 “완벽”하진 않지만 일반적인 데이터는 잘 됨)
 List<List<String>> _parseCsv(String csv) {

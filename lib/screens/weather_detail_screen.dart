@@ -48,11 +48,15 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
 
     if (icon.startsWith('01')) return 'assets/weather_img/sun.png';
     if (icon.startsWith('02')) return 'assets/weather_img/sunandcloud.png';
-    if (icon.startsWith('03') || icon.startsWith('04')) return 'assets/weather_img/cloud.png';
-    if (icon.startsWith('09') || icon.startsWith('10')) return 'assets/weather_img/rain.png';
-    if (icon.startsWith('11')) return 'assets/weather_img/rain.png'; // thunderstorm 대체
+    if (icon.startsWith('03') || icon.startsWith('04'))
+      return 'assets/weather_img/cloud.png';
+    if (icon.startsWith('09') || icon.startsWith('10'))
+      return 'assets/weather_img/rain.png';
+    if (icon.startsWith('11'))
+      return 'assets/weather_img/rain.png'; // thunderstorm 대체
     if (icon.startsWith('13')) return 'assets/weather_img/snow.png';
-    if (icon.startsWith('50')) return 'assets/weather_img/cloud.png'; // mist/fog 대체
+    if (icon.startsWith('50'))
+      return 'assets/weather_img/cloud.png'; // mist/fog 대체
 
     return 'assets/weather_img/sun.png';
   }
@@ -106,13 +110,15 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
         }
       }
 
-      result.add(_DailySummary(
-        date: day,
-        minTemp: minT,
-        maxTemp: maxT,
-        icon: rep.icon,
-        description: rep.description,
-      ));
+      result.add(
+        _DailySummary(
+          date: day,
+          minTemp: minT,
+          maxTemp: maxT,
+          icon: rep.icon,
+          description: rep.description,
+        ),
+      );
     }
 
     return result.take(7).toList();
@@ -123,10 +129,14 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
       appBar: AppBar(
-        backgroundColor: widget.themeColor,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white, // ✅ 배경을 흰색으로
+        foregroundColor: Colors.black, // ✅ 뒤로가기 버튼과 타이틀을 검정색으로
         elevation: 0,
-        title: Text(widget.stadiumName),
+        centerTitle: true, // ✅ 타이틀 중앙 정렬
+        title: Text(
+          widget.stadiumName,
+          style: const TextStyle(fontWeight: FontWeight.bold), // ✅ 텍스트 볼드 처리
+        ),
       ),
       body: SafeArea(
         child: FutureBuilder<List<ForecastPoint>>(
@@ -188,12 +198,18 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                   children: [
                     const Text(
                       '주간 날씨',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const Spacer(),
                     Text(
                       'forecast 기반(대략)',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ],
                 ),
@@ -276,7 +292,8 @@ class _TodayCard extends StatelessWidget {
             width: 44,
             height: 44,
             fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => Icon(Icons.cloud, size: 34, color: tintColor),
+            errorBuilder: (_, __, ___) =>
+                Icon(Icons.cloud, size: 34, color: tintColor),
           ),
           const SizedBox(height: 4),
           Text(
@@ -339,7 +356,10 @@ class _DailyRow extends StatelessWidget {
                   '$mm/$dd ($weekdayKo)',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 3),
                 Text(
@@ -374,7 +394,10 @@ class _DailyRow extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   '$maxT°',
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ],
             ),

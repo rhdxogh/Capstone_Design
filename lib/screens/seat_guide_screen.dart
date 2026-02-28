@@ -94,10 +94,14 @@ class _SeatGuideScreenState extends State<SeatGuideScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: widget.themeColor,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white, // 배경을 흰색으로
+        foregroundColor: Colors.black, // 아이콘 및 텍스트를 검정색으로
         elevation: 0,
-        title: Text(widget.stadiumName),
+        centerTitle: true,
+        title: Text(
+          widget.stadiumName,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: SafeArea(
         child: FutureBuilder<List<SeatSection>>(
@@ -115,17 +119,10 @@ class _SeatGuideScreenState extends State<SeatGuideScreen> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
               children: [
-                Text(
-                  widget.stadiumName,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 6),
+                //const SizedBox(height: 6),
                 Text(
                   '좌석 후기를 확인할 구역을 선택하세요.',
-                  style: TextStyle(fontSize: 12.5, color: Colors.grey.shade700),
+                  style: TextStyle(fontSize: 15, color: Colors.grey.shade700),
                 ),
                 const SizedBox(height: 14),
 
@@ -133,17 +130,29 @@ class _SeatGuideScreenState extends State<SeatGuideScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(14),
                   child: Container(
-                    height: 260,
+                    height: 240, // 👈 기존 180에서 240으로 늘려줍니다! (원하는 만큼 조절 가능)
                     color: const Color(0xFFF2F2F2),
                     alignment: Alignment.center,
-                    child: Image.asset(viewImagePath, fit: BoxFit.contain),
+                    child: Image.asset(
+                      viewImagePath,
+                      fit: BoxFit.cover, // 비율을 유지하면서 꽉 채워주는 마법의 속성!
+                      errorBuilder: (_, __, ___) => Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Text(
+                          '이미지를 찾을 수 없어요.\n$viewImagePath',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey.shade700),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
+
                 const Text(
                   '좌석안내',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 10),
 
@@ -158,6 +167,7 @@ class _SeatGuideScreenState extends State<SeatGuideScreen> {
                             stadiumName: widget.stadiumName,
                             sectionName: s.sectionName,
                             overlayAsset: s.overlayAsset,
+                            colorHex: s.colorHex,
                             themeColor: widget.themeColor,
                           ),
                         ),

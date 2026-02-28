@@ -10,6 +10,7 @@ class StadiumTab extends StatefulWidget {
 }
 
 class _StadiumTabState extends State<StadiumTab> {
+  // ... (기존 stadiums 리스트 데이터는 동일하게 유지)
   final List<_StadiumItem> stadiums = const [
     _StadiumItem(
       id: 'gocheok',
@@ -63,7 +64,7 @@ class _StadiumTabState extends State<StadiumTab> {
       context,
       MaterialPageRoute(
         builder: (_) => StadiumDetailScreen(
-          stadiumId: s.id, // gocheok/munhak...
+          stadiumId: s.id,
           stadiumName: s.nameKo,
           themeColor: widget.teamColor,
         ),
@@ -74,87 +75,99 @@ class _StadiumTabState extends State<StadiumTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: Colors.white, // ✅ 배경을 완전 흰색으로 변경
+      appBar: AppBar(
+        backgroundColor: Colors.white, // ✅ 화이트 앱바 적용
+        foregroundColor: Colors.black,
+        elevation: 0,
+        centerTitle: false, // 좌측 정렬 유지 (iOS 감성)
+        title: const Padding(
+          padding: EdgeInsets.only(left: 4),
+          child: Text(
+            '구장 선택',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '구장 선택',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 16),
+                child: Text(
+                  '후기를 확인하고 싶은 구장을 선택해주세요!',
+                  style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                '좌석 후기를 확인할 구장을 선택해주세요!',
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
-              ),
-              const SizedBox(height: 14),
 
-              // ✅ 카드 그리드
+              // ✅ 카드 그리드 디자인 개선
               Expanded(
                 child: GridView.builder(
                   itemCount: stadiums.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    mainAxisSpacing: 14,
-                    crossAxisSpacing: 14,
-                    childAspectRatio: 0.92,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 0.88,
                   ),
                   itemBuilder: (context, i) {
                     final s = stadiums[i];
                     return InkWell(
-                      borderRadius: BorderRadius.circular(18),
-                      onTap: () => _openDetail(s), // ✅ 여기서 상세로 이동
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => _openDetail(s),
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.grey.shade100,
+                          ), // 아주 연한 테두리
                           boxShadow: [
                             BoxShadow(
-                              blurRadius: 16,
-                              offset: const Offset(0, 6),
-                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                              color: Colors.black.withOpacity(
+                                0.04,
+                              ), // 더 부드러운 그림자
                             ),
                           ],
                         ),
-                        child: Stack(
+                        child: Column(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(14),
-                              child: Column(
-                                children: [
-                                  // ✅ 이미지 영역
-                                  Expanded(
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(14),
-                                      child: Container(
-                                        color: const Color(0xFFF1F1F1),
-                                        alignment:
-                                            Alignment.center, // ✅ 중앙 정렬 핵심
-                                        child: Image.asset(
-                                          s.asset,
-                                          fit: BoxFit.contain,
-                                        ),
-                                      ),
+                            // 이미지 영역
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    color: const Color(0xFFF8F9FA),
+                                    alignment: Alignment.center,
+                                    child: Image.asset(
+                                      s.asset,
+                                      fit: BoxFit.contain,
                                     ),
                                   ),
-                                  const SizedBox(height: 10),
+                                ),
+                              ),
+                            ),
 
-                                  // ✅ 이름
-                                  Text(
-                                    s.nameKo,
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      height: 1.2,
-                                    ),
-                                  ),
-                                ],
+                            // 구장 이름
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                              child: Text(
+                                s.nameKo,
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF222222),
+                                ),
                               ),
                             ),
                           ],

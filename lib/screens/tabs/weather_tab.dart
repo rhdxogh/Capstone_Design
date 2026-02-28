@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 
 import '../../data/stadium_locations.dart';
@@ -44,44 +42,29 @@ class _WeatherTabState extends State<WeatherTab> {
     return stadiumLocations.firstWhere((s) => s.id == id);
   }
 
-  /// ✅ OpenWeather icon code(01d, 02n...) 또는 description 기반으로
-  /// assets/weather_img/ 안의 아이콘으로 매핑
   String _assetIconPath(StadiumWeather w) {
-    final icon = (w.icon).toLowerCase(); // ex) 01d, 02n...
+    final icon = (w.icon).toLowerCase();
     final desc = (w.description).toLowerCase();
 
-    // --- OpenWeather 아이콘 코드 기반(가장 안정적) ---
-    // 01d/01n: clear sky
     if (icon.startsWith('01')) return 'assets/weather_img/sun.png';
-
-    // 02d/02n: few clouds
     if (icon.startsWith('02')) return 'assets/weather_img/sunandcloud.png';
-
-    // 03d/03n: scattered clouds, 04d/04n: broken/overcast clouds
     if (icon.startsWith('03') || icon.startsWith('04')) {
       return 'assets/weather_img/cloud.png';
     }
-
-    // 09: shower rain, 10: rain
     if (icon.startsWith('09') || icon.startsWith('10')) {
       return 'assets/weather_img/rain.png';
     }
-
-    // 11: thunderstorm → 지금 assets에 storm이 없으니 rain으로 대체
     if (icon.startsWith('11')) return 'assets/weather_img/rain.png';
-
-    // 13: snow
     if (icon.startsWith('13')) return 'assets/weather_img/snow.png';
-
-    // 50: mist/fog/haze → 지금 fog 아이콘이 없으니 cloud로 대체
     if (icon.startsWith('50')) return 'assets/weather_img/cloud.png';
 
-    // --- 혹시 icon이 비었거나 예상 못한 값일 때 description으로 보정 ---
-    if (desc.contains('rain') || desc.contains('비')) return 'assets/weather_img/rain.png';
-    if (desc.contains('snow') || desc.contains('눈')) return 'assets/weather_img/snow.png';
-    if (desc.contains('cloud') || desc.contains('구름')) return 'assets/weather_img/cloud.png';
+    if (desc.contains('rain') || desc.contains('비'))
+      return 'assets/weather_img/rain.png';
+    if (desc.contains('snow') || desc.contains('눈'))
+      return 'assets/weather_img/snow.png';
+    if (desc.contains('cloud') || desc.contains('구름'))
+      return 'assets/weather_img/cloud.png';
 
-    // 기본값: 맑음
     return 'assets/weather_img/sun.png';
   }
 
@@ -101,41 +84,61 @@ class _WeatherTabState extends State<WeatherTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7F9),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+        centerTitle: false,
+        title: const Padding(
+          padding: EdgeInsets.only(left: 4),
+          child: Text(
+            '전국 구장 날씨',
+            style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async => _refresh(),
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
             children: [
               _TopWeatherCard(
-                teamColor: widget.teamColor,
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => WeatherMapScreen(themeColor: widget.teamColor),
+                      builder: (_) =>
+                          WeatherMapScreen(themeColor: widget.teamColor),
                     ),
                   );
                 },
                 lastUpdatedText: _timeText(_lastUpdated),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 24),
               Row(
                 children: [
-                  const Expanded(
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4),
                     child: Text(
                       '오늘의 구장별 날씨',
-                      style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
+                  const Spacer(),
                   Text(
-                    _lastUpdated == null ? '' : '업데이트 ${_timeText(_lastUpdated)}',
+                    _lastUpdated == null
+                        ? ''
+                        : '업데이트 ${_timeText(_lastUpdated)}',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               FutureBuilder<List<StadiumWeather>>(
                 future: _future,
                 builder: (context, snapshot) {
@@ -145,45 +148,44 @@ class _WeatherTabState extends State<WeatherTab> {
 
                   if (snapshot.hasError) {
                     return _ErrorBox(
-                      message: '날씨를 불러오지 못했어요.\n${snapshot.error}',
+                      message: '날씨를 불러오지 못했어요.',
                       onRetry: _refresh,
-                      teamColor: widget.teamColor,
                     );
                   }
 
                   final list = snapshot.data ?? [];
-                  if (list.isEmpty) {
-                    return _ErrorBox(
-                      message: '데이터가 비어있어요. 다시 시도해 주세요.',
-                      onRetry: _refresh,
-                      teamColor: widget.teamColor,
-                    );
-                  }
-
                   list.sort((a, b) => a.stadiumId.compareTo(b.stadiumId));
 
                   return Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade400, width: 1.4),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.grey.shade100),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
                     child: Column(
                       children: [
                         for (int i = 0; i < list.length; i++) ...[
                           _WeatherRow(
-                            teamColor: widget.teamColor,
                             stadium: _findStadium(list[i].stadiumId),
                             weather: list[i],
-                            // ✅ 네트워크 대신 asset 아이콘 경로 전달
                             assetIconPath: _assetIconPath(list[i]),
-                            onTap: () {
-                              final s = _findStadium(list[i].stadiumId);
-                              _goDetail(s);
-                            },
+                            onTap: () =>
+                                _goDetail(_findStadium(list[i].stadiumId)),
                           ),
                           if (i != list.length - 1)
-                            Divider(height: 1, color: Colors.grey.shade200),
+                            Divider(
+                              height: 1,
+                              color: Colors.grey.shade100,
+                              indent: 16,
+                              endIndent: 16,
+                            ),
                         ],
                       ],
                     ),
@@ -199,30 +201,32 @@ class _WeatherTabState extends State<WeatherTab> {
 }
 
 class _TopWeatherCard extends StatelessWidget {
-  final Color teamColor;
   final VoidCallback onTap;
   final String lastUpdatedText;
 
-  const _TopWeatherCard({
-    required this.teamColor,
-    required this.onTap,
-    required this.lastUpdatedText,
-  });
+  const _TopWeatherCard({required this.onTap, required this.lastUpdatedText});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(20),
       onTap: onTap,
       child: Container(
-        clipBehavior: Clip.antiAlias, // ✅ 배경 이미지가 둥근 모서리 밖으로 안 나가게
+        height: 100,
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: teamColor.withOpacity(0.25)),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Stack(
           children: [
-            // ✅ 배경 이미지
+            // ✅ 배경 이미지 (필터 제거하여 선명하게 표시)
             Positioned.fill(
               child: Image.asset(
                 'assets/weather_img/weather_background.png',
@@ -230,45 +234,53 @@ class _TopWeatherCard extends StatelessWidget {
               ),
             ),
 
-            // ✅ 가독성용 오버레이(필수는 아닌데 훨씬 예쁨)
-            Positioned.fill(
-              child: Container(
-                color: Colors.white.withOpacity(0.55), // 숫자 올리면 더 뿌옇게
-              ),
-            ),
-
-            // ✅ 기존 내용
+            // ✅ 내용물 구성
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  const Expanded(
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      shape: BoxShape.circle,
+                    ),
+                    // ✅ 아이콘에서 팀 색상 제거 (Neutral Black)
+                    child: const Icon(
+                      Icons.map_outlined,
+                      color: Colors.black87,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '실시간 날씨 보러가기',
-                          style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                        const Text(
+                          '실시간 날씨 지도',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF365F7C),
+                          ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
-                          '각 구장별 현재 날씨를 확인해요',
-                          style: TextStyle(fontSize: 12.5, color: Colors.black54),
+                          '전국 구장 날씨 한눈에 확인하기',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF365F7C).withOpacity(0.95),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Icon(Icons.arrow_forward),
-                      SizedBox(height: 6),
-                      // lastUpdatedText 는 const 제거해야 사용 가능
-                      Text(
-                        lastUpdatedText.isEmpty ? '' : lastUpdatedText,
-                        style: TextStyle(fontSize: 11, color: Colors.grey),
-                      ),
-                    ],
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.white,
                   ),
                 ],
               ),
@@ -281,14 +293,12 @@ class _TopWeatherCard extends StatelessWidget {
 }
 
 class _WeatherRow extends StatelessWidget {
-  final Color teamColor;
   final StadiumLoc stadium;
   final StadiumWeather weather;
   final String assetIconPath;
   final VoidCallback onTap;
 
   const _WeatherRow({
-    required this.teamColor,
     required this.stadium,
     required this.weather,
     required this.assetIconPath,
@@ -297,73 +307,73 @@ class _WeatherRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tempText = '${weather.temp.toStringAsFixed(0)}°';
-
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             Container(
-              width: 34,
-              height: 34,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
-                color: teamColor.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(Icons.place, color: teamColor, size: 18),
+              // ✅ 위치 아이콘에서 팀 색상 제거 (Neutral Dark Gray)
+              child: const Icon(
+                Icons.location_on,
+                color: Colors.black38,
+                size: 20,
+              ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     stadium.nameKo,
-                    style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 2),
                   Text(
                     stadium.address,
-                    style: const TextStyle(fontSize: 11.5, color: Colors.grey),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                Image.asset(assetIconPath, width: 32, height: 32),
+                const SizedBox(width: 12),
                 SizedBox(
-                  width: 36,
-                  height: 36,
-                  child: Center(
-                    child: Image.asset(
-                      assetIconPath,
-                      width: 30,
-                      height: 30,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) =>
-                          Icon(Icons.cloud, color: teamColor, size: 26),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 56, // 글자 흔들리면 60까지 올려도 됨
+                  width: 50,
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        tempText,
-                        style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w900),
+                        '${weather.temp.toStringAsFixed(0)}°',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                       Text(
                         weather.description,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade600,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 11.5, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -381,23 +391,13 @@ class _LoadingList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      height: 100,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade400, width: 1.4),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade100),
       ),
-      child: const Row(
-        children: [
-          SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-          SizedBox(width: 10),
-          Text('날씨 불러오는 중...'),
-        ],
-      ),
+      child: const Center(child: CircularProgressIndicator(color: Colors.grey)),
     );
   }
 }
@@ -405,40 +405,25 @@ class _LoadingList extends StatelessWidget {
 class _ErrorBox extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
-  final Color teamColor;
 
-  const _ErrorBox({
-    required this.message,
-    required this.onRetry,
-    required this.teamColor,
-  });
+  const _ErrorBox({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade400, width: 1.4),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade100),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(message, style: TextStyle(color: Colors.grey.shade800)),
+          Text(message, style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 42,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: teamColor,
-                foregroundColor: Colors.white,
-                shape: const StadiumBorder(),
-                elevation: 0,
-              ),
-              onPressed: onRetry,
-              child: const Text('다시 시도'),
-            ),
+          TextButton(
+            onPressed: onRetry,
+            child: const Text('다시 시도', style: TextStyle(color: Colors.black87)),
           ),
         ],
       ),
