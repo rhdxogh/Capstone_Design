@@ -263,7 +263,7 @@ class _TopWeatherCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF365F7C),
+                            color: Color(0xCC000000),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -271,7 +271,7 @@ class _TopWeatherCard extends StatelessWidget {
                           '전국 구장 날씨 한눈에 확인하기',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Color(0xFF365F7C).withOpacity(0.95),
+                            color: Color(0xAA000000).withOpacity(0.95),
                           ),
                         ),
                       ],
