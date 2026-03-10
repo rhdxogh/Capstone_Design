@@ -3,12 +3,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../app_colors.dart';
+import '../services/auth_service.dart';
 import 'signup_screen.dart';
 import 'team_select_screen.dart';
 import 'main_shell.dart';
+import 'phone_login_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -30,12 +33,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _toast(String m) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(m)),
+    );
   }
 
   // ✅ uid로 Firestore에서 teamId 조회
   Future<String?> _getTeamId(String uid) async {
-    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
     if (!doc.exists) return null;
 
     final data = doc.data();
@@ -55,6 +64,65 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // ✅ 로그인 성공 후 공통 처리
+  // - teamId 있으면 MainShell
+  // - 없으면 TeamSelectScreen -> 저장 후 MainShell
+  Future<void> _goAfterLogin(User user) async {
+    final uid = user.uid;
+
+    // 1) 기존 teamId 있는지 확인
+    final teamId = await _getTeamId(uid);
+    if (!mounted) return;
+
+    if (teamId != null) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MainShell(
+            uid: uid,
+            teamId: teamId,
+          ),
+        ),
+            (_) => false,
+      );
+      return;
+    }
+
+    // 2) teamId 없으면 팀 선택 화면으로 이동
+    final selectedTeamId = await Navigator.push<String?>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TeamSelectScreen(
+          uid: uid,
+          returnSelectedTeamId: true,
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (selectedTeamId == null || selectedTeamId.isEmpty) {
+      _toast('팀 선택이 취소되었어요.');
+      return;
+    }
+
+    // 3) 선택한 teamId 저장 후 메인 이동
+    await _saveTeamId(uid, selectedTeamId);
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MainShell(
+          uid: uid,
+          teamId: selectedTeamId,
+        ),
+      ),
+          (_) => false,
+    );
+  }
+
+  // ✅ 이메일 로그인
   Future<void> _login() async {
     final email = emailCtrl.text.trim();
     final password = pwCtrl.text.trim();
@@ -67,7 +135,6 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => loading = true);
 
     try {
-      // 1) 로그인
       final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -79,59 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      final uid = user.uid;
-
-      // 2) 기존 teamId 있는지 확인
-      final teamId = await _getTeamId(uid);
-      if (!mounted) return;
-
-      if (teamId != null) {
-        // ✅ teamId 있으면 바로 메인
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) => MainShell(
-              uid: uid,
-              teamId: teamId,
-            ),
-          ),
-              (_) => false,
-        );
-        return;
-      }
-
-      // 3) teamId 없으면 팀 선택 화면으로 이동해서 선택값을 pop으로 받기
-      final selectedTeamId = await Navigator.push<String?>(
-        context,
-        MaterialPageRoute(
-          builder: (_) => TeamSelectScreen(
-            uid: uid,
-            returnSelectedTeamId: true, // 너가 만든 옵션
-          ),
-        ),
-      );
-
-      if (!mounted) return;
-
-      if (selectedTeamId == null || selectedTeamId.isEmpty) {
-        _toast('팀 선택이 취소되었어요.');
-        return;
-      }
-
-      // 4) 선택한 teamId 저장 후 메인 이동
-      await _saveTeamId(uid, selectedTeamId);
-      if (!mounted) return;
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => MainShell(
-            uid: uid,
-            teamId: selectedTeamId,
-          ),
-        ),
-            (_) => false,
-      );
+      await _goAfterLogin(user);
     } on FirebaseAuthException catch (e) {
       String msg = '로그인에 실패했어요.';
       switch (e.code) {
@@ -162,6 +177,46 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // ✅ 구글 로그인
+  Future<void> _googleLogin() async {
+    setState(() => loading = true);
+
+    try {
+      final cred = await AuthService.signInWithGoogle();
+      final user = cred.user;
+
+      if (user == null) {
+        _toast('구글 로그인에 실패했어요.');
+        return;
+      }
+
+      await _goAfterLogin(user);
+    } catch (e) {
+      _toast('구글 로그인 실패: $e');
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  // ✅ 전화번호 로그인 화면 진입 후 성공 처리
+  Future<void> _phoneLogin() async {
+    final ok = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const PhoneLoginScreen(),
+      ),
+    );
+
+    if (ok == true) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await _goAfterLogin(user);
+      } else {
+        _toast('전화번호 로그인 후 사용자 정보를 찾지 못했어요.');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,7 +235,14 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 6),
               Image.asset('assets/logo_black_font.png', width: 140),
               const SizedBox(height: 24),
-              const Text('로그인', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+
+              const Text(
+                '로그인',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(height: 18),
 
               _field(label: '이메일*', controller: emailCtrl),
@@ -192,7 +254,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscure: pwHidden,
                 suffix: IconButton(
                   onPressed: () => setState(() => pwHidden = !pwHidden),
-                  icon: Icon(pwHidden ? Icons.visibility_off : Icons.visibility),
+                  icon: Icon(
+                    pwHidden ? Icons.visibility_off : Icons.visibility,
+                  ),
                 ),
               ),
 
@@ -209,13 +273,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Spacer(),
                   TextButton(
                     onPressed: () => _toast('비밀번호 재설정은 나중에 연결할 수 있어요.'),
-                    child: Text('Forgot the password ?', style: TextStyle(color: AppColors.brandRed)),
+                    child: Text(
+                      'Forgot the password ?',
+                      style: TextStyle(color: AppColors.brandRed),
+                    ),
                   ),
                 ],
               ),
 
               const SizedBox(height: 6),
 
+              // ✅ 이메일 로그인 버튼
               SizedBox(
                 width: double.infinity,
                 height: 46,
@@ -229,9 +297,55 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   )
                       : const Text('Log In'),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ✅ Google 로그인 버튼
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    elevation: 1,
+                    side: BorderSide(color: Colors.grey.shade300),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.login),
+                  label: const Text('Google로 로그인'),
+                  onPressed: loading ? null : _googleLogin,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // ✅ 전화번호 로그인 버튼
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.phone),
+                  label: const Text('전화번호로 로그인'),
+                  onPressed: loading ? null : _phoneLogin,
                 ),
               ),
 
@@ -244,15 +358,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   GestureDetector(
                     onTap: () => Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const SignUpScreen(),
+                      ),
                     ),
                     child: Text(
                       'Sign Up',
-                      style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        color: AppColors.brandRed,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
               ),
+
               const SizedBox(height: 16),
             ],
           ),
@@ -270,22 +390,28 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           obscureText: obscure,
           decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
             suffixIcon: suffix,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
           ),
         ),
       ],
     );
   }
 }
-
-
 
 

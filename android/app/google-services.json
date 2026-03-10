@@ -12,7 +12,20 @@
           "package_name": "com.example.jikgwan_mate"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "979501622024-khps19dpp7l5aqqpnmank9qegnr83k79.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.jikgwan_mate",
+            "certificate_hash": "f0a1bd948a6f04070762c29c721234c6d865c3f8"
+          }
+        },
+        {
+          "client_id": "979501622024-6lkciha8tu392pt8cttiaao3vel93or8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC-cb5GtSl2YW51tDIv3SXieIki2mGjPOg"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "979501622024-6lkciha8tu392pt8cttiaao3vel93or8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "979501622024-apocie1q5jnlr30jqtmij3ga2949ln25.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.jikgwanMate"
+              }
+            }
+          ]
         }
       }
     }
