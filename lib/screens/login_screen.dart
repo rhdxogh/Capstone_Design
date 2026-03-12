@@ -8,6 +8,7 @@ import 'signup_screen.dart';
 import 'team_select_screen.dart';
 import 'main_shell.dart';
 import 'phone_login_screen.dart';
+import 'nickname_setup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailCtrl = TextEditingController();
   final pwCtrl = TextEditingController();
 
-  bool remember = true; // FirebaseAuth는 기본적으로 로그인 유지됨
+  bool remember = true;
   bool pwHidden = true;
   bool loading = false;
 
@@ -38,13 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ✅ uid로 Firestore에서 teamId 조회
-  Future<String?> _getTeamId(String uid) async {
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
+  Future<DocumentSnapshot<Map<String, dynamic>>> _getUserDoc(String uid) async {
+    return FirebaseFirestore.instance.collection('users').doc(uid).get();
+  }
 
+  Future<String?> _getTeamId(String uid) async {
+    final doc = await _getUserDoc(uid);
     if (!doc.exists) return null;
 
     final data = doc.data();
@@ -53,7 +53,16 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  // ✅ uid 문서에 teamId 저장(merge)
+  Future<String?> _getNickname(String uid) async {
+    final doc = await _getUserDoc(uid);
+    if (!doc.exists) return null;
+
+    final data = doc.data();
+    final nickname = data?['nickname'];
+    if (nickname is String && nickname.isNotEmpty) return nickname;
+    return null;
+  }
+
   Future<void> _saveTeamId(String uid, String teamId) async {
     await FirebaseFirestore.instance.collection('users').doc(uid).set(
       {
@@ -64,13 +73,51 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _saveDefaultProfile(String uid, User user) async {
+    await FirebaseFirestore.instance.collection('users').doc(uid).set(
+      {
+        'email': user.email,
+        'updatedAt': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
+  }
+
   // ✅ 로그인 성공 후 공통 처리
-  // - teamId 있으면 MainShell
-  // - 없으면 TeamSelectScreen -> 저장 후 MainShell
+  // 1) users 문서 기본 생성/업데이트
+  // 2) nickname 없으면 닉네임 설정
+  // 3) teamId 없으면 팀 선택
+  // 4) 둘 다 있으면 MainShell
   Future<void> _goAfterLogin(User user) async {
     final uid = user.uid;
 
-    // 1) 기존 teamId 있는지 확인
+    // users 문서 기본 생성
+    await _saveDefaultProfile(uid, user);
+
+    // 1) nickname 확인
+    String? nickname = await _getNickname(uid);
+    if (!mounted) return;
+
+    if (nickname == null || nickname.isEmpty) {
+      final savedNickname = await Navigator.push<String?>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => NicknameSetupScreen(uid: uid),
+        ),
+      );
+
+      if (!mounted) return;
+
+      if (savedNickname == null || savedNickname.isEmpty) {
+        _toast('닉네임 설정이 취소되었어요.');
+        return;
+      }
+
+      nickname = savedNickname;
+    }
+
+    // 2) teamId 확인
     final teamId = await _getTeamId(uid);
     if (!mounted) return;
 
@@ -88,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // 2) teamId 없으면 팀 선택 화면으로 이동
+    // 3) teamId 없으면 팀 선택 화면
     final selectedTeamId = await Navigator.push<String?>(
       context,
       MaterialPageRoute(
@@ -106,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // 3) 선택한 teamId 저장 후 메인 이동
+    // 4) 저장 후 메인 이동
     await _saveTeamId(uid, selectedTeamId);
     if (!mounted) return;
 
@@ -122,7 +169,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ✅ 이메일 로그인
   Future<void> _login() async {
     final email = emailCtrl.text.trim();
     final password = pwCtrl.text.trim();
@@ -177,7 +223,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ✅ 구글 로그인
   Future<void> _googleLogin() async {
     setState(() => loading = true);
 
@@ -198,7 +243,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ✅ 전화번호 로그인 화면 진입 후 성공 처리
   Future<void> _phoneLogin() async {
     final ok = await Navigator.push<bool>(
       context,
@@ -235,7 +279,6 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 6),
               Image.asset('assets/logo_black_font.png', width: 140),
               const SizedBox(height: 24),
-
               const Text(
                 '로그인',
                 style: TextStyle(
@@ -283,7 +326,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 6),
 
-              // ✅ 이메일 로그인 버튼
               SizedBox(
                 width: double.infinity,
                 height: 46,
@@ -308,7 +350,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 12),
 
-              // ✅ Google 로그인 버튼
               SizedBox(
                 width: double.infinity,
                 height: 48,
@@ -330,7 +371,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 10),
 
-              // ✅ 전화번호 로그인 버튼
               SizedBox(
                 width: double.infinity,
                 height: 48,
