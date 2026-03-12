@@ -77,7 +77,10 @@ class _MyReviewsScreenState extends State<MyReviewsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text('내가 쓴 후기 관리'),
+        title: const Text(
+          '내가 쓴 후기 관리',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: widget.themeColor,
         foregroundColor: Colors.white,
         elevation: 0,

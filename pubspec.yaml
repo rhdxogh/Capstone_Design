@@ -31,6 +31,19 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Pretendard-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/Pretendard-Bold.otf
+          weight: 700
+          
   assets:
     - assets/
     - assets/logo_red.png
@@ -42,6 +55,7 @@ flutter:
     - assets/etc/
     - assets/data/
     - assets/weather_img/
+    - assets/mascot_img/
     # Overlays
     - assets/overlays/
     - assets/overlays/MUNHAK/

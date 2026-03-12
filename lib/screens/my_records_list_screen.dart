@@ -77,6 +77,7 @@ class _MyRecordsListScreenState extends State<MyRecordsListScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => AddScheduleBottomSheet(
+        currentTeamId: data['myTeamId'] ?? '',
         initialDate: date,
         editingEvent: eventData, // 기존 데이터 주입
         onEventAdded: (newData, newDate) async {
@@ -98,7 +99,10 @@ class _MyRecordsListScreenState extends State<MyRecordsListScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text('나의 직관 기록 모아보기'),
+        title: const Text(
+          '나의 직관 기록 모아보기',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: widget.themeColor,
         foregroundColor: Colors.white,
         elevation: 0,
