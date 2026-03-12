@@ -10,9 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ✅ Firebase 초기화
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // ✅ 한국어 로케일(달력 등)
   await initializeDateFormatting('ko_KR', null);
@@ -28,9 +26,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: '직관메이트',
-      theme: ThemeData(primarySwatch: Colors.red),
+      theme: ThemeData(
+        fontFamily: 'Pretendard',
+        useMaterial3: true,
+        primarySwatch: Colors.red,
+      ),
       home: const SplashScreen(),
     );
   }
 }
-

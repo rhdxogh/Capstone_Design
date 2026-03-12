@@ -4,6 +4,7 @@ import 'tabs/home_tab.dart';
 import 'tabs/stadium_tab.dart';
 import 'tabs/weather_tab.dart';
 import 'tabs/my_tab.dart';
+import 'tabs/community_tab.dart';
 import 'calendar_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -58,6 +59,7 @@ class _MainShellState extends State<MainShell> {
       HomeTab(uid: widget.uid, team: team),
       StadiumTab(teamColor: teamColor),
       WeatherTab(teamColor: teamColor),
+      CommunityTab(),
       MyTab(
         uid: widget.uid,
         teamColor: teamColor,
@@ -123,6 +125,10 @@ class _MainShellState extends State<MainShell> {
             BottomNavigationBarItem(
               icon: Icon(Icons.wb_sunny_outlined),
               label: '날씨',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble_outline),
+              label: '커뮤니티',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),

@@ -3,9 +3,10 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import '../team_theme.dart';
 
 class CalendarScreen extends StatefulWidget {
-  // ✅ 메인에서 현재 팀 ID를 받아옵니다.
   final String currentTeamId;
 
   const CalendarScreen({super.key, required this.currentTeamId});
@@ -21,16 +22,74 @@ class _CalendarScreenState extends State<CalendarScreen> {
   bool _isLoading = true;
 
   final Map<DateTime, List<Map<String, dynamic>>> _events = {};
+  List<Map<String, String>> _todayScheduledGames = [];
 
   @override
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
     _loadMyRecordsFromFirestore();
+    _loadGamesForDate(_selectedDay!);
   }
 
   List<Map<String, dynamic>> _getEventsForDay(DateTime day) {
     return _events[DateTime.utc(day.year, day.month, day.day)] ?? [];
+  }
+
+  Future<void> _loadGamesForDate(DateTime date) async {
+    try {
+      final rawData = await rootBundle.loadString('assets/data/games.csv');
+      final lines = rawData.replaceAll('\r', '').split('\n');
+      final String targetDate = "${date.year}.${date.month}.${date.day}";
+
+      List<Map<String, String>> matches = [];
+      for (int i = 1; i < lines.length; i++) {
+        final cells = lines[i].split(',');
+        if (cells.length < 5) continue;
+
+        if (cells[0].trim() == targetDate) {
+          matches.add({
+            'stadium': cells[1].trim(),
+            'away': cells[3].trim(),
+            'home': cells[4].trim(),
+            'time': (cells.length > 5) ? cells[5].trim() : '',
+          });
+        }
+      }
+
+      // ✅ 내 응원팀 경기 리스트 맨 위로 끌어올리기 (정렬)
+      String myTeamName = teamThemes[widget.currentTeamId]?.nameKo ?? '';
+      if (myTeamName.isNotEmpty) {
+        matches.sort((a, b) {
+          bool aIsMyTeam =
+              a['away']!.contains(myTeamName) ||
+              a['home']!.contains(myTeamName) ||
+              myTeamName.contains(a['away']!) ||
+              myTeamName.contains(a['home']!);
+          bool bIsMyTeam =
+              b['away']!.contains(myTeamName) ||
+              b['home']!.contains(myTeamName) ||
+              myTeamName.contains(b['away']!) ||
+              myTeamName.contains(b['home']!);
+
+          if (aIsMyTeam && !bIsMyTeam) return -1; // a가 내 팀이면 앞으로
+          if (!aIsMyTeam && bIsMyTeam) return 1; // b가 내 팀이면 b를 앞으로
+          return 0; // 둘 다 내 팀이거나 둘 다 아니면 그대로
+        });
+      }
+
+      if (mounted) {
+        setState(() {
+          _todayScheduledGames = matches;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _todayScheduledGames = [];
+        });
+      }
+    }
   }
 
   Future<void> _loadMyRecordsFromFirestore() async {
@@ -48,18 +107,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-
-        // ✅ [핵심 수정] 캘린더 필터링 로직
         String? recordTeamId = data['myTeamId'];
 
-        // 1. 기록에 팀 정보가 있는데, 현재 팀과 다르다면? -> 과감히 패스 (숨김)
         if (recordTeamId != null && recordTeamId != widget.currentTeamId) {
           continue;
         }
-        // 2. 기록에 팀 정보가 없다면? (옛날 데이터)
-        // -> 일단 보여주거나, 혹은 이것도 숨길 수 있습니다.
-        // -> 여기서는 "팀 세탁"이 목적이므로, 확실하지 않은 옛날 데이터는 보여주되
-        //    나중에 수정하면 현재 팀으로 귀속되게 둡니다.
 
         final DateTime date = (data['date'] as Timestamp).toDate();
         final dateKey = DateTime.utc(date.year, date.month, date.day);
@@ -71,7 +123,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           'stadium': data['stadium'],
           'result': data['result'],
           'date': date,
-          'myTeamId': recordTeamId, // 데이터 보존
+          'myTeamId': recordTeamId,
         };
 
         if (newEvents[dateKey] == null) newEvents[dateKey] = [];
@@ -133,14 +185,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
-  void _showAddScheduleSheet({Map<String, dynamic>? event}) {
+  void _showAddScheduleSheet({
+    Map<String, dynamic>? event,
+    Map<String, String>? prefilledGame,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AddScheduleBottomSheet(
+        currentTeamId: widget.currentTeamId,
         initialDate: _selectedDay!,
         editingEvent: event,
+        prefilledGame: prefilledGame,
         onEventAdded: (newData, newDate) async {
           if (uid == null) return;
 
@@ -150,7 +207,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 .doc(uid)
                 .collection('jikgwan_records');
 
-            // ✅ 저장/수정 시 현재 팀 ID(widget.currentTeamId)를 박제합니다.
             final Map<String, dynamic> dataToSave = {
               ...newData,
               'date': Timestamp.fromDate(newDate),
@@ -208,6 +264,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       _selectedDay = selectedDay;
                       _focusedDay = focusedDay;
                     });
+                    _loadGamesForDate(selectedDay);
                   },
                   headerStyle: const HeaderStyle(
                     formatButtonVisible: false,
@@ -233,7 +290,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ),
                 ),
                 const Divider(thickness: 1, height: 1),
-                Expanded(child: _buildEventList()),
+                Expanded(child: _buildBottomSection()),
               ],
             ),
       floatingActionButton: FloatingActionButton(
@@ -244,117 +301,215 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _buildEventList() {
+  Widget _buildBottomSection() {
     final events = _getEventsForDay(_selectedDay!);
-    if (events.isEmpty) {
-      return const Center(child: Text('기록된 직관 일정이 없습니다.'));
-    }
 
-    return ListView.builder(
-      itemCount: events.length,
-      itemBuilder: (context, index) {
-        final event = events[index];
-        final bool hasResult = event['result'] != null;
-
-        Color resultColor = Colors.grey;
-        if (event['result'] == '승')
-          resultColor = const Color(0xFFC62828);
-        else if (event['result'] == '무')
-          resultColor = Colors.green;
-        else if (event['result'] == '패')
-          resultColor = Colors.blue;
-
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[200]!),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5),
-            ],
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      children: [
+        if (events.isNotEmpty) ...[
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 10, 20, 8),
+            child: Text(
+              '나의 직관 기록',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: Colors.black87,
+              ),
+            ),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event['title'],
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "상대: ${event['opponent']} | 장소: ${event['stadium']}",
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                    ),
-                  ],
+          ...events.map((e) => _buildMyRecordCard(e)).toList(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Divider(height: 30, color: Color(0xFFEEEEEE)),
+          ),
+        ],
+
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 10, 20, 8),
+          child: Text(
+            '오늘의 KBO 경기 일정',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        if (_todayScheduledGames.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(30),
+            child: Center(
+              child: Text(
+                '해당 날짜에 예정된 경기가 없습니다.',
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ),
+          )
+        else
+          ..._todayScheduledGames
+              .map((game) => _buildKboGameCard(game))
+              .toList(),
+
+        const SizedBox(height: 80),
+      ],
+    );
+  }
+
+  Widget _buildMyRecordCard(Map<String, dynamic> event) {
+    final bool hasResult = event['result'] != null;
+    Color resultColor = Colors.grey;
+    if (event['result'] == '승')
+      resultColor = const Color(0xFFC62828);
+    else if (event['result'] == '무')
+      resultColor = Colors.green;
+    else if (event['result'] == '패')
+      resultColor = Colors.blue;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  event['title'],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "상대: ${event['opponent']} | 장소: ${event['stadium']}",
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+          if (hasResult)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: resultColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                event['result'],
+                style: TextStyle(
+                  color: resultColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
                 ),
               ),
-              if (hasResult)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: resultColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    event['result'],
-                    style: TextStyle(
-                      color: resultColor,
+            )
+          else
+            const Text(
+              "예정",
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          const SizedBox(width: 8),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.grey),
+            onSelected: (value) {
+              if (value == 'edit')
+                _showAddScheduleSheet(event: event);
+              else if (value == 'delete')
+                _deleteEvent(event['id']);
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: 'edit', child: Text('수정')),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Text('삭제', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKboGameCard(Map<String, String> game) {
+    // ✅ 내 팀 경기인지 확인해서 디자인을 살짝 다르게 줄 수도 있습니다. (현재는 동일)
+    return InkWell(
+      onTap: () => _showAddScheduleSheet(prefilledGame: game),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8F9FA),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.sports_baseball,
+                color: Colors.black54,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${game['away']} vs ${game['home']}',
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: 15,
                     ),
                   ),
-                )
-              else
-                const Text(
-                  "예정",
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-              const SizedBox(width: 8),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: Colors.grey),
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    _showAddScheduleSheet(event: event);
-                  } else if (value == 'delete') {
-                    _deleteEvent(event['id']);
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'edit', child: Text('수정')),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Text('삭제', style: TextStyle(color: Colors.red)),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${game['stadium']} | ${game['time']}',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                   ),
                 ],
               ),
-            ],
-          ),
-        );
-      },
+            ),
+            const Icon(Icons.add_circle, color: Color(0xFFC62828), size: 28),
+          ],
+        ),
+      ),
     );
   }
 }
 
 class AddScheduleBottomSheet extends StatefulWidget {
+  final String currentTeamId;
   final DateTime initialDate;
   final Map<String, dynamic>? editingEvent;
+  final Map<String, String>? prefilledGame;
   final Function(Map<String, dynamic>, DateTime) onEventAdded;
 
   const AddScheduleBottomSheet({
     super.key,
+    required this.currentTeamId,
     required this.initialDate,
     this.editingEvent,
+    this.prefilledGame,
     required this.onEventAdded,
   });
 
@@ -398,12 +553,65 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
   void initState() {
     super.initState();
     _selectedDate = widget.initialDate;
+
     if (widget.editingEvent != null) {
       _titleController.text = widget.editingEvent!['title'];
       _selectedOpponent = widget.editingEvent!['opponent'];
       _selectedStadium = widget.editingEvent!['stadium'];
       _selectedResult = widget.editingEvent!['result'];
       _selectedDate = widget.editingEvent!['date'];
+    } else if (widget.prefilledGame != null) {
+      String myTeamName = teamThemes[widget.currentTeamId]?.nameKo ?? '';
+      String away = widget.prefilledGame!['away']!;
+      String home = widget.prefilledGame!['home']!;
+      String stadium = widget.prefilledGame!['stadium']!;
+      String opponentRaw = '';
+
+      if (away.contains(myTeamName) || myTeamName.contains(away)) {
+        opponentRaw = home;
+      } else if (home.contains(myTeamName) || myTeamName.contains(home)) {
+        opponentRaw = away;
+      } else {
+        opponentRaw = away;
+      }
+
+      for (String t in _teams) {
+        if (opponentRaw.contains(t) || t.contains(opponentRaw)) {
+          _selectedOpponent = t;
+          break;
+        }
+      }
+
+      String upperStadium = stadium.toUpperCase();
+      if (upperStadium.contains('JAMSIL') || upperStadium.contains('잠실')) {
+        _selectedStadium = '잠실';
+      } else if (upperStadium.contains('GOCHEOK') ||
+          upperStadium.contains('고척')) {
+        _selectedStadium = '고척';
+      } else if (upperStadium.contains('MUNHAK') ||
+          upperStadium.contains('INCHEON') ||
+          upperStadium.contains('문학')) {
+        _selectedStadium = '문학';
+      } else if (upperStadium.contains('SUWON') ||
+          upperStadium.contains('수원')) {
+        _selectedStadium = '수원';
+      } else if (upperStadium.contains('DAEJEON') ||
+          upperStadium.contains('대전')) {
+        _selectedStadium = '대전';
+      } else if (upperStadium.contains('GWANGJU') ||
+          upperStadium.contains('광주')) {
+        _selectedStadium = '광주';
+      } else if (upperStadium.contains('DAEGU') ||
+          upperStadium.contains('대구')) {
+        _selectedStadium = '대구';
+      } else if (upperStadium.contains('CHANGWON') ||
+          upperStadium.contains('창원')) {
+        _selectedStadium = '창원';
+      } else if (upperStadium.contains('SAJIK') ||
+          upperStadium.contains('사직') ||
+          upperStadium.contains('BUSAN')) {
+        _selectedStadium = '사직';
+      }
     }
   }
 
@@ -481,7 +689,9 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                   firstDate: DateTime(2020),
                   lastDate: DateTime(2030),
                 );
-                if (picked != null) setState(() => _selectedDate = picked);
+                if (picked != null) {
+                  setState(() => _selectedDate = picked);
+                }
               },
               child: InputDecorator(
                 decoration: const InputDecoration(
