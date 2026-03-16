@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'dart:convert';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import '../team_theme.dart'; // 🌟 구단 마스코트를 불러오기 위해 추가
 
 class ReviewWidget extends StatefulWidget {
   final String category;
@@ -71,13 +71,20 @@ class _ReviewWidgetState extends State<ReviewWidget> {
           .collection('users')
           .doc(user!.uid)
           .get();
-      final nickname = userDoc.data()?['nickname'] ?? '익명';
+      final userData = userDoc.data() ?? {};
+      final nickname = userData['nickname'] ?? '익명';
+
+      // 🌟 리뷰 작성자의 프사 & 팀 정보 가져오기
+      final profileImageBase64 = userData['profileImageBase64'];
+      final teamId = userData['teamId'] ?? '';
 
       await FirebaseFirestore.instance.collection('reviews').add({
         'category': widget.category,
         'targetId': widget.targetId,
         'uid': user!.uid,
         'nickname': nickname,
+        'teamId': teamId, // 🌟 저장!
+        'userProfileBase64': profileImageBase64, // 🌟 저장!
         'rating': _rating,
         'content': _reviewController.text,
         'imageBase64': _base64Image,
@@ -122,7 +129,6 @@ class _ReviewWidgetState extends State<ReviewWidget> {
     }
   }
 
-  // ✨ 리뉴얼된 리뷰 작성 시트 (디자인 반영)
   void _openWriteReviewSheet() {
     _reviewController.clear();
     _rating = 5.0;
@@ -132,7 +138,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white, // ✅ 시트 배경 완전 흰색
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -140,12 +146,11 @@ class _ReviewWidgetState extends State<ReviewWidget> {
         return StatefulBuilder(
           builder: (ctx, setModalState) {
             return Container(
-              height: MediaQuery.of(ctx).size.height * 0.85, // 화면 85% 높이 사용
+              height: MediaQuery.of(ctx).size.height * 0.85,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 상단 바
                   Row(
                     children: [
                       IconButton(
@@ -162,7 +167,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 48), // 밸런스용 빈 공간
+                      const SizedBox(width: 48),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -172,7 +177,6 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // 📸 1. 사진 등록 박스 (점선 스타일)
                           GestureDetector(
                             onTap: () async {
                               await _pickImage();
@@ -192,14 +196,12 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                                     width: double.infinity,
                                     height: 180,
                                     decoration: BoxDecoration(
-                                      color: const Color(
-                                        0xFFF8F9FA,
-                                      ), // 아주 연한 회색 배경
+                                      color: const Color(0xFFF8F9FA),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                         color: Colors.grey.shade300,
                                         style: BorderStyle.none,
-                                      ), // 점선 효과 대신 깔끔한 배경
+                                      ),
                                     ),
                                     child: CustomPaint(
                                       painter: _DashedBorderPainter(
@@ -227,10 +229,8 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                                     ),
                                   ),
                           ),
-
                           const SizedBox(height: 30),
 
-                          // ⭐ 2. 별점
                           const Text(
                             '만족도를 평가해주세요.',
                             style: TextStyle(
@@ -260,10 +260,8 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                               );
                             }),
                           ),
-
                           const SizedBox(height: 30),
 
-                          // 📝 3. 텍스트 입력
                           const Text(
                             '생생한 후기를 남겨주세요.',
                             style: TextStyle(
@@ -309,7 +307,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                     ),
                   ),
 
-                  // ✅ 등록하기 버튼 (하단 고정)
+                  // ✅ 최신 플러터 문법 (WidgetStateProperty) 반영 완료
                   SafeArea(
                     child: SizedBox(
                       width: double.infinity,
@@ -318,34 +316,31 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                         onPressed: _isUploading ? null : _addReview,
                         style:
                             ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey.shade200, // 평소엔 연회색
+                              backgroundColor: Colors.grey.shade200,
                               foregroundColor: Colors.black,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ).copyWith(
-                              backgroundColor:
-                                  MaterialStateProperty.resolveWith((states) {
-                                    if (states.contains(MaterialState.disabled))
-                                      return Colors.grey.shade100;
-                                    // 입력이 있으면 색상 변경 (예: 검정 or 팀컬러)
-                                    if (_reviewController.text.isNotEmpty ||
-                                        _pickedImage != null) {
-                                      return const Color(
-                                        0xFF222222,
-                                      ); // 활성화 시 진한 회색/검정
-                                    }
-                                    return const Color(0xFFF0F0F0); // 비활성 (기본)
-                                  }),
-                              foregroundColor:
-                                  MaterialStateProperty.resolveWith((states) {
-                                    if (_reviewController.text.isNotEmpty ||
-                                        _pickedImage != null) {
-                                      return Colors.white;
-                                    }
-                                    return const Color(0xFF999999);
-                                  }),
+                              backgroundColor: WidgetStateProperty.resolveWith((
+                                states,
+                              ) {
+                                if (states.contains(WidgetState.disabled))
+                                  return Colors.grey.shade100;
+                                if (_reviewController.text.isNotEmpty ||
+                                    _pickedImage != null)
+                                  return const Color(0xFF222222);
+                                return const Color(0xFFF0F0F0);
+                              }),
+                              foregroundColor: WidgetStateProperty.resolveWith((
+                                states,
+                              ) {
+                                if (_reviewController.text.isNotEmpty ||
+                                    _pickedImage != null)
+                                  return Colors.white;
+                                return const Color(0xFF999999);
+                              }),
                             ),
                         child: _isUploading
                             ? const SizedBox(
@@ -375,34 +370,51 @@ class _ReviewWidgetState extends State<ReviewWidget> {
     );
   }
 
-  // ✨ 카드형 리뷰 디자인 (유지)
+  // ✨ 카드형 리뷰 디자인 (여기에 마스코트/프사 로직 포함!)
   Widget _buildReviewCard(Map<String, dynamic> data, String docId) {
     final isMyReview = user?.uid == data['uid'];
     final Timestamp? ts = data['createdAt'];
     final dateStr = ts != null
         ? DateFormat('yy.MM.dd').format(ts.toDate())
         : '방금 전';
-    final String? base64Str = data['imageBase64'];
+    final String? reviewImageBase64 = data['imageBase64'];
+
+    final String? userProfileBase64 = data['userProfileBase64'];
+    final String? teamId = data['teamId'];
+
+    // 🌟 핵심: 팀 ID가 있으면 마스코트 사진 경로 생성, 없으면 빈칸
+    final String mascotPath = (teamId != null && teamId.isNotEmpty)
+        ? 'assets/mascot_img/$teamId.png'
+        : '';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(0),
-      color: Colors.transparent, // 배경 투명 (깔끔하게)
+      color: Colors.transparent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              // 📸 1순위: 프사, 2순위: 마스코트, 3순위: 기본아이콘
               CircleAvatar(
                 radius: 16,
                 backgroundColor: Colors.grey.shade200,
-                child: Icon(
-                  Icons.person,
-                  color: Colors.grey.shade500,
-                  size: 20,
-                ),
+                backgroundImage:
+                    userProfileBase64 != null && userProfileBase64.isNotEmpty
+                    ? MemoryImage(base64Decode(userProfileBase64))
+                          as ImageProvider
+                    : (mascotPath.isNotEmpty
+                          ? AssetImage(mascotPath) as ImageProvider
+                          : null),
+                child:
+                    (userProfileBase64 == null || userProfileBase64.isEmpty) &&
+                        mascotPath.isEmpty
+                    ? Icon(Icons.person, color: Colors.grey.shade500, size: 20)
+                    : null,
               ),
               const SizedBox(width: 10),
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -416,7 +428,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      Icon(Icons.star, size: 12, color: Colors.amber),
+                      const Icon(Icons.star, size: 12, color: Colors.amber),
                       const SizedBox(width: 2),
                       Text(
                         '${data['rating'] ?? 0}',
@@ -456,11 +468,11 @@ class _ReviewWidgetState extends State<ReviewWidget> {
           ),
           const SizedBox(height: 12),
 
-          if (base64Str != null && base64Str.isNotEmpty) ...[
+          if (reviewImageBase64 != null && reviewImageBase64.isNotEmpty) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.memory(
-                base64Decode(base64Str),
+                base64Decode(reviewImageBase64),
                 width: double.infinity,
                 height: 220,
                 fit: BoxFit.cover,
@@ -483,6 +495,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
     );
   }
 
+  // 🌟 (가장 중요) 위에서 없다고 에러 났던 메인 build 위젯!
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -538,6 +551,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
             if (snapshot.hasError) return const Text('잠시 후 다시 시도해주세요.');
             if (snapshot.connectionState == ConnectionState.waiting)
               return const Center(child: CircularProgressIndicator());
+
             final docs = snapshot.data?.docs ?? [];
             if (docs.isEmpty) {
               return Container(
@@ -549,6 +563,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                 ),
               );
             }
+
             ListView view = ListView.builder(
               shrinkWrap: true,
               physics: widget.isEmbedded
@@ -571,7 +586,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
   }
 }
 
-// 🎨 점선 테두리 그리기용 페인터
+// 🎨 점선 테두리 그리기용 페인터 (클래스 바깥으로 완전히 빼둠)
 class _DashedBorderPainter extends CustomPainter {
   final Color color;
   _DashedBorderPainter({required this.color});
@@ -592,7 +607,7 @@ class _DashedBorderPainter extends CustomPainter {
     final path = Path()..addRRect(rrect);
 
     final Path dashPath = Path();
-    for (PathMetric pathMetric in path.computeMetrics()) {
+    for (var pathMetric in path.computeMetrics()) {
       double distance = 0.0;
       while (distance < pathMetric.length) {
         dashPath.addPath(

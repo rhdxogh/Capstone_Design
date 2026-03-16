@@ -6,6 +6,8 @@ import '../../screens/my_reviews_screen.dart';
 import '../../screens/my_records_list_screen.dart';
 import '../../screens/my_posts_screen.dart';
 import '../../screens/settings_screen.dart';
+import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -45,6 +47,8 @@ class MyTab extends StatelessWidget {
         final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
         final String nickname = userData?['nickname'] ?? '닉네임';
 
+        final String? profileImageBase64 = userData?['profileImageBase64'];
+
         return Scaffold(
           backgroundColor: const Color(0xFFF5F5F5),
           body: StreamBuilder<QuerySnapshot>(
@@ -68,7 +72,13 @@ class MyTab extends StatelessWidget {
 
               for (var doc in docs) {
                 final data = doc.data() as Map<String, dynamic>;
+                // 내 팀 아이디가 다르면 패스
                 if (data['myTeamId'] != currentTeamId) continue;
+
+                // 🌟 핵심 추가: 상대팀 이름에 'vs'가 있거나 '타팀경기'인 경우 통계 카드에서 완전 제외!
+                final String opponent = data['opponent'] ?? '';
+                if (opponent.contains('vs') || opponent == '타팀경기') continue;
+
                 rawRecords.add(data);
 
                 final result = data['result'];
@@ -88,7 +98,12 @@ class MyTab extends StatelessWidget {
               // 🌟 헤더를 스크롤 바깥으로 빼서 고정시킵니다.
               return Column(
                 children: [
-                  _buildHeader(nickname, teamName),
+                  _buildHeader(
+                    nickname,
+                    teamName,
+                    profileImageBase64,
+                    currentTeamId,
+                  ),
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
@@ -118,30 +133,67 @@ class MyTab extends StatelessWidget {
     );
   }
 
-  // 🌟 기록 횟수 표시 부분을 제거하고 깔끔하게 만들었습니다.
-  Widget _buildHeader(String nickname, String teamName) {
+  // 🌟 파라미터로 teamId를 받아옵니다 (이건 아까 하신 것과 동일해요)
+  Widget _buildHeader(
+    String nickname,
+    String teamName,
+    String? base64Image,
+    String teamId,
+  ) {
+    // 🌟 핵심 수정: 팀 테마 로고가 아닌, 직접 지정해주신 마스코트 경로 사용!
+    final String mascotPath = teamId.isNotEmpty
+        ? 'assets/mascot_img/$teamId.png'
+        : '';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 60, 24, 30),
       decoration: BoxDecoration(color: teamColor),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            '$nickname 님,',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-            ),
+          // 📸 프로필 이미지 영역 (커스텀 프사 or 구단 마스코트)
+          CircleAvatar(
+            radius: 34,
+            backgroundColor: Colors.white.withValues(alpha: 0.2),
+            // 1순위: 사용자가 설정한 프사 (Base64)
+            // 2순위: 마스코트 이미지 (mascotPath)
+            backgroundImage: base64Image != null && base64Image.isNotEmpty
+                ? MemoryImage(base64Decode(base64Image)) as ImageProvider
+                : (mascotPath.isNotEmpty
+                      ? AssetImage(mascotPath) as ImageProvider
+                      : null),
+
+            // 둘 다 에러나거나 없을 때 최후의 보루로 띄워줄 사람 아이콘
+            child:
+                (base64Image == null || base64Image.isEmpty) &&
+                    mascotPath.isEmpty
+                ? const Icon(Icons.person, size: 40, color: Colors.white)
+                : null,
           ),
-          const SizedBox(height: 10),
-          Text(
-            '응원팀 : $teamName',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+          const SizedBox(width: 16),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$nickname 님,',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '응원팀 : $teamName',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -205,7 +257,7 @@ class MyTab extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         const Text(
-                          '직관 승률은?',
+                          '나의 직관 승률은?',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -291,7 +343,7 @@ class MyTab extends StatelessWidget {
                 if (!isEmpty) ...[
                   const SizedBox(height: 20),
                   Text(
-                    '👆 카드를 눌러 상세 분석 확인하기',
+                    '👆 카드를 눌러 상세 직관 승률 확인하기',
                     style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                   ),
                 ],
@@ -336,7 +388,7 @@ class MyTab extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _buildMenuTile('내가 쓴 후기 관리', Icons.rate_review_outlined, () {
+          _buildMenuTile('내가 작성한 후기 관리', Icons.rate_review_outlined, () {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -348,7 +400,7 @@ class MyTab extends StatelessWidget {
           const Divider(height: 1, indent: 20, endIndent: 20),
 
           // 🌟 새롭게 추가된 '내가 쓴 게시글 관리' 메뉴
-          _buildMenuTile('내가 쓴 게시글 관리', Icons.article_outlined, () {
+          _buildMenuTile('내가 작성한 게시글 관리', Icons.article_outlined, () {
             Navigator.push(
               context,
               MaterialPageRoute(

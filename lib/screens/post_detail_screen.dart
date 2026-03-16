@@ -33,7 +33,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       final snapshot = await transaction.get(postRef);
       if (!snapshot.exists) return;
 
-      // 데이터 타입 명확히 지정 (에러 방지)
       final data = snapshot.data() as Map<String, dynamic>?;
       if (data == null) return;
 
@@ -95,7 +94,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     });
   }
 
-  // 💬 댓글 등록 로직
+  // 💬 댓글 등록 로직 (🌟 프사 정보도 함께 저장)
   Future<void> _addComment() async {
     if (_commentCtrl.text.trim().isEmpty || widget.myUid == null) return;
     final text = _commentCtrl.text.trim();
@@ -106,7 +105,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         .doc(widget.myUid)
         .get();
     final nickname = userDoc.data()?['nickname'] ?? '익명';
-    final teamId = userDoc.data()?['teamId'] ?? 'ssg';
+    final teamId = userDoc.data()?['teamId'] ?? '';
+    final profileImageBase64 = userDoc
+        .data()?['profileImageBase64']; // 🌟 프사 정보 추가
 
     await FirebaseFirestore.instance
         .collection('posts')
@@ -116,6 +117,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           'uid': widget.myUid,
           'nickname': nickname,
           'teamId': teamId,
+          'userProfileBase64': profileImageBase64, // 🌟 저장!
           'content': text,
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -189,7 +191,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  // 📝 댓글 수정/삭제 다이얼로그
+  // 📝 댓글 옵션 (수정/삭제)
   void _showCommentOptions(String commentId, String currentContent) {
     showModalBottomSheet(
       context: context,
@@ -313,8 +315,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         final data =
                             snapshot.data!.data() as Map<String, dynamic>;
                         final team = teamThemes[data['teamId']];
+
+                        // 🌟 본문 작성자 프사 및 마스코트 로직 추가
+                        final String? userProfileBase64 =
+                            data['userProfileBase64'];
                         final String mascotPath =
-                            'assets/mascot_img/${data['teamId']}.png';
+                            (data['teamId'] != null &&
+                                data['teamId'].toString().isNotEmpty)
+                            ? 'assets/mascot_img/${data['teamId']}.png'
+                            : '';
+
                         final bool isLiked =
                             widget.myUid != null &&
                             (data['likedBy'] ?? []).contains(widget.myUid);
@@ -331,19 +341,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             children: [
                               Row(
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.asset(
-                                      mascotPath,
-                                      width: 44,
-                                      height: 44,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => const Icon(
-                                        Icons.account_circle,
-                                        size: 44,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
+                                  // 📸 작성자 프로필 적용 (프사 -> 마스코트 -> 아이콘)
+                                  CircleAvatar(
+                                    radius: 22,
+                                    backgroundColor: Colors.grey.shade200,
+                                    backgroundImage:
+                                        userProfileBase64 != null &&
+                                            userProfileBase64.isNotEmpty
+                                        ? MemoryImage(
+                                                base64Decode(userProfileBase64),
+                                              )
+                                              as ImageProvider
+                                        : (mascotPath.isNotEmpty
+                                              ? AssetImage(mascotPath)
+                                                    as ImageProvider
+                                              : null),
+                                    child:
+                                        (userProfileBase64 == null ||
+                                                userProfileBase64.isEmpty) &&
+                                            mascotPath.isEmpty
+                                        ? Icon(
+                                            Icons.person,
+                                            color: Colors.grey.shade500,
+                                            size: 28,
+                                          )
+                                        : null,
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -396,7 +418,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 ],
                               ),
                               const SizedBox(height: 16),
-
                               Text(
                                 data['content'] ?? '',
                                 style: const TextStyle(
@@ -404,7 +425,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   height: 1.5,
                                 ),
                               ),
-
                               if (data['imageBase64'] != null &&
                                   data['imageBase64']
                                       .toString()
@@ -419,10 +439,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   ),
                                 ),
                               ],
-
                               const SizedBox(height: 16),
                               const Divider(height: 1),
-
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceAround,
@@ -511,10 +529,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 widget.myUid != null &&
                                 cData['uid'] == widget.myUid;
 
-                            final commentTeamId = cData['teamId'] ?? 'ssg';
+                            final commentTeamId = cData['teamId'] ?? '';
                             final commentTeam = teamThemes[commentTeamId];
+
+                            // 🌟 댓글 작성자 프사 및 마스코트 로직 추가
+                            final String? commentProfileBase64 =
+                                cData['userProfileBase64'];
                             final String commentMascotPath =
-                                'assets/mascot_img/$commentTeamId.png';
+                                commentTeamId.isNotEmpty
+                                ? 'assets/mascot_img/$commentTeamId.png'
+                                : '';
 
                             return Padding(
                               padding: const EdgeInsets.symmetric(
@@ -524,19 +548,33 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.asset(
-                                      commentMascotPath,
-                                      width: 36,
-                                      height: 36,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => const Icon(
-                                        Icons.account_circle,
-                                        size: 36,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
+                                  // 📸 댓글 프로필 적용 (프사 -> 마스코트 -> 아이콘)
+                                  CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor: Colors.grey.shade200,
+                                    backgroundImage:
+                                        commentProfileBase64 != null &&
+                                            commentProfileBase64.isNotEmpty
+                                        ? MemoryImage(
+                                                base64Decode(
+                                                  commentProfileBase64,
+                                                ),
+                                              )
+                                              as ImageProvider
+                                        : (commentMascotPath.isNotEmpty
+                                              ? AssetImage(commentMascotPath)
+                                                    as ImageProvider
+                                              : null),
+                                    child:
+                                        (commentProfileBase64 == null ||
+                                                commentProfileBase64.isEmpty) &&
+                                            commentMascotPath.isEmpty
+                                        ? Icon(
+                                            Icons.person,
+                                            color: Colors.grey.shade500,
+                                            size: 24,
+                                          )
+                                        : null,
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(

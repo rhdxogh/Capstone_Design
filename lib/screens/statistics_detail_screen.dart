@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../team_theme.dart'; // ✅ 이미 있는 테마 파일 활용
+import '../team_theme.dart';
 
 class StatisticsDetailScreen extends StatelessWidget {
   final String uid;
@@ -60,12 +60,12 @@ class StatisticsDetailScreen extends StatelessWidget {
       final stadium = rec['stadium'] ?? '';
       final opponent = rec['opponent'] ?? '기타';
 
-      // ✅ 기록 당시의 응원팀 ID (없으면 현재 팀 ID)
       final String recordTeamId = rec['myTeamId'] ?? teamId;
       final List<String> recordHomeStadiums =
           teamHomeStadiums[recordTeamId] ?? [];
 
-      if (result == null) continue; // 예정 경기 제외
+      if (result == null) continue;
+      if (opponent.contains('vs') || opponent == '타팀경기') continue;
 
       // 1. 전체 승무패
       if (result == '승')
@@ -109,15 +109,45 @@ class StatisticsDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text('직관 상세 분석'),
         backgroundColor: currentTeamColor,
+
         foregroundColor: Colors.white,
+
+        elevation: 0,
+
+        title: const Text(
+          '직관 승률 분석',
+
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: currentTeamColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: currentTeamColor, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    '마이팀 경기 직관 기록만 집계됩니다!',
+                    style: TextStyle(
+                      color: currentTeamColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             // 전체 승률 카드
             _buildSummaryCard(totalWins, totalDraws, totalLosses, winColor),
 

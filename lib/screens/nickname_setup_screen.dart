@@ -35,9 +35,7 @@ class _NicknameSetupScreenState extends State<NicknameSetupScreen> {
 
   void _toast(String m) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(m)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
   }
 
   Future<void> _save() async {
@@ -61,13 +59,10 @@ class _NicknameSetupScreenState extends State<NicknameSetupScreen> {
     setState(() => loading = true);
 
     try {
-      await FirebaseFirestore.instance.collection('users').doc(widget.uid).set(
-        {
-          'nickname': nickname,
-          'updatedAt': FieldValue.serverTimestamp(),
-        },
-        SetOptions(merge: true),
-      );
+      await FirebaseFirestore.instance.collection('users').doc(widget.uid).set({
+        'nickname': nickname,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
       if (!mounted) return;
       Navigator.pop(context, nickname);
@@ -97,18 +92,12 @@ class _NicknameSetupScreenState extends State<NicknameSetupScreen> {
               const SizedBox(height: 8),
               const Text(
                 '사용할 닉네임을 입력해 주세요',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
               Text(
-                '마이페이지와 후기에서 표시될 이름이에요.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade700,
-                ),
+                '후기와 커뮤니티에서 표시될 이름이에요.',
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
               ),
               const SizedBox(height: 22),
               TextField(
@@ -137,13 +126,13 @@ class _NicknameSetupScreenState extends State<NicknameSetupScreen> {
                   onPressed: loading ? null : _save,
                   child: loading
                       ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
                       : const Text('저장하고 계속하기'),
                 ),
               ),

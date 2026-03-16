@@ -20,6 +20,7 @@ class _CommunityTabState extends State<CommunityTab>
   final String? myUid = FirebaseAuth.instance.currentUser?.uid;
   String myTeamId = '';
   String myNickname = '익명';
+  String? myProfileBase64;
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _CommunityTabState extends State<CommunityTab>
       setState(() {
         myTeamId = doc.data()?['teamId'] ?? '';
         myNickname = doc.data()?['nickname'] ?? '익명';
+        myProfileBase64 = doc.data()?['profileImageBase64'];
       });
     }
   }
@@ -186,6 +188,7 @@ class _CommunityTabState extends State<CommunityTab>
                                       'uid': myUid,
                                       'nickname': myNickname,
                                       'teamId': myTeamId,
+                                      'userProfileBase64': myProfileBase64,
                                       'createdAt': FieldValue.serverTimestamp(),
                                       'likeCount': 0,
                                       'dislikeCount': 0,
@@ -322,7 +325,13 @@ class _PostCard extends StatelessWidget {
     final team = teamThemes[data['teamId']];
     final String teamFullName = team?.fullName ?? 'KBO 팬';
     final Color teamColor = team?.primary ?? Colors.black;
-    final String mascotPath = 'assets/mascot_img/${data['teamId']}.png';
+
+    // 🌟 핵심: 프사 -> 마스코트 순으로 경로 설정
+    final String? userProfileBase64 = data['userProfileBase64'];
+    final String mascotPath =
+        (data['teamId'] != null && data['teamId'].toString().isNotEmpty)
+        ? 'assets/mascot_img/${data['teamId']}.png'
+        : '';
 
     final bool isLiked =
         myUid != null && (data['likedBy'] ?? []).contains(myUid);
@@ -331,7 +340,6 @@ class _PostCard extends StatelessWidget {
 
     return InkWell(
       borderRadius: BorderRadius.circular(20),
-      // 🌟 핵심: 카드를 누르면 포스트 상세 화면으로 이동!
       onTap: () {
         Navigator.push(
           context,
@@ -362,22 +370,30 @@ class _PostCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. 프로필 영역
+            // 1. 프로필 영역 (🌟 이 부분이 변경됨)
             Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    mascotPath,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.account_circle,
-                      size: 50,
-                      color: Colors.grey,
-                    ),
-                  ),
+                CircleAvatar(
+                  radius: 25,
+                  backgroundColor: Colors.grey.shade200,
+                  // 1순위: 사용자 프사, 2순위: 팀 마스코트
+                  backgroundImage:
+                      userProfileBase64 != null && userProfileBase64.isNotEmpty
+                      ? MemoryImage(base64Decode(userProfileBase64))
+                            as ImageProvider
+                      : (mascotPath.isNotEmpty
+                            ? AssetImage(mascotPath) as ImageProvider
+                            : null),
+                  child:
+                      (userProfileBase64 == null ||
+                              userProfileBase64.isEmpty) &&
+                          mascotPath.isEmpty
+                      ? const Icon(
+                          Icons.account_circle,
+                          size: 50,
+                          color: Colors.grey,
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Column(

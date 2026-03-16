@@ -204,7 +204,8 @@ class _MyRecordsListScreenState extends State<MyRecordsListScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'vs $opponent',
+                  // 🌟 수정된 부분: 상대팀 이름에 이미 'vs'가 있으면 그대로 출력, 없으면 'vs ' 붙여서 출력
+                  opponent.contains('vs') ? opponent : 'vs $opponent',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

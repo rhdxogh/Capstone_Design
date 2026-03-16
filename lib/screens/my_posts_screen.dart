@@ -178,7 +178,7 @@ class _MyPostCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.blue.shade100, width: 1.5),
+          border: Border.all(color: Colors.grey.shade100, width: 1.5),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.03),
