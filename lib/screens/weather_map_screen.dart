@@ -4,6 +4,7 @@ import '../data/stadium_locations.dart';
 import '../models/stadium_weather.dart';
 import '../services/weather_service.dart';
 import 'weather_detail_screen.dart';
+import 'kma_radar_screen.dart';
 
 class WeatherMapScreen extends StatefulWidget {
   final Color themeColor;
@@ -98,7 +99,7 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
         elevation: 0,
         title: const Text(
           '실시간 레이더 영상 확인',
-          style: TextStyle(fontWeight: FontWeight.bold), // ✅ 타이틀 볼드체 적용
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -108,9 +109,27 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
           ),
         ],
       ),
+      // 🌟 AppBar 밖으로 빼낸 레이더 영상 버튼! (Scaffold의 속성입니다)
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: widget.themeColor,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => KmaRadarScreen(themeColor: widget.themeColor),
+            ),
+          );
+        },
+        icon: const Icon(Icons.radar, color: Colors.white),
+        label: const Text(
+          '기상청 레이더 보기',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: SafeArea(
         child: FutureBuilder<List<StadiumWeather>>(
           future: _future,
+          // ... (이하 기존 코드와 완전히 동일합니다) ...
           builder: (context, snap) {
             if (snap.connectionState != ConnectionState.done) {
               return const Center(child: CircularProgressIndicator());
