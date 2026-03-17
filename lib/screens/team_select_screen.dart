@@ -24,7 +24,10 @@ class _TeamSelectScreenState extends State<TeamSelectScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('응원하는 구단을 선택해주세요!'),
+        title: const Text(
+          '응원하는 구단을 선택해주세요!',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: AppColors.brandRed, //
         foregroundColor: Colors.white,
         elevation: 0,

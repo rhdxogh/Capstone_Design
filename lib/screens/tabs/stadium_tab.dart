@@ -77,6 +77,7 @@ class _StadiumTabState extends State<StadiumTab> {
     return Scaffold(
       backgroundColor: Colors.white, // ✅ 배경을 완전 흰색으로 변경
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white, // ✅ 화이트 앱바 적용
         foregroundColor: Colors.black,
         elevation: 0,
