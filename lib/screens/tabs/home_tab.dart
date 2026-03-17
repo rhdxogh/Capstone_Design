@@ -193,7 +193,7 @@ class _HomeTabState extends State<HomeTab> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      '최신 KBO 소식',
+                      '최신 구단 소식',
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 18,

@@ -135,7 +135,7 @@ class _CommunityTabState extends State<CommunityTab>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // 사진 첨부 버튼
+                    // 🌟 중복되던 사진 첨부 버튼 1개로 통일 & 용량 압축 적용 완료!
                     IconButton(
                       icon: const Icon(
                         Icons.image_outlined,
@@ -146,12 +146,15 @@ class _CommunityTabState extends State<CommunityTab>
                         final picker = ImagePicker();
                         final pickedFile = await picker.pickImage(
                           source: ImageSource.gallery,
-                          imageQuality: 30,
+                          imageQuality: 30, // 화질 압축
+                          maxWidth: 800, // 🌟 가로 최대 길이 제한 (용량 초과 방지)
+                          maxHeight: 800, // 🌟 세로 최대 길이 제한 (용량 초과 방지)
                         );
-                        if (pickedFile != null)
+                        if (pickedFile != null) {
                           setSheetState(
                             () => selectedImage = File(pickedFile.path),
                           );
+                        }
                       },
                     ),
 
@@ -169,8 +172,9 @@ class _CommunityTabState extends State<CommunityTab>
                           ? null
                           : () async {
                               if (controller.text.trim().isEmpty &&
-                                  selectedImage == null)
+                                  selectedImage == null) {
                                 return;
+                              }
                               setSheetState(() => isUploading = true);
                               String base64Image = '';
 
