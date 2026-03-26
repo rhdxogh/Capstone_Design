@@ -26,7 +26,7 @@ class _HomeTabState extends State<HomeTab> {
   final int _initialPage = 500;
   double _currentPage = 500;
 
-  final DateTime _today = DateTime(2026, 3, 28);
+  final DateTime _today = DateTime.now();
   late DateTime _baseDate;
   late DateTime _selectedDate;
   late Future<Map<String, List<dynamic>>> _gameData;

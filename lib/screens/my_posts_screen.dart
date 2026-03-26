@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
+import 'dart:io'; // 🌟 사진 파일을 다루기 위해 추가
+import 'package:image_picker/image_picker.dart'; // 🌟 갤러리 접근을 위해 추가
 import '../team_theme.dart';
 import 'post_detail_screen.dart';
 
@@ -16,14 +18,10 @@ class MyPostsScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         backgroundColor: themeColor,
-
         foregroundColor: Colors.white,
-
         elevation: 0,
-
         title: const Text(
           '내가 쓴 게시글',
-
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
@@ -70,7 +68,7 @@ class MyPostsScreen extends StatelessWidget {
   }
 }
 
-// ✅ 내가 쓴 글 목록용 카드 위젯 (수정, 삭제 기능 추가됨)
+// ✅ 내가 쓴 글 목록용 카드 위젯 (예쁜 바텀시트 수정, 사진 교체/삭제 기능 추가)
 class _MyPostCard extends StatelessWidget {
   final String postId;
   final Map<String, dynamic> data;
@@ -84,38 +82,194 @@ class _MyPostCard extends StatelessWidget {
     required this.teamColor,
   });
 
-  // 📝 게시글 수정 다이얼로그
-  void _editPost(BuildContext context, String currentContent) {
+  // 📝 게시글 수정 바텀 시트 (사진 수정/삭제 기능 포함)
+  void _editPost(
+    BuildContext context,
+    String currentContent,
+    String? existingImageBase64,
+  ) {
     final editCtrl = TextEditingController(text: currentContent);
-    showDialog(
+    final ImagePicker picker = ImagePicker();
+
+    File? newPickedFile;
+    String? currentBase64 = existingImageBase64;
+    bool isImageDeleted = false;
+
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('게시글 수정'),
-        content: TextField(
-          controller: editCtrl,
-          maxLines: 4,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: teamColor),
-            onPressed: () async {
-              if (editCtrl.text.trim().isNotEmpty) {
-                await FirebaseFirestore.instance
-                    .collection('posts')
-                    .doc(postId)
-                    .update({'content': editCtrl.text.trim()});
-                if (context.mounted) Navigator.pop(context);
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            // 📸 이미지 가져오기
+            Future<void> pickImage() async {
+              final XFile? image = await picker.pickImage(
+                source: ImageSource.gallery,
+              );
+              if (image != null) {
+                File file = File(image.path);
+                final bytes = await file.readAsBytes();
+                setState(() {
+                  newPickedFile = file;
+                  currentBase64 = base64Encode(bytes);
+                  isImageDeleted = false;
+                });
               }
-            },
-            child: const Text('수정완료', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 5,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+
+                    // 🌟 이미지 미리보기 및 삭제(X) 버튼
+                    if (currentBase64 != null && currentBase64!.isNotEmpty)
+                      Stack(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            width: double.infinity,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.memory(
+                                base64Decode(currentBase64!),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  currentBase64 = null;
+                                  newPickedFile = null;
+                                  isImageDeleted = true;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                    TextField(
+                      controller: editCtrl,
+                      maxLines: 5,
+                      maxLength: 500,
+                      onChanged: (text) => setState(() {}),
+                      decoration: const InputDecoration(
+                        hintText: '수정할 내용을 입력해주세요.',
+                        border: InputBorder.none,
+                        counterText: '',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        InkWell(
+                          onTap: pickImage,
+                          child: Icon(
+                            Icons.camera_alt_outlined,
+                            color: Colors.grey.shade600,
+                            size: 28,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${editCtrl.text.length}/500',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: teamColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          onPressed: () async {
+                            if (editCtrl.text.trim().isNotEmpty) {
+                              Map<String, dynamic> updateData = {
+                                'content': editCtrl.text.trim(),
+                              };
+
+                              if (isImageDeleted) {
+                                updateData['imageBase64'] = FieldValue.delete();
+                              } else if (newPickedFile != null) {
+                                updateData['imageBase64'] = currentBase64;
+                              }
+
+                              await FirebaseFirestore.instance
+                                  .collection('posts')
+                                  .doc(postId)
+                                  .update(updateData);
+
+                              if (bottomSheetContext.mounted) {
+                                Navigator.pop(bottomSheetContext);
+                              }
+                            }
+                          },
+                          child: const Text(
+                            '수정',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -207,7 +361,6 @@ class _MyPostCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // 🌟 Expanded로 감싸서 텍스트 영역이 남는 공간을 다 차지하게 함 (쩜쩜쩜 버튼을 우측 끝으로 밀기 위해)
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,11 +383,16 @@ class _MyPostCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // 🌟 우측 상단 수정/삭제 팝업 메뉴 추가
+                // 🌟 수정 메뉴를 눌렀을 때 기존 사진 데이터(imageBase64)도 함께 넘겨주기
                 PopupMenuButton<String>(
                   onSelected: (value) {
-                    if (value == 'edit')
-                      _editPost(context, data['content'] ?? '');
+                    if (value == 'edit') {
+                      _editPost(
+                        context,
+                        data['content'] ?? '',
+                        data['imageBase64'], // 사진 데이터 넘겨줌!
+                      );
+                    }
                     if (value == 'delete') _deletePost(context);
                   },
                   itemBuilder: (BuildContext context) => [

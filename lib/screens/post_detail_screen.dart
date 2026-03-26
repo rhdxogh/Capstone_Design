@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io'; // 🌟 파일 처리를 위한 임포트 추가
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart'; // 🌟 이미지 피커 임포트 추가
 import '../team_theme.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -94,7 +96,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     });
   }
 
-  // 💬 댓글 등록 로직 (🌟 프사 정보도 함께 저장)
+  // 💬 댓글 등록 로직
   Future<void> _addComment() async {
     if (_commentCtrl.text.trim().isEmpty || widget.myUid == null) return;
     final text = _commentCtrl.text.trim();
@@ -106,8 +108,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         .get();
     final nickname = userDoc.data()?['nickname'] ?? '익명';
     final teamId = userDoc.data()?['teamId'] ?? '';
-    final profileImageBase64 = userDoc
-        .data()?['profileImageBase64']; // 🌟 프사 정보 추가
+    final profileImageBase64 = userDoc.data()?['profileImageBase64'];
 
     await FirebaseFirestore.instance
         .collection('posts')
@@ -117,7 +118,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           'uid': widget.myUid,
           'nickname': nickname,
           'teamId': teamId,
-          'userProfileBase64': profileImageBase64, // 🌟 저장!
+          'userProfileBase64': profileImageBase64,
           'content': text,
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -127,38 +128,188 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         .update({'commentCount': FieldValue.increment(1)});
   }
 
-  // 📝 게시글 수정 다이얼로그
-  void _editPost(String currentContent) {
+  // 📝 게시글 수정 바텀 시트 (사진 수정 기능 포함)
+  void _editPost(String currentContent, String? existingImageBase64) {
     final editCtrl = TextEditingController(text: currentContent);
-    showDialog(
+    final ImagePicker picker = ImagePicker();
+
+    File? newPickedFile;
+    String? currentBase64 = existingImageBase64;
+    bool isImageDeleted = false;
+
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('게시글 수정'),
-        content: TextField(
-          controller: editCtrl,
-          maxLines: 4,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: widget.teamColor),
-            onPressed: () async {
-              if (editCtrl.text.trim().isNotEmpty) {
-                await FirebaseFirestore.instance
-                    .collection('posts')
-                    .doc(widget.postId)
-                    .update({'content': editCtrl.text.trim()});
-                if (mounted) Navigator.pop(context);
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            // 📸 이미지 가져오기
+            Future<void> pickImage() async {
+              final XFile? image = await picker.pickImage(
+                source: ImageSource.gallery,
+              );
+              if (image != null) {
+                File file = File(image.path);
+                final bytes = await file.readAsBytes();
+                setState(() {
+                  newPickedFile = file;
+                  currentBase64 = base64Encode(bytes);
+                  isImageDeleted = false;
+                });
               }
-            },
-            child: const Text('수정완료', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 5,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+
+                    // 🌟 이미지 미리보기 및 삭제 버튼
+                    if (currentBase64 != null && currentBase64!.isNotEmpty)
+                      Stack(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            width: double.infinity,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.memory(
+                                base64Decode(currentBase64!),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  currentBase64 = null;
+                                  newPickedFile = null;
+                                  isImageDeleted = true;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                    TextField(
+                      controller: editCtrl,
+                      maxLines: 5,
+                      maxLength: 500,
+                      onChanged: (text) => setState(() {}),
+                      decoration: const InputDecoration(
+                        hintText: '수정할 내용을 입력해주세요.',
+                        border: InputBorder.none,
+                        counterText: '',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        InkWell(
+                          onTap: pickImage,
+                          child: Icon(
+                            Icons.camera_alt_outlined,
+                            color: Colors.grey.shade600,
+                            size: 28,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${editCtrl.text.length}/500',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: widget.teamColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          onPressed: () async {
+                            if (editCtrl.text.trim().isNotEmpty) {
+                              Map<String, dynamic> updateData = {
+                                'content': editCtrl.text.trim(),
+                              };
+
+                              if (isImageDeleted) {
+                                updateData['imageBase64'] = FieldValue.delete();
+                              } else if (newPickedFile != null) {
+                                updateData['imageBase64'] = currentBase64;
+                              }
+
+                              await FirebaseFirestore.instance
+                                  .collection('posts')
+                                  .doc(widget.postId)
+                                  .update(updateData);
+
+                              if (mounted) Navigator.pop(context);
+                            }
+                          },
+                          child: const Text(
+                            '수정',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -316,7 +467,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             snapshot.data!.data() as Map<String, dynamic>;
                         final team = teamThemes[data['teamId']];
 
-                        // 🌟 본문 작성자 프사 및 마스코트 로직 추가
                         final String? userProfileBase64 =
                             data['userProfileBase64'];
                         final String mascotPath =
@@ -341,7 +491,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             children: [
                               Row(
                                 children: [
-                                  // 📸 작성자 프로필 적용 (프사 -> 마스코트 -> 아이콘)
                                   CircleAvatar(
                                     radius: 22,
                                     backgroundColor: Colors.grey.shade200,
@@ -393,8 +542,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   if (isMyPost)
                                     PopupMenuButton<String>(
                                       onSelected: (value) {
-                                        if (value == 'edit')
-                                          _editPost(data['content'] ?? '');
+                                        // 🌟 수정 버튼 클릭 시 이미지 정보도 함께 넘겨줌
+                                        if (value == 'edit') {
+                                          _editPost(
+                                            data['content'] ?? '',
+                                            data['imageBase64'],
+                                          );
+                                        }
                                         if (value == 'delete') _deletePost();
                                       },
                                       itemBuilder: (BuildContext context) => [
@@ -532,7 +686,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             final commentTeamId = cData['teamId'] ?? '';
                             final commentTeam = teamThemes[commentTeamId];
 
-                            // 🌟 댓글 작성자 프사 및 마스코트 로직 추가
                             final String? commentProfileBase64 =
                                 cData['userProfileBase64'];
                             final String commentMascotPath =
@@ -548,7 +701,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // 📸 댓글 프로필 적용 (프사 -> 마스코트 -> 아이콘)
                                   CircleAvatar(
                                     radius: 18,
                                     backgroundColor: Colors.grey.shade200,
