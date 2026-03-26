@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // 🌟 파이어베이스 임포트 추가!
 import '../team_theme.dart';
 import '../app_colors.dart';
 import 'main_shell.dart';
@@ -18,6 +19,7 @@ class TeamSelectScreen extends StatefulWidget {
 
 class _TeamSelectScreenState extends State<TeamSelectScreen> {
   String? selected;
+  bool _isLoading = false; // 🌟 로딩 상태 추가
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +30,7 @@ class _TeamSelectScreenState extends State<TeamSelectScreen> {
           '응원하는 구단을 선택해주세요!',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: AppColors.brandRed, //
+        backgroundColor: AppColors.brandRed,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -36,7 +38,7 @@ class _TeamSelectScreenState extends State<TeamSelectScreen> {
         padding: const EdgeInsets.all(14),
         child: GridView.count(
           crossAxisCount: 3,
-          childAspectRatio: 0.75, // 로고와 버튼 비율을 위해 살짝 조정
+          childAspectRatio: 0.75,
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
           children: teamThemes.values.map((t) {
@@ -58,20 +60,18 @@ class _TeamSelectScreenState extends State<TeamSelectScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // ✅ 수정된 부분: 야구공 아이콘 대신 Image.asset 사용
                       Container(
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: Colors.white, // 로고 배경은 흰색이 깔끔합니다
+                          color: Colors.white,
                           shape: BoxShape.circle,
                         ),
                         child: ClipOval(
                           child: Image.asset(
-                            t.logoPath, // ✅ team_theme.dart의 logoPath 변수 사용
+                            t.logoPath,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) {
-                              // 이미지가 없을 때를 대비한 대체 아이콘
                               return Icon(
                                 Icons.sports_baseball,
                                 color: t.primary,
@@ -87,12 +87,11 @@ class _TeamSelectScreenState extends State<TeamSelectScreen> {
                           fontWeight: FontWeight.w700,
                           fontSize: 12,
                         ),
-                        maxLines: 1, // 한 줄 고정
-                        overflow: TextOverflow.ellipsis, // 넘치면 '...' 처리
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
-                      // Follow 버튼 디자인
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
@@ -129,33 +128,61 @@ class _TeamSelectScreenState extends State<TeamSelectScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: selected == null
                     ? Colors.grey
-                    : AppColors.brandRed, //
+                    : AppColors.brandRed,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              onPressed: selected == null
+              // 🌟 버튼 누를 때 DB에 저장하는 로직으로 전면 수정
+              onPressed: (selected == null || _isLoading)
                   ? null
-                  : () {
+                  : () async {
                       if (widget.returnSelectedTeamId) {
                         Navigator.pop(context, selected);
                       } else {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => MainShell(
-                              uid: widget.uid,
-                              teamId: selected!,
-                            ), // ✅ uid 연결
-                          ),
-                        );
+                        setState(() => _isLoading = true);
+                        try {
+                          // 🌟 파이어베이스에 팀 정보 확실하게 저장!!
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(widget.uid)
+                              .set({
+                                'teamId': selected!,
+                              }, SetOptions(merge: true));
+
+                          if (!context.mounted) return;
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  MainShell(uid: widget.uid, teamId: selected!),
+                            ),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('저장 중 오류가 발생했습니다.')),
+                          );
+                          setState(() => _isLoading = false);
+                        }
                       }
                     },
-              child: const Text(
-                '선택 완료',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      '선택 완료',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
           ),
         ),

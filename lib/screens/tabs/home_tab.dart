@@ -6,8 +6,7 @@ import '../../services/naver_news_service.dart';
 import '../../models/naver_news_article.dart';
 //import '../../services/news_service.dart'; // newsapi용
 //import '../../models/news_article.dart'; // newsapi용
-
-import 'package:jikgwan_mate/screens/lineup_screen.dart';
+import '../lineup_screen.dart';
 // import 'package:jikgwan_mate/screens/team_news_screen1.dart'; // newsapi용
 import 'package:jikgwan_mate/screens/team_news_screen.dart';
 

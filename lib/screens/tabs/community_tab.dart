@@ -44,7 +44,7 @@ class _CommunityTabState extends State<CommunityTab>
     }
   }
 
-  // ✅ 글쓰기 바텀 시트 (Storage 안 쓰고 Base64 글자 변환 방식)
+  // ✅ 글쓰기 바텀 시트 (최신 유저 정보 동기화 로직 추가)
   void _openWriteSheet() {
     final controller = TextEditingController();
     File? selectedImage;
@@ -95,8 +95,6 @@ class _CommunityTabState extends State<CommunityTab>
                     border: InputBorder.none,
                   ),
                 ),
-
-                // 선택된 사진 미리보기
                 if (selectedImage != null)
                   Stack(
                     children: [
@@ -131,11 +129,9 @@ class _CommunityTabState extends State<CommunityTab>
                       ),
                     ],
                   ),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // 🌟 중복되던 사진 첨부 버튼 1개로 통일 & 용량 압축 적용 완료!
                     IconButton(
                       icon: const Icon(
                         Icons.image_outlined,
@@ -146,19 +142,16 @@ class _CommunityTabState extends State<CommunityTab>
                         final picker = ImagePicker();
                         final pickedFile = await picker.pickImage(
                           source: ImageSource.gallery,
-                          imageQuality: 30, // 화질 압축
-                          maxWidth: 800, // 🌟 가로 최대 길이 제한 (용량 초과 방지)
-                          maxHeight: 800, // 🌟 세로 최대 길이 제한 (용량 초과 방지)
+                          imageQuality: 30,
+                          maxWidth: 800,
+                          maxHeight: 800,
                         );
-                        if (pickedFile != null) {
+                        if (pickedFile != null)
                           setSheetState(
                             () => selectedImage = File(pickedFile.path),
                           );
-                        }
                       },
                     ),
-
-                    // 게시 버튼
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
@@ -172,9 +165,8 @@ class _CommunityTabState extends State<CommunityTab>
                           ? null
                           : () async {
                               if (controller.text.trim().isEmpty &&
-                                  selectedImage == null) {
+                                  selectedImage == null)
                                 return;
-                              }
                               setSheetState(() => isUploading = true);
                               String base64Image = '';
 
@@ -184,15 +176,29 @@ class _CommunityTabState extends State<CommunityTab>
                                       .readAsBytes();
                                   base64Image = base64Encode(bytes);
                                 }
+
+                                // 🌟 [핵심 변경점] 글 올리기 직전에 파이어베이스에서 내 최신 정보를 다시 가져옴!
+                                final userDoc = await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(myUid)
+                                    .get();
+                                final userData = userDoc.data() ?? {};
+                                final currentTeamId = userData['teamId'] ?? '';
+                                final currentNickname =
+                                    userData['nickname'] ?? '익명';
+                                final currentProfileBase64 =
+                                    userData['profileImageBase64'];
+
                                 await FirebaseFirestore.instance
                                     .collection('posts')
                                     .add({
                                       'content': controller.text.trim(),
                                       'imageBase64': base64Image,
                                       'uid': myUid,
-                                      'nickname': myNickname,
-                                      'teamId': myTeamId,
-                                      'userProfileBase64': myProfileBase64,
+                                      'nickname': currentNickname,
+                                      'teamId': currentTeamId, // 최신 팀 반영!
+                                      'userProfileBase64':
+                                          currentProfileBase64, // 최신 프사 반영!
                                       'createdAt': FieldValue.serverTimestamp(),
                                       'likeCount': 0,
                                       'dislikeCount': 0,
@@ -203,7 +209,7 @@ class _CommunityTabState extends State<CommunityTab>
                                 setSheetState(() => isUploading = false);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('업로드 실패: 이미지가 너무 클 수 있습니다.'),
+                                    content: Text('업로드 실패: 다시 시도해주세요.'),
                                   ),
                                 );
                               }

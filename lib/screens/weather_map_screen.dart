@@ -98,7 +98,7 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
         foregroundColor: Colors.black,
         elevation: 0,
         title: const Text(
-          '실시간 레이더 영상 확인',
+          '실시간 날씨 지도',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [

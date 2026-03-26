@@ -81,15 +81,12 @@ class _NicknameSetupScreenState extends State<NicknameSetupScreen> {
     setState(() => loading = true);
 
     try {
+      // 🌟 사진을 고르지 않아도 기본적으로 빈 문자열('')을 저장하게 변경
       Map<String, dynamic> dataToSave = {
         'nickname': nickname,
+        'profileImageBase64': _base64Image ?? '', // 핵심 변경점!
         'updatedAt': FieldValue.serverTimestamp(),
       };
-
-      // 🌟 이미지를 골랐다면 데이터에 함께 추가
-      if (_base64Image != null) {
-        dataToSave['profileImageBase64'] = _base64Image;
-      }
 
       await FirebaseFirestore.instance
           .collection('users')
