@@ -23,6 +23,12 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    // ✅ 이메일 로그인 사용자만 true
+    final bool isEmailUser =
+        user?.providerData.any((p) => p.providerId == 'password') ?? false;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -52,43 +58,62 @@ class SettingsScreen extends StatelessWidget {
             }),
             const Divider(height: 1, indent: 16, endIndent: 16),
 
-            // 🌟 3. 기본 프로필로 변경 (새로 추가됨!)
+            // 3. 기본 프로필로 변경
             _buildListTile(context, '기본 프로필로 변경', Icons.face, () {
               _resetToDefaultProfile(context);
             }),
             const Divider(height: 1, indent: 16, endIndent: 16),
 
             // 4. 응원하는 팀 변경하기
-            _buildListTile(context, '응원하는 팀 변경하기', Icons.swap_horiz, () async {
-              final selected = await Navigator.push<String?>(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      TeamSelectScreen(uid: uid, returnSelectedTeamId: true),
-                ),
-              );
-              if (selected != null) {
-                onTeamChanged(selected);
-                Navigator.pop(context); // 팀 변경 후 마이페이지로 돌아가기
-              }
-            }, isLast: true),
+            _buildListTile(
+              context,
+              '응원하는 팀 변경하기',
+              Icons.swap_horiz,
+                  () async {
+                final selected = await Navigator.push<String?>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TeamSelectScreen(
+                      uid: uid,
+                      returnSelectedTeamId: true,
+                    ),
+                  ),
+                );
+                if (selected != null) {
+                  onTeamChanged(selected);
+                  Navigator.pop(context); // 팀 변경 후 마이페이지로 돌아가기
+                }
+              },
+              isLast: true,
+            ),
           ]),
 
           const SizedBox(height: 24),
           _buildSectionTitle('기타'),
           _buildSettingsBox([
+            // ✅ 이메일 로그인 유저만 비밀번호 변경 노출
+            if (isEmailUser) ...[
+              _buildListTile(
+                context,
+                '비밀번호 변경',
+                Icons.lock_outline,
+                    () => _handlePasswordReset(context),
+              ),
+              const Divider(height: 1, indent: 16, endIndent: 16),
+            ],
+
             _buildListTile(
               context,
               '로그아웃',
               Icons.logout,
-              () => _handleLogout(context),
+                  () => _handleLogout(context),
             ),
             const Divider(height: 1, indent: 16, endIndent: 16),
             _buildListTile(
               context,
               '회원탈퇴',
               Icons.person_remove_outlined,
-              () => _handleDeleteAccount(context),
+                  () => _handleDeleteAccount(context),
               isDestructive: true,
               isLast: true,
             ),
@@ -130,13 +155,13 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildListTile(
-    BuildContext context,
-    String title,
-    IconData icon,
-    VoidCallback onTap, {
-    bool isDestructive = false,
-    bool isLast = false,
-  }) {
+      BuildContext context,
+      String title,
+      IconData icon,
+      VoidCallback onTap, {
+        bool isDestructive = false,
+        bool isLast = false,
+      }) {
     final color = isDestructive ? Colors.red[400] : Colors.black87;
     return ListTile(
       leading: Icon(icon, color: color, size: 22),
@@ -160,7 +185,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   // ==========================================
-  // 🔥 닉네임 변경 로직
+  // 닉네임 변경 로직
   // ==========================================
   void _showNicknameChangeDialog(BuildContext context) {
     final TextEditingController controller = TextEditingController();
@@ -203,10 +228,11 @@ class SettingsScreen extends StatelessWidget {
                     );
                   }
                 } catch (e) {
-                  if (context.mounted)
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('오류가 발생했습니다: $e')));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('오류가 발생했습니다: $e')),
+                    );
+                  }
                 }
               }
             },
@@ -221,14 +247,14 @@ class SettingsScreen extends StatelessWidget {
   }
 
   // ==========================================
-  // 🔥 사진 갤러리 픽업 & Base64 저장 로직
+  // 사진 갤러리 픽업 & Base64 저장 로직
   // ==========================================
   Future<void> _pickAndSaveProfileImage(BuildContext context) async {
     try {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 30, // 화질 압축 (중요)
+        imageQuality: 30,
         maxWidth: 200,
         maxHeight: 200,
       );
@@ -248,33 +274,79 @@ class SettingsScreen extends StatelessWidget {
         );
       }
     } catch (e) {
-      if (context.mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('이미지 변경 실패: $e')));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('이미지 변경 실패: $e')),
+        );
+      }
     }
   }
 
   // ==========================================
-  // 🔥 기본 프로필(마스코트)로 되돌리기 로직 (새로 추가!)
+  // 기본 프로필(마스코트)로 되돌리기 로직
   // ==========================================
   Future<void> _resetToDefaultProfile(BuildContext context) async {
     try {
-      // 파이어베이스에서 프사(profileImageBase64) 필드를 삭제해버립니다.
       await FirebaseFirestore.instance.collection('users').doc(uid).update({
         'profileImageBase64': FieldValue.delete(),
       });
 
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('기본 마스코트 프로필로 변경되었습니다!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('기본 마스코트 프로필로 변경되었습니다!')),
+        );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('변경 실패: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('변경 실패: $e')),
+        );
+      }
+    }
+  }
+
+  // ==========================================
+  // ✅ 이메일 로그인 유저용 비밀번호 재설정 메일 전송
+  // ==========================================
+  Future<void> _handlePasswordReset(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final email = user?.email;
+
+    if (email == null || email.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이메일 정보를 찾을 수 없어요.')),
+        );
+      }
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$email 로 비밀번호 재설정 메일을 보냈어요.')),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String msg = '비밀번호 재설정 메일 전송에 실패했어요.';
+      if (e.code == 'invalid-email') {
+        msg = '이메일 형식이 올바르지 않아요.';
+      } else if (e.code == 'user-not-found') {
+        msg = '존재하지 않는 계정이에요.';
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('오류: $e')),
+        );
       }
     }
   }
@@ -301,7 +373,7 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
         ) ??
-        false;
+            false;
 
     if (confirm) {
       await FirebaseAuth.instance.signOut();
@@ -309,7 +381,7 @@ class SettingsScreen extends StatelessWidget {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const AuthEntryScreen()),
-        (route) => false,
+            (route) => false,
       );
     }
   }
@@ -342,7 +414,7 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
         ) ??
-        false;
+            false;
 
     if (confirm) {
       try {
@@ -353,27 +425,31 @@ class SettingsScreen extends StatelessWidget {
               .doc(user.uid)
               .collection('jikgwan_records')
               .get();
+
           for (var doc in records.docs) {
             await doc.reference.delete();
           }
+
           await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
               .delete();
+
           await user.delete();
 
           if (!context.mounted) return;
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const AuthEntryScreen()),
-            (route) => false,
+                (route) => false,
           );
         }
       } catch (e) {
-        if (context.mounted)
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('탈퇴 오류: $e')));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('탈퇴 오류: $e')),
+          );
+        }
       }
     }
   }
