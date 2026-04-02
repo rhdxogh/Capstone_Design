@@ -188,6 +188,109 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // ==========================================
+  // ✅ 비밀번호 찾기 (재설정 메일 발송 다이얼로그)
+  // ==========================================
+  void _showForgotPasswordDialog() {
+    final TextEditingController emailController = TextEditingController();
+
+    // 입력 필드에 현재 입력된 이메일이 있다면 기본값으로 넣어줍니다.
+    if (emailCtrl.text.isNotEmpty) {
+      emailController.text = emailCtrl.text;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          '비밀번호 찾기',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '가입하신 이메일 주소를 입력해주세요.\n비밀번호 재설정 링크를 보내드립니다.',
+              style: TextStyle(color: Colors.grey[700], fontSize: 14),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                hintText: '이메일 주소 입력',
+                hintStyle: TextStyle(color: Colors.grey[400]),
+                filled: true,
+                fillColor: Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actionsPadding: const EdgeInsets.only(right: 16, bottom: 16),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final email = emailController.text.trim();
+              if (email.isEmpty) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('이메일을 입력해주세요.')));
+                return;
+              }
+
+              try {
+                await FirebaseAuth.instance.sendPasswordResetEmail(
+                  email: email,
+                );
+                if (mounted) {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('비밀번호 재설정 메일을 발송했습니다! 메일함을 확인해주세요.'),
+                    ),
+                  );
+                }
+              } on FirebaseAuthException catch (e) {
+                String errorMessage = '메일 발송에 실패했습니다.';
+                if (e.code == 'user-not-found') {
+                  errorMessage = '가입되지 않은 이메일 계정입니다.';
+                } else if (e.code == 'invalid-email') {
+                  errorMessage = '올바른 이메일 형식이 아닙니다.';
+                }
+                if (mounted) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(errorMessage)));
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.brandRed, // 메인 컬러 통일
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('전송', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -237,7 +340,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text('Remember me'),
                   const Spacer(),
                   TextButton(
-                    onPressed: () => _toast('비밀번호 재설정은 나중에 연결할 수 있어요.'),
+                    onPressed: _showForgotPasswordDialog, // ✅ 다이얼로그 호출 연결
                     child: Text(
                       'Forgot the password ?',
                       style: TextStyle(color: AppColors.brandRed),

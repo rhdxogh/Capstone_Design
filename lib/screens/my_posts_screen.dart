@@ -21,7 +21,7 @@ class MyPostsScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 0,
         title: const Text(
-          '내가 쓴 게시글',
+          '내가 작성한 게시글',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),

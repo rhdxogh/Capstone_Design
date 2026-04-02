@@ -125,16 +125,18 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
       // ✅ 결과가 너무 적으면(또는 0개) → 유사도(sim)로 한 번 더 시도 (완화)
       final fallback = (list.isEmpty)
           ? await NaverNewsService.fetchTeamNews(
-        teamNameOrId: keyword,
-        start: start,
-        display: _display,
-        sort: 'sim',
-      )
+              teamNameOrId: keyword,
+              start: start,
+              display: _display,
+              sort: 'sim',
+            )
           : list;
 
       // ✅ 중복 제거(같은 링크 반복 방지)
       final existingLinks = _items
-          .map((e) => (e.originallink.isNotEmpty ? e.originallink : e.link).trim())
+          .map(
+            (e) => (e.originallink.isNotEmpty ? e.originallink : e.link).trim(),
+          )
           .where((u) => u.isNotEmpty)
           .toSet();
 
@@ -167,15 +169,12 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
     final uri = Uri.tryParse(url);
     if (uri == null) return;
 
-    final ok = await launchUrl(
-      uri,
-      mode: LaunchMode.externalApplication,
-    );
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
 
     if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('링크를 열 수 없어요.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('링크를 열 수 없어요.')));
     }
   }
 
@@ -197,7 +196,10 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
         backgroundColor: widget.themeColor,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: Text('${widget.teamName} 구단 소식'),
+        title: Text(
+          '${widget.teamName} 구단 소식',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: _loadFirst,
@@ -226,10 +228,7 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
                       ),
                     ),
                   ),
-                  TextButton(
-                    onPressed: _loadFirst,
-                    child: const Text('새로고침'),
-                  ),
+                  TextButton(onPressed: _loadFirst, child: const Text('새로고침')),
                 ],
               ),
             ),
@@ -329,10 +328,7 @@ class _NewsCard extends StatelessWidget {
               article.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 6),
             Text(
@@ -417,10 +413,7 @@ class _ErrorBox extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            message,
-            style: TextStyle(color: Colors.grey.shade800),
-          ),
+          Text(message, style: TextStyle(color: Colors.grey.shade800)),
           const SizedBox(height: 10),
           SizedBox(
             height: 42,
@@ -440,4 +433,3 @@ class _ErrorBox extends StatelessWidget {
     );
   }
 }
-

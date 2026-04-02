@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // ✅ 파이어베이스 임포트 수정
 
 import '../../team_theme.dart';
 import '../../services/naver_news_service.dart';
 import '../../models/naver_news_article.dart';
-//import '../../services/news_service.dart'; // newsapi용
-//import '../../models/news_article.dart'; // newsapi용
 import '../lineup_screen.dart';
-// import 'package:jikgwan_mate/screens/team_news_screen1.dart'; // newsapi용
 import 'package:jikgwan_mate/screens/team_news_screen.dart';
 
 class HomeTab extends StatefulWidget {
@@ -29,8 +27,6 @@ class _HomeTabState extends State<HomeTab> {
   late DateTime _baseDate;
   late DateTime _selectedDate;
   late Future<Map<String, List<dynamic>>> _gameData;
-
-  // ✅ 뉴스 프리뷰(메인에 1~2개만)
   late Future<List<NaverNewsArticle>> _newsFuture;
 
   @override
@@ -51,13 +47,11 @@ class _HomeTabState extends State<HomeTab> {
     });
 
     _gameData = _loadGamesFromCsv(_selectedDate);
-
-    // ✅ 구단 소식(메인 프리뷰)
     _newsFuture = NaverNewsService.fetchTeamNews(
       teamNameOrId: widget.team.nameKo,
       start: 1,
       display: 2,
-      sort: 'date', // 메인에서는 1~2개만 프리뷰
+      sort: 'date',
     );
   }
 
@@ -145,8 +139,9 @@ class _HomeTabState extends State<HomeTab> {
           body: ListView(
             padding: EdgeInsets.zero,
             children: [
+              // 메인 카드 영역
               SizedBox(
-                height: 290, // ✅ 카드가 내려올 공간을 위해 전체 높이 증가
+                height: 290,
                 child: Stack(
                   children: [
                     Container(height: 145, color: widget.team.primary),
@@ -177,15 +172,56 @@ class _HomeTabState extends State<HomeTab> {
                 ),
               ),
 
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 15),
-                child: Text(
-                  '타구단 경기',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+              // ✅ 타구단 경기 & 순위표 버튼
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '타구단 경기',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () => _showKboRankingSheet(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: widget.team.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.bar_chart,
+                              size: 16,
+                              color: widget.team.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '팀 순위',
+                              style: TextStyle(
+                                color: widget.team.primary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               _buildOtherGamesList(otherMatches),
 
+              // 구단 소식 헤더
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 25, 10, 5),
                 child: Row(
@@ -219,10 +255,232 @@ class _HomeTabState extends State<HomeTab> {
                 ),
               ),
 
-              // ✅ 뉴스 프리뷰(1~2개)
               _buildNewsPreview(),
-
               const SizedBox(height: 40),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 🏆 순위표 바텀 시트 (폰트 및 로고 크기 확대, UI 개선 버전)
+  void _showKboRankingSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+          child: Column(
+            children: [
+              // 상단 핸들러 바
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'KBO 정규시즌 순위',
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                ), // 18 -> 19
+              ),
+              const SizedBox(height: 16),
+
+              // 표 헤더 (글씨 크기 12 -> 13)
+              Row(
+                children: [
+                  SizedBox(
+                    width: 35,
+                    child: Text(
+                      '순위',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Text(
+                        '팀명',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 35,
+                    child: Text(
+                      '경기',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 75,
+                    child: Text(
+                      '승-무-패',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 45,
+                    child: Text(
+                      '승률',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Divider(height: 1, thickness: 1),
+
+              // 파이어베이스 데이터 리스트
+              Expanded(
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('kbo_rankings')
+                      .orderBy('rank')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text('순위 정보를 불러올 수 없습니다.'));
+                    }
+
+                    final docs = snapshot.data!.docs;
+
+                    return ListView.separated(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      itemCount: docs.length,
+                      separatorBuilder: (context, index) =>
+                          Divider(height: 1, color: Colors.grey.shade100),
+                      itemBuilder: (context, index) {
+                        final data = docs[index].data() as Map<String, dynamic>;
+
+                        final bool isMyTeam =
+                            data['teamName'] == widget.team.nameKo ||
+                            data['teamName'] == widget.team.id;
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: isMyTeam
+                                ? widget.team.primary.withOpacity(0.1)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ), // 간격도 살짝 넓힘 (10 -> 12)
+                          child: Row(
+                            children: [
+                              // 1. 순위 (글씨 크기 14 -> 15)
+                              SizedBox(
+                                width: 35,
+                                child: Text(
+                                  '${data['rank']}',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: isMyTeam
+                                        ? FontWeight.w900
+                                        : FontWeight.w700,
+                                    color: isMyTeam
+                                        ? widget.team.primary
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ),
+
+                              // 2. 팀 로고 + 팀명 (로고 22->24, 글씨 14->15)
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 6),
+                                  child: Row(
+                                    children: [
+                                      Image.asset(
+                                        _getLogo(data['teamName']),
+                                        width: 24, // 로고 확대
+                                        height: 24, // 로고 확대
+                                        errorBuilder: (_, __, ___) =>
+                                            const Icon(
+                                              Icons.sports_baseball,
+                                              size: 24,
+                                              color: Colors.grey,
+                                            ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '${data['teamName']}',
+                                        style: TextStyle(
+                                          fontSize: 15, // 글씨 확대
+                                          fontWeight: isMyTeam
+                                              ? FontWeight.bold
+                                              : FontWeight.w600,
+                                          color: isMyTeam
+                                              ? widget.team.primary
+                                              : Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // 3. 경기 수 (12 -> 13)
+                              SizedBox(
+                                width: 35,
+                                child: Text(
+                                  '${data['games']}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ),
+
+                              // 4. 승-무-패 (12 -> 13)
+                              SizedBox(
+                                width: 75,
+                                child: Text(
+                                  '${data['win']}-${data['draw']}-${data['lose']}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ),
+
+                              // 5. 승률 (12 -> 13)
+                              SizedBox(
+                                width: 45,
+                                child: Text(
+                                  '${data['winRate']}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         );

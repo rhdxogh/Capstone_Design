@@ -78,7 +78,7 @@ class _MyReviewsScreenState extends State<MyReviewsScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text(
-          '내가 쓴 후기 관리',
+          '내가 작성한 후기 관리',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: widget.themeColor,
