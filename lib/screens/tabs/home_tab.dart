@@ -79,6 +79,39 @@ class _HomeTabState extends State<HomeTab> {
     return logo;
   }
 
+  // ✅ 한글/영문 구단명 교차 매칭을 위한 헬퍼 함수 추가
+  bool _isMyTeam(String teamName) {
+    final String tName = teamName.toUpperCase().trim();
+    final String myId = widget.team.id.toUpperCase().trim();
+    final String myKo = widget.team.nameKo.trim();
+
+    // 1차: 기본 일치 여부 확인
+    if (tName == myId || tName == myKo) return true;
+
+    // 2차: KIA / 기아 등 영문-한글 혼용 구단 예외 처리
+    if ((tName.contains('KIA') || tName.contains('기아')) &&
+        (myId.contains('KIA') || myKo.contains('기아')))
+      return true;
+
+    if ((tName.contains('KT') || tName.contains('케이티')) &&
+        (myId.contains('KT') || myKo.contains('케이티')))
+      return true;
+
+    if ((tName.contains('NC') || tName.contains('엔씨')) &&
+        (myId.contains('NC') || myKo.contains('엔씨')))
+      return true;
+
+    if ((tName.contains('SSG') || tName.contains('에스에스지')) &&
+        (myId.contains('SSG') || myKo.contains('에스에스지')))
+      return true;
+
+    if ((tName.contains('LG') || tName.contains('엘지')) &&
+        (myId.contains('LG') || myKo.contains('엘지')))
+      return true;
+
+    return false;
+  }
+
   Future<Map<String, List<dynamic>>> _loadGamesFromCsv(DateTime date) async {
     try {
       final rawData = await rootBundle.loadString('assets/data/games.csv');
@@ -103,13 +136,10 @@ class _HomeTabState extends State<HomeTab> {
         };
 
         if (game['date'] == targetDate) {
+          // ✅ 헬퍼 함수를 사용하여 내 팀 매칭 확인
           bool isMyMatch =
-              game['away'].toString().toUpperCase() ==
-                  widget.team.id.toUpperCase() ||
-              game['home'].toString().toUpperCase() ==
-                  widget.team.id.toUpperCase() ||
-              game['away'] == widget.team.nameKo ||
-              game['home'] == widget.team.nameKo;
+              _isMyTeam(game['away'].toString()) ||
+              _isMyTeam(game['home'].toString());
 
           if (isMyMatch) {
             myMatch.add(game);
@@ -264,7 +294,7 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  // 🏆 순위표 바텀 시트 (폰트 및 로고 크기 확대, UI 개선 버전)
+  // 🏆 순위표 바텀 시트
   void _showKboRankingSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -291,14 +321,11 @@ class _HomeTabState extends State<HomeTab> {
               const SizedBox(height: 20),
               const Text(
                 'KBO 정규시즌 순위',
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.bold,
-                ), // 18 -> 19
+                style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
 
-              // 표 헤더 (글씨 크기 12 -> 13)
+              // 표 헤더
               Row(
                 children: [
                   SizedBox(
@@ -372,9 +399,10 @@ class _HomeTabState extends State<HomeTab> {
                       itemBuilder: (context, index) {
                         final data = docs[index].data() as Map<String, dynamic>;
 
-                        final bool isMyTeam =
-                            data['teamName'] == widget.team.nameKo ||
-                            data['teamName'] == widget.team.id;
+                        // ✅ 헬퍼 함수 적용하여 순위표 내 팀 하이라이트 매칭
+                        final bool isMyTeam = _isMyTeam(
+                          data['teamName'].toString(),
+                        );
 
                         return Container(
                           decoration: BoxDecoration(
@@ -383,12 +411,10 @@ class _HomeTabState extends State<HomeTab> {
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                          ), // 간격도 살짝 넓힘 (10 -> 12)
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Row(
                             children: [
-                              // 1. 순위 (글씨 크기 14 -> 15)
+                              // 1. 순위
                               SizedBox(
                                 width: 35,
                                 child: Text(
@@ -406,7 +432,7 @@ class _HomeTabState extends State<HomeTab> {
                                 ),
                               ),
 
-                              // 2. 팀 로고 + 팀명 (로고 22->24, 글씨 14->15)
+                              // 2. 팀 로고 + 팀명
                               Expanded(
                                 child: Padding(
                                   padding: const EdgeInsets.only(left: 6),
@@ -414,8 +440,8 @@ class _HomeTabState extends State<HomeTab> {
                                     children: [
                                       Image.asset(
                                         _getLogo(data['teamName']),
-                                        width: 24, // 로고 확대
-                                        height: 24, // 로고 확대
+                                        width: 24,
+                                        height: 24,
                                         errorBuilder: (_, __, ___) =>
                                             const Icon(
                                               Icons.sports_baseball,
@@ -427,7 +453,7 @@ class _HomeTabState extends State<HomeTab> {
                                       Text(
                                         '${data['teamName']}',
                                         style: TextStyle(
-                                          fontSize: 15, // 글씨 확대
+                                          fontSize: 15,
                                           fontWeight: isMyTeam
                                               ? FontWeight.bold
                                               : FontWeight.w600,
@@ -441,7 +467,7 @@ class _HomeTabState extends State<HomeTab> {
                                 ),
                               ),
 
-                              // 3. 경기 수 (12 -> 13)
+                              // 3. 경기 수
                               SizedBox(
                                 width: 35,
                                 child: Text(
@@ -451,7 +477,7 @@ class _HomeTabState extends State<HomeTab> {
                                 ),
                               ),
 
-                              // 4. 승-무-패 (12 -> 13)
+                              // 4. 승-무-패
                               SizedBox(
                                 width: 75,
                                 child: Text(
@@ -461,7 +487,7 @@ class _HomeTabState extends State<HomeTab> {
                                 ),
                               ),
 
-                              // 5. 승률 (12 -> 13)
+                              // 5. 승률
                               SizedBox(
                                 width: 45,
                                 child: Text(
@@ -724,8 +750,6 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  // ✅ 홈 탭 뉴스 프리뷰(1~2개)
-  // ✅ 홈 탭 뉴스 프리뷰(네이버 검색 API, 1~2개)
   Widget _buildNewsPreview() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -813,7 +837,6 @@ class _HomeTabState extends State<HomeTab> {
                   article: a,
                   themeColor: widget.team.primary,
                   onTap: () {
-                    // 프리뷰 클릭 시 -> 더보기 화면으로
                     Navigator.push(
                       context,
                       MaterialPageRoute(
