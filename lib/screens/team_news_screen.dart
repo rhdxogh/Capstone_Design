@@ -78,6 +78,8 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
   }
 
   Future<void> _loadFirst() async {
+    if (_loading) return; // 데이터 꼬임 방지
+
     setState(() {
       _items.clear();
       _start = 1;
@@ -115,15 +117,19 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
 
       final fallback = (list.isEmpty)
           ? await NaverNewsService.fetchTeamNews(
-        teamNameOrId: keyword,
-        start: start,
-        display: _display,
-        sort: 'sim',
-      )
+              teamNameOrId: keyword,
+              start: start,
+              display: _display,
+              sort: 'sim',
+            )
           : list;
 
+      if (!mounted) return; // 화면 종료 시 에러 방지
+
       final existingLinks = _items
-          .map((e) => (e.originallink.isNotEmpty ? e.originallink : e.link).trim())
+          .map(
+            (e) => (e.originallink.isNotEmpty ? e.originallink : e.link).trim(),
+          )
           .where((u) => u.isNotEmpty)
           .toSet();
 
@@ -138,6 +144,8 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
         _hasMore = deduped.length >= (_display ~/ 2) && _start <= 1000;
       });
     } catch (e) {
+      if (!mounted) return; // 화면 종료 시 에러 방지
+
       setState(() {
         _error = '$e';
       });
@@ -186,86 +194,121 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _loadFirst,
-        child: ListView(
+        child: CustomScrollView(
           controller: _scrollCtrl,
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: widget.themeColor.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: widget.themeColor.withOpacity(0.20)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.search, color: widget.themeColor),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '검색 키워드: $keyword',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
+          slivers: [
+            // 상단 검색어 및 에러/로딩 메시지 영역
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: widget.themeColor.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: widget.themeColor.withOpacity(0.20),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.search, color: widget.themeColor),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '검색 키워드: $keyword',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: _loadFirst,
+                            child: const Text('새로고침'),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: _loadFirst,
-                    child: const Text('새로고침'),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+
+                    if (_error != null)
+                      _ErrorBox(
+                        message: _error!,
+                        onRetry: _loadFirst,
+                        themeColor: widget.themeColor,
+                      ),
+
+                    if (_items.isEmpty && _error == null && _loading)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 60),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+
+                    if (_items.isEmpty && _error == null && !_loading)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 60),
+                        child: Center(child: Text('검색 결과가 없어요.')),
+                      ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 12),
 
-            if (_error != null)
-              _ErrorBox(
-                message: _error!,
-                onRetry: _loadFirst,
-                themeColor: widget.themeColor,
-              ),
-
-            if (_items.isEmpty && _error == null && _loading)
-              const Padding(
-                padding: EdgeInsets.only(top: 60),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-
-            if (_items.isEmpty && _error == null && !_loading)
-              const Padding(
-                padding: EdgeInsets.only(top: 60),
-                child: Center(child: Text('검색 결과가 없어요.')),
-              ),
-
-            for (final a in _items) ...[
-              _NewsCard(
-                article: a,
-                themeColor: widget.themeColor,
-                dateText: _dateText(a.pubDate),
-                onTap: () => _openUrl(
-                  a.originallink.isNotEmpty ? a.originallink : a.link,
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final a = _items[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _NewsCard(
+                        article: a,
+                        themeColor: widget.themeColor,
+                        dateText: _dateText(a.pubDate),
+                        onTap: () => _openUrl(
+                          a.originallink.isNotEmpty ? a.originallink : a.link,
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: _items.length, // 아이템 개수만큼만 생성
                 ),
               ),
-              const SizedBox(height: 12),
-            ],
+            ),
 
-            if (_loading && _items.isNotEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Center(child: CircularProgressIndicator()),
-              ),
+            // 하단 로딩 아이콘 및 마지막 메시지 영역
+            SliverPadding(
+              padding: const EdgeInsets.only(bottom: 18),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    if (_loading && _items.isNotEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
 
-            if (!_hasMore && _items.isNotEmpty)
-              const Padding(
-                padding: EdgeInsets.only(top: 6, bottom: 14),
-                child: Center(
-                  child: Text(
-                    '마지막 소식이에요',
-                    style: TextStyle(color: Colors.grey),
-                  ),
+                    if (!_hasMore && _items.isNotEmpty)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 6, bottom: 14),
+                        child: Center(
+                          child: Text(
+                            '마지막 소식이에요',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
+            ),
           ],
         ),
       ),
@@ -398,10 +441,10 @@ class _NewsThumb extends StatelessWidget {
         color: Colors.grey.shade100,
         child: hasImage
             ? Image.network(
-          imageUrl!,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _fallback(),
-        )
+                imageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _fallback(),
+              )
             : _fallback(),
       ),
     );

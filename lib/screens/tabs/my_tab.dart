@@ -8,6 +8,7 @@ import '../../screens/my_posts_screen.dart';
 import '../../screens/settings_screen.dart';
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
+import '../post_detail_screen.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
