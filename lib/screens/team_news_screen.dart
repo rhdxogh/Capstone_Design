@@ -5,10 +5,7 @@ import '../models/naver_news_article.dart';
 import '../services/naver_news_service.dart';
 
 class TeamNewsScreen extends StatefulWidget {
-  /// 예: "KT 위즈", "SSG 랜더스", "키움 히어로즈" ...
   final String teamName;
-
-  /// 상단바 색
   final Color themeColor;
 
   const TeamNewsScreen({
@@ -23,13 +20,9 @@ class TeamNewsScreen extends StatefulWidget {
 
 class _TeamNewsScreenState extends State<TeamNewsScreen> {
   final _scrollCtrl = ScrollController();
-
   final List<NaverNewsArticle> _items = [];
 
-  // ✅ 네이버는 page가 아니라 start/display 방식
-  // start: 1~1000 (1부터 시작)
-  // display: 1~100 (권장 20~50)
-  static const int _display = 30;
+  static const int _display = 5;
   int _start = 1;
 
   bool _loading = false;
@@ -55,7 +48,6 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
     super.dispose();
   }
 
-  /// 팀 이름을 네이버 검색에 유리한 “정식 키워드”로 정규화
   String _keywordFromTeamName(String teamName) {
     final t = teamName.trim();
 
@@ -114,7 +106,6 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
     try {
       final keyword = _keywordFromTeamName(widget.teamName);
 
-      // ✅ 1차: 최신순(date)로 많이 가져오기
       final list = await NaverNewsService.fetchTeamNews(
         teamNameOrId: keyword,
         start: start,
@@ -122,21 +113,17 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
         sort: 'date',
       );
 
-      // ✅ 결과가 너무 적으면(또는 0개) → 유사도(sim)로 한 번 더 시도 (완화)
       final fallback = (list.isEmpty)
           ? await NaverNewsService.fetchTeamNews(
-              teamNameOrId: keyword,
-              start: start,
-              display: _display,
-              sort: 'sim',
-            )
+        teamNameOrId: keyword,
+        start: start,
+        display: _display,
+        sort: 'sim',
+      )
           : list;
 
-      // ✅ 중복 제거(같은 링크 반복 방지)
       final existingLinks = _items
-          .map(
-            (e) => (e.originallink.isNotEmpty ? e.originallink : e.link).trim(),
-          )
+          .map((e) => (e.originallink.isNotEmpty ? e.originallink : e.link).trim())
           .where((u) => u.isNotEmpty)
           .toSet();
 
@@ -147,13 +134,7 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
 
       setState(() {
         _items.addAll(deduped);
-
-        // 다음 페이지로
         _start = start + _display;
-
-        // hasMore 판단:
-        // - deduped가 너무 적으면 더 이상 안 나올 가능성이 큼
-        // - start가 1000 넘어가면 중단
         _hasMore = deduped.length >= (_display ~/ 2) && _start <= 1000;
       });
     } catch (e) {
@@ -161,7 +142,9 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
         _error = '$e';
       });
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -207,7 +190,6 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
           controller: _scrollCtrl,
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
           children: [
-            // 상단 안내(현재 검색 키워드 표시)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
@@ -228,11 +210,13 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
                       ),
                     ),
                   ),
-                  TextButton(onPressed: _loadFirst, child: const Text('새로고침')),
+                  TextButton(
+                    onPressed: _loadFirst,
+                    child: const Text('새로고침'),
+                  ),
                 ],
               ),
             ),
-
             const SizedBox(height: 12),
 
             if (_error != null)
@@ -321,53 +305,68 @@ class _NewsCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              article.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              article.description,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12.5,
-                color: Colors.grey.shade700,
-                height: 1.35,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Icon(Icons.public, size: 16, color: themeColor),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    _domainText(
-                      article.originallink.isNotEmpty
-                          ? article.originallink
-                          : article.link,
+            _NewsThumb(imageUrl: article.imageUrl),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    article.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
                     ),
-                    maxLines: 1,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    article.description,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 12.5,
+                      color: Colors.grey.shade700,
+                      height: 1.35,
                     ),
                   ),
-                ),
-                if (dateText.isNotEmpty)
-                  Text(
-                    dateText,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(Icons.public, size: 16, color: themeColor),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _domainText(
+                            article.originallink.isNotEmpty
+                                ? article.originallink
+                                : article.link,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      if (dateText.isNotEmpty)
+                        Text(
+                          dateText,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                    ],
                   ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -379,6 +378,44 @@ class _NewsCard extends StatelessWidget {
     final uri = Uri.tryParse(url);
     if (uri == null) return url;
     return uri.host.replaceFirst('www.', '');
+  }
+}
+
+class _NewsThumb extends StatelessWidget {
+  final String? imageUrl;
+
+  const _NewsThumb({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImage = imageUrl != null && imageUrl!.trim().isNotEmpty;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 92,
+        height: 92,
+        color: Colors.grey.shade100,
+        child: hasImage
+            ? Image.network(
+          imageUrl!,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _fallback(),
+        )
+            : _fallback(),
+      ),
+    );
+  }
+
+  Widget _fallback() {
+    return Container(
+      color: Colors.grey.shade100,
+      child: Icon(
+        Icons.article_outlined,
+        color: Colors.grey.shade500,
+        size: 30,
+      ),
+    );
   }
 }
 
@@ -396,35 +433,38 @@ class _ErrorBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeColor.withOpacity(0.06),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.redAccent.withOpacity(0.25)),
+        border: Border.all(color: themeColor.withOpacity(0.16)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '불러오기 실패',
-            style: TextStyle(
-              color: Colors.red.shade700,
-              fontWeight: FontWeight.w900,
-            ),
+          const Text(
+            '뉴스를 불러오는 중 문제가 생겼어요.',
+            style: TextStyle(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
-          Text(message, style: TextStyle(color: Colors.grey.shade800)),
+          Text(
+            message,
+            style: TextStyle(
+              fontSize: 12.5,
+              color: Colors.grey.shade700,
+              height: 1.35,
+            ),
+          ),
           const SizedBox(height: 10),
-          SizedBox(
-            height: 42,
+          Align(
+            alignment: Alignment.centerRight,
             child: ElevatedButton(
+              onPressed: onRetry,
               style: ElevatedButton.styleFrom(
                 backgroundColor: themeColor,
                 foregroundColor: Colors.white,
-                elevation: 0,
-                shape: const StadiumBorder(),
               ),
-              onPressed: onRetry,
               child: const Text('다시 시도'),
             ),
           ),

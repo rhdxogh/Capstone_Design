@@ -74,12 +74,10 @@ class NaverNewsService {
     return (strong: [teamNameOrId], weak: const []);
   }
 
-  /// ✅ 한 번에 긴 검색어를 넣지 말고, 짧은 검색어 여러 개를 순차 시도
   static List<String> _buildQueries(String teamNameOrId) {
     final t = teamNameOrId.toLowerCase();
     final keys = _teamKeys(teamNameOrId);
 
-    // KIA는 예외 처리
     if (t.contains('기아') || t.contains('kia') || t.contains('타이거즈')) {
       return [
         'KIA 타이거즈',
@@ -89,11 +87,10 @@ class NaverNewsService {
       ];
     }
 
-    // 나머지 팀들도 너무 길지 않게 2~3개만 만든다
     final List<String> queries = [];
 
     if (keys.strong.isNotEmpty) {
-      queries.add(keys.strong.first); // 대표 검색어 1개
+      queries.add(keys.strong.first);
     }
 
     if (keys.strong.length >= 2) {
@@ -106,9 +103,39 @@ class NaverNewsService {
 
     queries.add('${keys.strong.first} KBO');
 
-    // 중복 제거
     final seen = <String>{};
     return queries.where((q) => seen.add(q)).toList();
+  }
+
+  static Future<String?> _extractImageFromArticle(String url) async {
+    try {
+      final uri = Uri.tryParse(url);
+      if (uri == null) return null;
+
+      final res = await http.get(
+        uri,
+        headers: {
+          'User-Agent': 'Mozilla/5.0',
+        },
+      ).timeout(const Duration(seconds: 2));
+
+      if (res.statusCode != 200) return null;
+
+      final html = res.body;
+
+      final match = RegExp(
+        '<meta property="og:image" content="([^"]+)"',
+        caseSensitive: false,
+      ).firstMatch(html);
+
+      if (match != null) {
+        return match.group(1);
+      }
+
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<List<NaverNewsArticle>> _fetchSingleQuery({
@@ -140,17 +167,26 @@ class NaverNewsService {
     final items = (data['items'] as List<dynamic>? ?? [])
         .whereType<Map<String, dynamic>>();
 
-    return items.map(NaverNewsArticle.fromJson).toList();
+    final articles = items.map(NaverNewsArticle.fromJson).toList();
+
+    final result = await Future.wait(
+      articles.map((article) async {
+        final articleUrl =
+        article.originallink.isNotEmpty ? article.originallink : article.link;
+
+        final imageUrl = await _extractImageFromArticle(articleUrl);
+
+        return article.copyWith(imageUrl: imageUrl);
+      }),
+    );
+
+    return result;
   }
 
-  /// 네이버 뉴스 검색
-  /// - display: 10~100
-  /// - start: 1~1000
-  /// - sort: date / sim
   static Future<List<NaverNewsArticle>> fetchTeamNews({
     required String teamNameOrId,
     int start = 1,
-    int display = 30,
+    int display = 5,
     String sort = 'date',
   }) async {
     if (display < 1) display = 1;
@@ -159,10 +195,8 @@ class NaverNewsService {
     if (start > 1000) start = 1000;
 
     final queries = _buildQueries(teamNameOrId);
-
     final merged = <NaverNewsArticle>[];
 
-    // ✅ 여러 query를 순차 호출해서 합친다
     for (final q in queries) {
       try {
         final list = await _fetchSingleQuery(
@@ -177,9 +211,9 @@ class NaverNewsService {
       }
     }
 
-    // ✅ 중복 제거
     final seen = <String>{};
     final deduped = <NaverNewsArticle>[];
+
     for (final a in merged) {
       final key = (a.originallink.isNotEmpty ? a.originallink : a.link).trim();
       if (key.isEmpty) continue;
