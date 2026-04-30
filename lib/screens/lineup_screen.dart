@@ -34,18 +34,14 @@ class _LineupScreenState extends State<LineupScreen> {
   final Map<String, Offset> fieldCoords = {
     'C': const Offset(0.38, 0.92),
     'SP': const Offset(0.38, 0.62),
-    'CF': const Offset(0.38, 0.12), // 0.08 -> 0.12 (조금 내림)
-    // 외야 대칭 (안쪽으로 모음)
-    'LF': const Offset(0.04, 0.28), // 0.02 -> 0.04 (오른쪽으로)
-    'RF': const Offset(0.68, 0.28), // 0.74 -> 0.68 (왼쪽으로 확!)
-
+    'CF': const Offset(0.38, 0.12),
+    'LF': const Offset(0.04, 0.28),
+    'RF': const Offset(0.68, 0.28),
     'SS': const Offset(0.18, 0.46),
     '2B': const Offset(0.54, 0.46),
     '3B': const Offset(0.06, 0.72),
     '1B': const Offset(0.66, 0.72),
-
-    // 지명타자 (숫자 잘림 방지: 왼쪽으로 확 땡김)
-    'DH': const Offset(0.65, 0.85), // 0.80 -> 0.65 (확 땡김!)
+    'DH': const Offset(0.65, 0.85),
   };
 
   // --- ID 및 로고 헬퍼 ---
@@ -58,7 +54,7 @@ class _LineupScreenState extends State<LineupScreen> {
       if (t.contains('SSG')) return 'SK';
       if (t.contains('삼성')) return 'SS';
       if (t.contains('두산')) return 'OB';
-      if (t.contains('KIA')) return 'HT';
+      if (t.contains('KIA') || t.contains('기아')) return 'HT'; // 기아/KIA 예외처리 추가
       if (t.contains('LG')) return 'LG';
       if (t.contains('NC')) return 'NC';
       if (t.contains('롯데')) return 'LT';
@@ -91,27 +87,36 @@ class _LineupScreenState extends State<LineupScreen> {
     return logo;
   }
 
-  // 🔥 [추가됨] 내 팀 경기인지 타구단 경기인지 판별하는 헬퍼 함수
+  // 🔥 [핵심] main_shell 수정 없이 색상과 이름 매칭을 완벽하게 처리하는 함수
   bool _isMyTeamGame() {
-    for (var t in teamThemes.values) {
-      // 전달받은 테마색과 일치하는 팀(내 팀)을 찾아서, 그 팀 이름이 매치에 있는지 확인
-      if (t.primary == widget.themeColor) {
-        final away = widget.game['away'].toString();
-        final home = widget.game['home'].toString();
-        if (away.contains(t.nameKo) ||
-            home.contains(t.nameKo) ||
-            t.nameKo.contains(away) ||
-            t.nameKo.contains(home)) {
-          return true; // 내 팀 경기 맞음
+    for (var v in teamThemes.values) {
+      // 1. 넘어온 테마색과 일치하는 내 구단 찾기
+      if (v.primary.value == widget.themeColor.value) {
+        String away = widget.game['away'].toString().trim().toUpperCase();
+        String home = widget.game['home'].toString().trim().toUpperCase();
+        String tId = v.id.toUpperCase(); // 예: 'DOOSAN'
+        String tName = v.nameKo.toUpperCase(); // 예: '두산 베어스'
+
+        // 2. 기아 / KIA 한영 혼용 완벽 호환 처리
+        if (away == 'KIA') away = '기아';
+        if (home == 'KIA') home = '기아';
+        if (tId == 'KIA') tId = '기아';
+
+        // 3. '두산' in '두산 베어스' 처럼 포함 관계를 양방향으로 검사
+        if (away.contains(tId) ||
+            home.contains(tId) ||
+            tName.contains(away) ||
+            tName.contains(home)) {
+          return true; // 내 팀 경기가 확실함!
         }
       }
     }
-    return false; // 타구단 경기임
+    return false; // 매칭 안 되면 타구단 경기
   }
 
   @override
   Widget build(BuildContext context) {
-    // 🔥 타구단 경기 여부에 따른 앱바 색상 결정
+    // 🌟 여기서 내 구단 여부를 판별해 앱바 색상만 결정합니다.
     final bool isMyTeam = _isMyTeamGame();
     final Color appBarBgColor = isMyTeam ? widget.themeColor : Colors.white;
     final Color appBarFgColor = isMyTeam ? Colors.white : Colors.black;
@@ -124,12 +129,12 @@ class _LineupScreenState extends State<LineupScreen> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 22,
-            color: appBarFgColor, // 텍스트 색상 적용
+            color: appBarFgColor, // 텍스트 색상
           ),
         ),
         centerTitle: true,
-        backgroundColor: appBarBgColor, // 바탕색 적용
-        foregroundColor: appBarFgColor, // 아이콘(뒤로가기 등) 색상 적용
+        backgroundColor: appBarBgColor, // 바탕 색상
+        foregroundColor: appBarFgColor, // 뒤로가기 아이콘 색상
         elevation: 0,
       ),
       body: StreamBuilder<DocumentSnapshot>(
@@ -146,7 +151,7 @@ class _LineupScreenState extends State<LineupScreen> {
             children: [
               _buildTopMatchCard(scoreData),
               if (scoreboard != null) _buildScoreBoardCard(scoreboard),
-              _buildLineupSection(),
+              _buildLineupSection(isMyTeam), // 토글 버튼 색상을 위해 isMyTeam 전달
             ],
           );
         },
@@ -195,18 +200,17 @@ class _LineupScreenState extends State<LineupScreen> {
                     style: TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.w900,
-                      color: aR > hR
-                          ? strongRed
-                          : (aR < hR ? Colors.grey : Colors.black87),
+                      color: aR > hR ? strongRed : Colors.black, // 지는 팀 블랙 통일
                     ),
                   ),
                   const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    padding: EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
                       'vs',
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black38,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -216,9 +220,7 @@ class _LineupScreenState extends State<LineupScreen> {
                     style: TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.w900,
-                      color: hR > aR
-                          ? strongRed
-                          : (hR < aR ? Colors.grey : Colors.black87),
+                      color: hR > aR ? strongRed : Colors.black, // 지는 팀 블랙 통일
                     ),
                   ),
                 ],
@@ -257,13 +259,9 @@ class _LineupScreenState extends State<LineupScreen> {
     int aR = int.tryParse(scoreboard[0]['R'].toString()) ?? 0;
     int hR = int.tryParse(scoreboard[1]['R'].toString()) ?? 0;
 
-    // R 부분 색상 결정
-    Color awayRColor = aR > hR
-        ? strongRed
-        : (aR < hR ? Colors.grey : Colors.black87);
-    Color homeRColor = hR > aR
-        ? strongRed
-        : (hR < aR ? Colors.grey : Colors.black87);
+    // R 부분 색상 결정 (회색 걷어내고 블랙으로 통일)
+    Color awayRColor = aR > hR ? strongRed : Colors.black;
+    Color homeRColor = hR > aR ? strongRed : Colors.black;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -352,7 +350,7 @@ class _LineupScreenState extends State<LineupScreen> {
               fontSize: 14,
             ),
           ),
-        ), // 득점 색상 적용
+        ),
         DataCell(
           Text(data['H'].toString(), style: const TextStyle(fontSize: 13)),
         ),
@@ -367,10 +365,9 @@ class _LineupScreenState extends State<LineupScreen> {
   }
 
   // 3. 라인업 섹션
-  Widget _buildLineupSection() {
+  Widget _buildLineupSection(bool isMyTeam) {
     final String docId = _getLineupDocId();
 
-    // 🔥 [핵심 추가] 경기 날짜가 '오늘(또는 미래)'인지 판별하는 로직
     final parts = widget.game['date'].toString().split('.');
     final gameYear = int.tryParse(parts[0]) ?? DateTime.now().year;
     final gameMonth = int.tryParse(parts[1]) ?? DateTime.now().month;
@@ -383,7 +380,6 @@ class _LineupScreenState extends State<LineupScreen> {
       DateTime.now().day,
     );
 
-    // 경기 날짜가 오늘이거나 미래일 때만 true
     final bool showWarningBanner =
         gameDate.isAtSameMomentAs(today) || gameDate.isAfter(today);
 
@@ -404,7 +400,8 @@ class _LineupScreenState extends State<LineupScreen> {
                 onPressed: (index) => setState(() => isHomeTab = index == 0),
                 borderRadius: BorderRadius.circular(12),
                 selectedColor: Colors.white,
-                fillColor: Colors.grey,
+                // 타구단 경기일 때는 버튼 색상도 무난한 진회색으로 맞춰줍니다
+                fillColor: isMyTeam ? widget.themeColor : Colors.grey.shade800,
                 constraints: const BoxConstraints(minHeight: 32, minWidth: 60),
                 children: [
                   const Text(
@@ -438,7 +435,6 @@ class _LineupScreenState extends State<LineupScreen> {
 
             return Column(
               children: [
-                // 🌟 과거 경기에서는 배너가 아예 안 보이고, 오늘 경기만 배너가 뜹니다!
                 if (showWarningBanner)
                   Container(
                     margin: const EdgeInsets.only(
@@ -522,7 +518,6 @@ class _LineupScreenState extends State<LineupScreen> {
     );
   }
 
-  // 💊 이름 자간 넓히고 전체적으로 오른쪽 밀기 버전
   Widget _buildPlayerBadge(
     BoxConstraints constraints,
     String pos,
@@ -538,16 +533,13 @@ class _LineupScreenState extends State<LineupScreen> {
       child: Stack(
         alignment: Alignment.centerLeft,
         children: [
-          // 1. 배경 배지 이미지
           Image.asset(
             'assets/lineup_img/$fileName.png',
             height: 22,
             fit: BoxFit.contain,
           ),
-
-          // 2. 이름 배치 (오른쪽으로 살짝 이동 + 자간 확보)
           Padding(
-            padding: const EdgeInsets.only(left: 24), // 20 -> 24 (오른쪽으로 미세 이동)
+            padding: const EdgeInsets.only(left: 24),
             child: SizedBox(
               width: 58,
               height: 22,
@@ -559,18 +551,14 @@ class _LineupScreenState extends State<LineupScreen> {
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
                     color: Colors.black,
-                    letterSpacing: 0.0, // -1.0 -> 0.0 (글자 간격 시원하게 변경)
+                    letterSpacing: 0.0,
                   ),
                 ),
               ),
             ),
           ),
-
-          // 3. 타순 숫자 (함께 오른쪽으로 이동)
           Padding(
-            padding: const EdgeInsets.only(
-              left: 81,
-            ), // 80 -> 83 (원 중앙에 맞게 미세 이동)
+            padding: const EdgeInsets.only(left: 81),
             child: SizedBox(
               width: 18,
               height: 22,
@@ -595,7 +583,7 @@ class _LineupScreenState extends State<LineupScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white, // 전체 배경 화이트로 통일
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
@@ -612,12 +600,11 @@ class _LineupScreenState extends State<LineupScreen> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: players.length,
-          // 🔥 배경색 구분이 없어졌으므로 아주 연한 구분선을 추가
           separatorBuilder: (context, index) => Divider(
             height: 1,
             thickness: 1,
             color: Colors.grey.shade100,
-            indent: 20, // 양옆 여백을 줘서 더 고급스럽게
+            indent: 20,
             endIndent: 20,
           ),
           itemBuilder: (context, index) {
@@ -625,10 +612,9 @@ class _LineupScreenState extends State<LineupScreen> {
 
             return Container(
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-              color: Colors.white, // 모든 행을 화이트로 고정
+              color: Colors.white,
               child: Row(
                 children: [
-                  // 1. 타순
                   SizedBox(
                     width: 75,
                     child: Text(
@@ -640,8 +626,6 @@ class _LineupScreenState extends State<LineupScreen> {
                       ),
                     ),
                   ),
-
-                  // 2. 선수 이름
                   Expanded(
                     child: Text(
                       p['name'],
@@ -654,8 +638,6 @@ class _LineupScreenState extends State<LineupScreen> {
                       ),
                     ),
                   ),
-
-                  // 3. 포지션 (오른쪽 포지션 태그는 연회색으로 고정하여 돋보이게)
                   SizedBox(
                     width: 75,
                     child: Align(
@@ -666,7 +648,7 @@ class _LineupScreenState extends State<LineupScreen> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF2F4F7), // 일관된 연회색 태그 배경
+                          color: const Color(0xFFF2F4F7),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
