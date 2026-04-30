@@ -91,18 +91,45 @@ class _LineupScreenState extends State<LineupScreen> {
     return logo;
   }
 
+  // 🔥 [추가됨] 내 팀 경기인지 타구단 경기인지 판별하는 헬퍼 함수
+  bool _isMyTeamGame() {
+    for (var t in teamThemes.values) {
+      // 전달받은 테마색과 일치하는 팀(내 팀)을 찾아서, 그 팀 이름이 매치에 있는지 확인
+      if (t.primary == widget.themeColor) {
+        final away = widget.game['away'].toString();
+        final home = widget.game['home'].toString();
+        if (away.contains(t.nameKo) ||
+            home.contains(t.nameKo) ||
+            t.nameKo.contains(away) ||
+            t.nameKo.contains(home)) {
+          return true; // 내 팀 경기 맞음
+        }
+      }
+    }
+    return false; // 타구단 경기임
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 🔥 타구단 경기 여부에 따른 앱바 색상 결정
+    final bool isMyTeam = _isMyTeamGame();
+    final Color appBarBgColor = isMyTeam ? widget.themeColor : Colors.white;
+    final Color appBarFgColor = isMyTeam ? Colors.white : Colors.black;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
       appBar: AppBar(
         title: Text(
           "${widget.game['date']} 경기 정보",
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            color: appBarFgColor, // 텍스트 색상 적용
+          ),
         ),
         centerTitle: true,
-        backgroundColor: widget.themeColor,
-        foregroundColor: Colors.white,
+        backgroundColor: appBarBgColor, // 바탕색 적용
+        foregroundColor: appBarFgColor, // 아이콘(뒤로가기 등) 색상 적용
         elevation: 0,
       ),
       body: StreamBuilder<DocumentSnapshot>(
@@ -377,7 +404,7 @@ class _LineupScreenState extends State<LineupScreen> {
                 onPressed: (index) => setState(() => isHomeTab = index == 0),
                 borderRadius: BorderRadius.circular(12),
                 selectedColor: Colors.white,
-                fillColor: widget.themeColor,
+                fillColor: Colors.grey,
                 constraints: const BoxConstraints(minHeight: 32, minWidth: 60),
                 children: [
                   const Text(
@@ -568,7 +595,7 @@ class _LineupScreenState extends State<LineupScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FA),
+        color: Colors.white, // 전체 배경 화이트로 통일
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
@@ -585,17 +612,23 @@ class _LineupScreenState extends State<LineupScreen> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: players.length,
-          separatorBuilder: (context, index) => const SizedBox.shrink(),
+          // 🔥 배경색 구분이 없어졌으므로 아주 연한 구분선을 추가
+          separatorBuilder: (context, index) => Divider(
+            height: 1,
+            thickness: 1,
+            color: Colors.grey.shade100,
+            indent: 20, // 양옆 여백을 줘서 더 고급스럽게
+            endIndent: 20,
+          ),
           itemBuilder: (context, index) {
             final p = players[index];
-            final bool isEven = index % 2 == 0;
 
             return Container(
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-              color: isEven ? Colors.white : const Color(0xFFF2F4F7),
+              color: Colors.white, // 모든 행을 화이트로 고정
               child: Row(
                 children: [
-                  // 1. 타순 (왼쪽 고정 너비를 75로 확대)
+                  // 1. 타순
                   SizedBox(
                     width: 75,
                     child: Text(
@@ -608,7 +641,7 @@ class _LineupScreenState extends State<LineupScreen> {
                     ),
                   ),
 
-                  // 2. 선수 이름 (정중앙 정렬)
+                  // 2. 선수 이름
                   Expanded(
                     child: Text(
                       p['name'],
@@ -622,7 +655,7 @@ class _LineupScreenState extends State<LineupScreen> {
                     ),
                   ),
 
-                  // 3. 포지션 (오른쪽 고정 너비를 75로 확대하여 '지명타자' 한 줄 유지)
+                  // 3. 포지션 (오른쪽 포지션 태그는 연회색으로 고정하여 돋보이게)
                   SizedBox(
                     width: 75,
                     child: Align(
@@ -631,11 +664,9 @@ class _LineupScreenState extends State<LineupScreen> {
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 4,
-                        ), // 좌우 패딩 살짝 조정
+                        ),
                         decoration: BoxDecoration(
-                          color: isEven
-                              ? const Color(0xFFF2F4F7)
-                              : Colors.white,
+                          color: const Color(0xFFF2F4F7), // 일관된 연회색 태그 배경
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -645,7 +676,7 @@ class _LineupScreenState extends State<LineupScreen> {
                             fontWeight: FontWeight.bold,
                             color: Colors.grey.shade600,
                           ),
-                          maxLines: 1, // 한 줄 고정
+                          maxLines: 1,
                           softWrap: false,
                         ),
                       ),
