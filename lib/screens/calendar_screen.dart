@@ -91,6 +91,70 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
+  // 🤖 자동 계산 헬퍼 함수: 스코어보드 DB에서 결과를 읽어와 승/무/패를 리턴합니다.
+  Future<String?> _fetchAndCalcResult(
+    DateTime date,
+    String? away,
+    String? home,
+    String myTeamId,
+  ) async {
+    if (away == null || home == null) return null;
+
+    final y = date.year.toString();
+    final m = date.month.toString().padLeft(2, '0');
+    final d = date.day.toString().padLeft(2, '0');
+
+    String getCode(String t) {
+      if (t.contains('SSG')) return 'SK';
+      if (t.contains('삼성')) return 'SS';
+      if (t.contains('두산')) return 'OB';
+      if (t.contains('기아') || t.contains('KIA')) return 'HT';
+      if (t.contains('LG')) return 'LG';
+      if (t.contains('NC')) return 'NC';
+      if (t.contains('롯데')) return 'LT';
+      if (t.contains('키움')) return 'WO';
+      if (t.contains('한화')) return 'HH';
+      if (t.contains('KT')) return 'KT';
+      return t;
+    }
+
+    String gameId = "$y$m$d${getCode(away)}${getCode(home)}0";
+
+    try {
+      final scoreDoc = await FirebaseFirestore.instance
+          .collection('kbo_scoreboards')
+          .doc(gameId)
+          .get();
+      if (scoreDoc.exists) {
+        final scoreData = scoreDoc.data() as Map<String, dynamic>;
+        final scoreboard = scoreData['scoreboard'] as List<dynamic>?;
+
+        if (scoreboard != null && scoreboard.length >= 2) {
+          int awayScore = int.tryParse(scoreboard[0]['R'].toString()) ?? -1;
+          int homeScore = int.tryParse(scoreboard[1]['R'].toString()) ?? -1;
+
+          if (awayScore == -1 || homeScore == -1) return null; // 아직 점수 없음
+
+          if (awayScore == homeScore) return '무';
+
+          String myName = teamThemes[myTeamId]?.nameKo ?? '';
+          bool isMyTeamAway = away.contains(myName) || myName.contains(away);
+          bool isMyTeamHome = home.contains(myName) || myName.contains(home);
+
+          if (awayScore > homeScore) {
+            return isMyTeamAway ? '승' : '패';
+          } else {
+            return isMyTeamHome ? '승' : '패';
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('스코어 자동 계산 에러: $e');
+    }
+    return null;
+  }
+
+  // ♻️ 데이터 로드 시 승/무/패 자동 업데이트 로직 적용
   Future<void> _loadMyRecordsFromFirestore() async {
     if (uid == null) return;
 
@@ -115,14 +179,34 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final DateTime date = (data['date'] as Timestamp).toDate();
         final dateKey = DateTime.utc(date.year, date.month, date.day);
 
+        // 🔥 결과가 없고(null), 오늘을 포함해 경기 날짜가 지났을 때만 스코어 계산 시도
+        String? currentResult = data['result'];
+        if (currentResult == null && !date.isAfter(DateTime.now())) {
+          currentResult = await _fetchAndCalcResult(
+            date,
+            data['awayTeam'],
+            data['homeTeam'],
+            recordTeamId!,
+          );
+          if (currentResult != null) {
+            // 계산된 승무패를 DB에 덮어씀 (다음 로드부터는 계산 안 함)
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(uid)
+                .collection('jikgwan_records')
+                .doc(doc.id)
+                .update({'result': currentResult});
+          }
+        }
+
         final event = {
           'id': doc.id,
           'title': data['title'],
-          'awayTeam': data['awayTeam'], // ✅ 새로 추가된 필드 읽기
-          'homeTeam': data['homeTeam'], // ✅ 새로 추가된 필드 읽기
-          'opponent': data['opponent'], // 기존 데이터 호환용
+          'awayTeam': data['awayTeam'],
+          'homeTeam': data['homeTeam'],
+          'opponent': data['opponent'],
           'stadium': data['stadium'],
-          'result': data['result'],
+          'result': currentResult, // 🔥 새로 업데이트된 결과 렌더링
           'date': date,
           'myTeamId': recordTeamId,
         };
@@ -145,7 +229,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _deleteEvent(String? docId) async {
-    // ... (기존과 완전히 동일) ...
     if (docId == null || uid == null) return;
     bool confirm =
         await showDialog(
@@ -176,10 +259,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
             .delete();
         _loadMyRecordsFromFirestore();
       } catch (e) {
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text('삭제 실패: $e')));
+        }
       }
     }
   }
@@ -220,10 +304,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
             }
             _loadMyRecordsFromFirestore();
           } catch (e) {
-            if (mounted)
+            if (mounted) {
               ScaffoldMessenger.of(
                 context,
               ).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
+            }
           }
         },
       ),
@@ -232,7 +317,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ... (기존과 동일하므로 생략 없이 원래 _CalendarScreenState 빌드 부분 그대로 유지)
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -333,7 +417,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
         ),
 
-        // ✅ 문법 오류가 났던 부분 수정 (for 문 사용)
         if (_todayScheduledGames.isEmpty)
           const Padding(
             padding: EdgeInsets.all(30),
@@ -355,12 +438,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildMyRecordCard(Map<String, dynamic> event) {
     final bool hasResult = event['result'] != null;
     Color resultColor = Colors.grey;
-    if (event['result'] == '승')
+    if (event['result'] == '승') {
       resultColor = const Color(0xFFC62828);
-    else if (event['result'] == '무')
+    } else if (event['result'] == '무') {
       resultColor = Colors.green;
-    else if (event['result'] == '패')
+    } else if (event['result'] == '패') {
       resultColor = Colors.blue;
+    }
 
     String matchInfo = "";
     if (event['awayTeam'] != null && event['homeTeam'] != null) {
@@ -376,7 +460,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[200]!),
-        // ✅ 최신 문법 반영 (withOpacity -> withValues)
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4),
         ],
@@ -405,7 +488,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
           if (hasResult)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              // ✅ 최신 문법 반영
               decoration: BoxDecoration(
                 color: resultColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
@@ -428,10 +510,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.grey),
             onSelected: (value) {
-              if (value == 'edit')
+              if (value == 'edit') {
                 _showAddScheduleSheet(event: event);
-              else if (value == 'delete')
+              } else if (value == 'delete') {
                 _deleteEvent(event['id']);
+              }
             },
             itemBuilder: (context) => [
               const PopupMenuItem(value: 'edit', child: Text('수정')),
@@ -501,7 +584,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 }
 
 // ==========================================
-// 🌟 바텀시트 구조 대폭 개선 (핵심 수정 영역)
+// 🌟 바텀시트: 수동 입력 제거 버전
 // ==========================================
 class AddScheduleBottomSheet extends StatefulWidget {
   final String currentTeamId;
@@ -551,11 +634,9 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
     '사직',
   ];
 
-  // ✅ 변경점: opponent 하나가 아니라 어웨이/홈 양쪽을 저장
   String? _selectedAwayTeam;
   String? _selectedHomeTeam;
   String? _selectedStadium;
-  String? _selectedResult;
 
   @override
   void initState() {
@@ -567,26 +648,23 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
       _selectedAwayTeam = widget.editingEvent!['awayTeam'];
       _selectedHomeTeam = widget.editingEvent!['homeTeam'];
 
-      // 1. 기존 'KIA' 데이터 처리
       if (_selectedAwayTeam == 'KIA') _selectedAwayTeam = '기아';
       if (_selectedHomeTeam == 'KIA') _selectedHomeTeam = '기아';
 
-      // 🔥 2. [가장 중요한 핵심] 드롭다운( _teams )에 없는 '타팀경기' 같은 값이면 에러 방지를 위해 아예 비워버림!
-      if (_selectedAwayTeam != null && !_teams.contains(_selectedAwayTeam))
+      if (_selectedAwayTeam != null && !_teams.contains(_selectedAwayTeam)) {
         _selectedAwayTeam = null;
-      if (_selectedHomeTeam != null && !_teams.contains(_selectedHomeTeam))
+      }
+      if (_selectedHomeTeam != null && !_teams.contains(_selectedHomeTeam)) {
         _selectedHomeTeam = null;
+      }
 
-      // 3. 구버전 데이터 호환 (away/home이 없고 opponent만 있을 때)
       if (_selectedAwayTeam == null &&
           widget.editingEvent!['opponent'] != null) {
         String opp = widget.editingEvent!['opponent'];
         if (opp == 'KIA') opp = '기아';
 
-        // 여기서도 드롭다운에 있는 정상적인 팀 이름일 때만 넣습니다.
         if (_teams.contains(opp)) {
           _selectedAwayTeam = opp;
-
           String myTeamName = teamThemes[widget.currentTeamId]?.nameKo ?? '';
           for (String t in _teams) {
             if (myTeamName.contains(t) || t.contains(myTeamName)) {
@@ -598,7 +676,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
       }
 
       _selectedStadium = widget.editingEvent!['stadium'];
-      _selectedResult = widget.editingEvent!['result'];
       _selectedDate = widget.editingEvent!['date'];
     } else if (widget.prefilledGame != null) {
       String away = widget.prefilledGame!['away']!;
@@ -614,28 +691,35 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
       }
 
       String upperStadium = stadium.toUpperCase();
-      if (upperStadium.contains('JAMSIL') || upperStadium.contains('잠실'))
+      if (upperStadium.contains('JAMSIL') || upperStadium.contains('잠실')) {
         _selectedStadium = '잠실';
-      else if (upperStadium.contains('GOCHEOK') || upperStadium.contains('고척'))
+      } else if (upperStadium.contains('GOCHEOK') ||
+          upperStadium.contains('고척')) {
         _selectedStadium = '고척';
-      else if (upperStadium.contains('MUNHAK') ||
+      } else if (upperStadium.contains('MUNHAK') ||
           upperStadium.contains('INCHEON') ||
-          upperStadium.contains('문학'))
+          upperStadium.contains('문학')) {
         _selectedStadium = '문학';
-      else if (upperStadium.contains('SUWON') || upperStadium.contains('수원'))
+      } else if (upperStadium.contains('SUWON') ||
+          upperStadium.contains('수원')) {
         _selectedStadium = '수원';
-      else if (upperStadium.contains('DAEJEON') || upperStadium.contains('대전'))
+      } else if (upperStadium.contains('DAEJEON') ||
+          upperStadium.contains('대전')) {
         _selectedStadium = '대전';
-      else if (upperStadium.contains('GWANGJU') || upperStadium.contains('광주'))
+      } else if (upperStadium.contains('GWANGJU') ||
+          upperStadium.contains('광주')) {
         _selectedStadium = '광주';
-      else if (upperStadium.contains('DAEGU') || upperStadium.contains('대구'))
+      } else if (upperStadium.contains('DAEGU') ||
+          upperStadium.contains('대구')) {
         _selectedStadium = '대구';
-      else if (upperStadium.contains('CHANGWON') || upperStadium.contains('창원'))
+      } else if (upperStadium.contains('CHANGWON') ||
+          upperStadium.contains('창원')) {
         _selectedStadium = '창원';
-      else if (upperStadium.contains('SAJIK') ||
+      } else if (upperStadium.contains('SAJIK') ||
           upperStadium.contains('사직') ||
-          upperStadium.contains('BUSAN'))
+          upperStadium.contains('BUSAN')) {
         _selectedStadium = '사직';
+      }
     } else {
       String myTeamName = teamThemes[widget.currentTeamId]?.nameKo ?? '';
       for (String t in _teams) {
@@ -690,7 +774,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
             ),
             const SizedBox(height: 16),
 
-            // ✅ 핵심 변경: 팀 선택을 원정 vs 홈 구조로 나눔
             Row(
               children: [
                 Expanded(
@@ -772,38 +855,34 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               ),
             ),
             const SizedBox(height: 24),
+
             const Text(
               '직관 결과 기록',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 12),
-            if (_isFutureDate())
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: Text(
-                    '경기 후에 결과를 기록할 수 있습니다. ⚾️',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              )
-            else
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildResultButton('승', const Color(0xFFC62828)),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(child: _buildResultButton('무', Colors.green)),
-                  const SizedBox(width: 10),
-                  Expanded(child: _buildResultButton('패', Colors.blue)),
-                ],
+
+            // 🔥 수동 입력 대신 자동 업데이트 안내 문구로 깔끔하게 교체
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
               ),
+              child: Center(
+                child: Text(
+                  _isFutureDate()
+                      ? '경기 후에 결과가 자동으로 기록됩니다. ⚾️'
+                      : '앱이 경기 결과를 자동으로 불러와 기록합니다! 📊',
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
@@ -826,41 +905,36 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                     return;
                   }
 
-                  // 🌟 싹 지워버린 타팀경기 짬처리 로직! 대신 ID 기반으로 정확히 상대팀만 쏙 빼옵니다.
                   String myTeamValue = '';
-                  if (widget.currentTeamId == 'kia')
+                  if (widget.currentTeamId == 'kia') {
                     myTeamValue = '기아';
-                  else if (widget.currentTeamId == 'lg')
+                  } else if (widget.currentTeamId == 'lg') {
                     myTeamValue = 'LG';
-                  else if (widget.currentTeamId == 'doosan')
+                  } else if (widget.currentTeamId == 'doosan') {
                     myTeamValue = '두산';
-                  else if (widget.currentTeamId == 'lotte')
+                  } else if (widget.currentTeamId == 'lotte') {
                     myTeamValue = '롯데';
-                  else if (widget.currentTeamId == 'samsung')
+                  } else if (widget.currentTeamId == 'samsung') {
                     myTeamValue = '삼성';
-                  else if (widget.currentTeamId == 'ssg')
+                  } else if (widget.currentTeamId == 'ssg') {
                     myTeamValue = 'SSG';
-                  else if (widget.currentTeamId == 'nc')
+                  } else if (widget.currentTeamId == 'nc') {
                     myTeamValue = 'NC';
-                  else if (widget.currentTeamId == 'kiwoom')
+                  } else if (widget.currentTeamId == 'kiwoom') {
                     myTeamValue = '키움';
-                  else if (widget.currentTeamId == 'hanwha')
+                  } else if (widget.currentTeamId == 'hanwha') {
                     myTeamValue = '한화';
-                  else if (widget.currentTeamId == 'kt')
+                  } else if (widget.currentTeamId == 'kt') {
                     myTeamValue = 'KT';
+                  }
 
                   String calculatedOpponent = '';
 
-                  // 내가 고른 원정팀이 내 팀이면 -> 상대팀은 홈팀
                   if (_selectedAwayTeam == myTeamValue) {
                     calculatedOpponent = _selectedHomeTeam!;
-                  }
-                  // 내가 고른 홈팀이 내 팀이면 -> 상대팀은 원정팀
-                  else if (_selectedHomeTeam == myTeamValue) {
+                  } else if (_selectedHomeTeam == myTeamValue) {
                     calculatedOpponent = _selectedAwayTeam!;
-                  }
-                  // 내 팀이 하나도 안 낀 진짜 제3자 직관 경기일 경우
-                  else {
+                  } else {
                     calculatedOpponent =
                         '$_selectedAwayTeam vs $_selectedHomeTeam';
                   }
@@ -869,10 +943,12 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                     'title': _titleController.text,
                     'awayTeam': _selectedAwayTeam,
                     'homeTeam': _selectedHomeTeam,
-                    'opponent':
-                        calculatedOpponent, // 🔥 이제 "vs 두산" 처럼 정상적으로 이름이 들어감!
+                    'opponent': calculatedOpponent,
                     'stadium': _selectedStadium,
-                    'result': _isFutureDate() ? null : _selectedResult,
+                    // 🔥 기존의 result가 있으면 살려두고, 없으면 null 처리 (자동 갱신 대상)
+                    'result': widget.editingEvent != null
+                        ? widget.editingEvent!['result']
+                        : null,
                   }, _selectedDate);
 
                   Navigator.pop(context);
@@ -888,31 +964,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildResultButton(String text, Color color) {
-    bool isSelected = _selectedResult == text;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedResult = text),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: isSelected ? color : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? color : Colors.grey[300]!),
-        ),
-        child: Center(
-          child: Text(
-            text,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
         ),
       ),
     );

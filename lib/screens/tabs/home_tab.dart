@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // ✅ 파이어베이스 임포트 수정
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../team_theme.dart';
 import '../../services/naver_news_service.dart';
@@ -79,37 +79,51 @@ class _HomeTabState extends State<HomeTab> {
     return logo;
   }
 
-  // ✅ 한글/영문 구단명 교차 매칭을 위한 헬퍼 함수 추가
   bool _isMyTeam(String teamName) {
     final String tName = teamName.toUpperCase().trim();
     final String myId = widget.team.id.toUpperCase().trim();
     final String myKo = widget.team.nameKo.trim();
 
-    // 1차: 기본 일치 여부 확인
     if (tName == myId || tName == myKo) return true;
-
-    // 2차: KIA / 기아 등 영문-한글 혼용 구단 예외 처리
     if ((tName.contains('KIA') || tName.contains('기아')) &&
         (myId.contains('KIA') || myKo.contains('기아')))
       return true;
-
     if ((tName.contains('KT') || tName.contains('케이티')) &&
         (myId.contains('KT') || myKo.contains('케이티')))
       return true;
-
     if ((tName.contains('NC') || tName.contains('엔씨')) &&
         (myId.contains('NC') || myKo.contains('엔씨')))
       return true;
-
     if ((tName.contains('SSG') || tName.contains('에스에스지')) &&
         (myId.contains('SSG') || myKo.contains('에스에스지')))
       return true;
-
     if ((tName.contains('LG') || tName.contains('엘지')) &&
         (myId.contains('LG') || myKo.contains('엘지')))
       return true;
 
     return false;
+  }
+
+  String _getKboGameId(DateTime date, String away, String home) {
+    final y = date.year.toString();
+    final m = date.month.toString().padLeft(2, '0');
+    final d = date.day.toString().padLeft(2, '0');
+
+    String getCode(String t) {
+      if (t.contains('SSG') || t.contains('에스에스지')) return 'SK';
+      if (t.contains('삼성')) return 'SS';
+      if (t.contains('두산')) return 'OB';
+      if (t.contains('KIA') || t.contains('기아')) return 'HT';
+      if (t.contains('LG') || t.contains('엘지')) return 'LG';
+      if (t.contains('NC') || t.contains('엔씨')) return 'NC';
+      if (t.contains('롯데')) return 'LT';
+      if (t.contains('키움')) return 'WO';
+      if (t.contains('한화')) return 'HH';
+      if (t.contains('KT') || t.contains('케이티')) return 'KT';
+      return t;
+    }
+
+    return "$y$m$d${getCode(away)}${getCode(home)}0";
   }
 
   Future<Map<String, List<dynamic>>> _loadGamesFromCsv(DateTime date) async {
@@ -136,16 +150,13 @@ class _HomeTabState extends State<HomeTab> {
         };
 
         if (game['date'] == targetDate) {
-          // ✅ 헬퍼 함수를 사용하여 내 팀 매칭 확인
           bool isMyMatch =
               _isMyTeam(game['away'].toString()) ||
               _isMyTeam(game['home'].toString());
-
-          if (isMyMatch) {
+          if (isMyMatch)
             myMatch.add(game);
-          } else {
+          else
             otherMatches.add(game);
-          }
         }
       }
       return {'my': myMatch, 'others': otherMatches};
@@ -169,7 +180,6 @@ class _HomeTabState extends State<HomeTab> {
           body: ListView(
             padding: EdgeInsets.zero,
             children: [
-              // 메인 카드 영역
               SizedBox(
                 height: 290,
                 child: Stack(
@@ -201,8 +211,6 @@ class _HomeTabState extends State<HomeTab> {
                   ],
                 ),
               ),
-
-              // ✅ 타구단 경기 & 순위표 버튼
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 15),
                 child: Row(
@@ -250,8 +258,6 @@ class _HomeTabState extends State<HomeTab> {
                 ),
               ),
               _buildOtherGamesList(otherMatches),
-
-              // 구단 소식 헤더
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 25, 10, 5),
                 child: Row(
@@ -284,7 +290,6 @@ class _HomeTabState extends State<HomeTab> {
                   ],
                 ),
               ),
-
               _buildNewsPreview(),
               const SizedBox(height: 40),
             ],
@@ -294,7 +299,6 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  // 🏆 순위표 바텀 시트
   void _showKboRankingSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -309,7 +313,6 @@ class _HomeTabState extends State<HomeTab> {
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
           child: Column(
             children: [
-              // 상단 핸들러 바
               Container(
                 width: 40,
                 height: 4,
@@ -324,8 +327,6 @@ class _HomeTabState extends State<HomeTab> {
                 style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-
-              // 표 헤더
               Row(
                 children: [
                   SizedBox(
@@ -373,8 +374,6 @@ class _HomeTabState extends State<HomeTab> {
               ),
               const SizedBox(height: 8),
               const Divider(height: 1, thickness: 1),
-
-              // 파이어베이스 데이터 리스트
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
@@ -382,15 +381,11 @@ class _HomeTabState extends State<HomeTab> {
                       .orderBy('rank')
                       .snapshots(),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
+                    if (snapshot.connectionState == ConnectionState.waiting)
                       return const Center(child: CircularProgressIndicator());
-                    }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
                       return const Center(child: Text('순위 정보를 불러올 수 없습니다.'));
-                    }
-
                     final docs = snapshot.data!.docs;
-
                     return ListView.separated(
                       padding: const EdgeInsets.only(bottom: 20),
                       itemCount: docs.length,
@@ -398,12 +393,9 @@ class _HomeTabState extends State<HomeTab> {
                           Divider(height: 1, color: Colors.grey.shade100),
                       itemBuilder: (context, index) {
                         final data = docs[index].data() as Map<String, dynamic>;
-
-                        // ✅ 헬퍼 함수 적용하여 순위표 내 팀 하이라이트 매칭
                         final bool isMyTeam = _isMyTeam(
                           data['teamName'].toString(),
                         );
-
                         return Container(
                           decoration: BoxDecoration(
                             color: isMyTeam
@@ -414,7 +406,6 @@ class _HomeTabState extends State<HomeTab> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Row(
                             children: [
-                              // 1. 순위
                               SizedBox(
                                 width: 35,
                                 child: Text(
@@ -431,8 +422,6 @@ class _HomeTabState extends State<HomeTab> {
                                   ),
                                 ),
                               ),
-
-                              // 2. 팀 로고 + 팀명
                               Expanded(
                                 child: Padding(
                                   padding: const EdgeInsets.only(left: 6),
@@ -466,8 +455,6 @@ class _HomeTabState extends State<HomeTab> {
                                   ),
                                 ),
                               ),
-
-                              // 3. 경기 수
                               SizedBox(
                                 width: 35,
                                 child: Text(
@@ -476,8 +463,6 @@ class _HomeTabState extends State<HomeTab> {
                                   style: const TextStyle(fontSize: 13),
                                 ),
                               ),
-
-                              // 4. 승-무-패
                               SizedBox(
                                 width: 75,
                                 child: Text(
@@ -486,8 +471,6 @@ class _HomeTabState extends State<HomeTab> {
                                   style: const TextStyle(fontSize: 13),
                                 ),
                               ),
-
-                              // 5. 승률
                               SizedBox(
                                 width: 45,
                                 child: Text(
@@ -514,26 +497,13 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
+  // ==========================================
+  // ⭐️ 메인 경기 카드
+  // ==========================================
   Widget _buildMainCard(dynamic game) {
-    bool isActuallyToday =
-        _selectedDate.year == _today.year &&
-        _selectedDate.month == _today.month &&
-        _selectedDate.day == _today.day;
-
-    return GestureDetector(
-      onTap: game != null
-          ? () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      LineupScreen(game: game, themeColor: widget.team.primary),
-                ),
-              );
-            }
-          : null,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 30),
+    if (game == null) {
+      return Container(
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -545,120 +515,224 @@ class _HomeTabState extends State<HomeTab> {
             ),
           ],
         ),
-        child: Column(
-          children: [
-            // 상단 날짜 영역
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (isActuallyToday)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: widget.team.primary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'Today',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
-                else
-                  const SizedBox(height: 27),
-                Text(
-                  "${_selectedDate.year}.${_selectedDate.month}.${_selectedDate.day}",
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
+        child: const Center(child: Text("경기가 없습니다.")),
+      );
+    }
+
+    bool isActuallyToday =
+        _selectedDate.year == _today.year &&
+        _selectedDate.month == _today.month &&
+        _selectedDate.day == _today.day;
+    final String scoreDocId = _getKboGameId(
+      _selectedDate,
+      game['away'],
+      game['home'],
+    );
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('kbo_scoreboards')
+          .doc(scoreDocId)
+          .snapshots(),
+      builder: (context, snapshot) {
+        Map<String, dynamic>? scoreData =
+            snapshot.data?.data() as Map<String, dynamic>?;
+
+        String awayScore = "0";
+        String homeScore = "0";
+        bool isFinished = scoreData?['status'] == 'FINISHED';
+
+        if (scoreData != null && scoreData['scoreboard'] != null) {
+          final scoreboardList = scoreData['scoreboard'] as List<dynamic>;
+          if (scoreboardList.length >= 2) {
+            awayScore = scoreboardList[0]['R']?.toString() ?? "0";
+            homeScore = scoreboardList[1]['R']?.toString() ?? "0";
+          }
+        }
+
+        bool hasScore =
+            isFinished ||
+            (scoreData != null && scoreData['scoreboard'] != null);
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    LineupScreen(game: game, themeColor: widget.team.primary),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (isActuallyToday)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isFinished ? Colors.grey : widget.team.primary,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          isFinished ? '경기 종료' : 'Today',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    else
+                      const SizedBox(height: 27),
+                    Text(
+                      "${_selectedDate.year}.${_selectedDate.month}.${_selectedDate.day}",
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(child: _teamInfo(game['away'])),
 
-            const Spacer(flex: 1),
+                    if (hasScore)
+                      _scoreArea(
+                        awayScore,
+                        homeScore,
+                        game['stadium'].toString(),
+                      )
+                    else
+                      _vsOriginalArea(
+                        game['stadium'].toString(),
+                        game['time'].toString(),
+                      ),
 
-            if (game == null)
-              const Center(child: Text("예정된 경기가 없습니다."))
-            else
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Spacer(flex: 1),
-                  _teamInfo(game['away']),
-                  const Spacer(flex: 2),
-                  _vsInfo(game['stadium'], game['time']),
-                  const Spacer(flex: 2),
-                  _teamInfo(game['home']),
-                  const Spacer(flex: 1),
-                ],
-              ),
-
-            const Spacer(flex: 1),
-          ],
-        ),
-      ),
+                    Expanded(child: _teamInfo(game['home'])),
+                  ],
+                ),
+                const Spacer(),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _teamInfo(String teamName) {
+  // 🔢 점수 표시 영역 (강렬한 색상 버전)
+  Widget _scoreArea(String awayScore, String homeScore, String stadium) {
+    int a = int.tryParse(awayScore) ?? 0;
+    int h = int.tryParse(homeScore) ?? 0;
+
+    // 🔥 강렬한 색상 정의
+    const Color strongRed = Color(0xFFCC0000); // 강렬한 빨강
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(
-          _getLogo(teamName),
-          width: 60,
-          height: 60,
-          errorBuilder: (_, __, ___) =>
-              const Icon(Icons.sports_baseball, size: 60),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              awayScore,
+              style: TextStyle(
+                fontSize: 42,
+                fontWeight: FontWeight.w900,
+                color: a > h
+                    ? strongRed
+                    : (a < h ? Colors.grey : Colors.black87),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'vs',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            Text(
+              homeScore,
+              style: TextStyle(
+                fontSize: 42,
+                fontWeight: FontWeight.w900,
+                color: h > a
+                    ? strongRed
+                    : (h < a ? Colors.grey : Colors.black87),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Text(
-          teamName,
-          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+          stadium.toUpperCase(),
+          style: TextStyle(
+            color: Colors.grey.shade600,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ],
     );
   }
 
-  Widget _vsInfo(String stadium, String time) {
+  // 🆚 오리지널 VS 영역 (미래 경기용)
+  Widget _vsOriginalArea(String stadium, String time) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: 5),
         const Text(
           'VS',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w900,
             fontStyle: FontStyle.italic,
-            letterSpacing: -1,
-            height: 1.0,
+            color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         Text(
-          stadium,
+          stadium.toUpperCase(),
           style: TextStyle(
             color: Colors.grey.shade600,
             fontSize: 12,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(
             color: Colors.grey.shade100,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
           ),
           child: Text(
             time,
@@ -673,14 +747,35 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
+  Widget _teamInfo(String teamName) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset(
+          _getLogo(teamName),
+          width: 55,
+          height: 55,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.sports_baseball, size: 55),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          teamName,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================
+  // ⭐️ 타구단 경기 리스트
+  // ==========================================
   Widget _buildOtherGamesList(List<dynamic> games) {
-    if (games.isEmpty) {
+    if (games.isEmpty)
       return const SizedBox(
         height: 100,
         child: Center(child: Text("경기 정보가 없습니다.")),
       );
-    }
-
     return SizedBox(
       height: 145,
       child: ListView.builder(
@@ -688,64 +783,153 @@ class _HomeTabState extends State<HomeTab> {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: games.length,
-        itemBuilder: (context, i) => Container(
-          width: 160,
-          margin: const EdgeInsets.only(right: 15, bottom: 8),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.grey.shade100),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "${games[i]['stadium']} | ${games[i]['time']}",
-                style: const TextStyle(fontSize: 10, color: Colors.grey),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Image.asset(
-                    _getLogo(games[i]['away']),
-                    width: 35,
-                    height: 35,
-                  ),
-                  const Text(
-                    'VS',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.black12,
+        itemBuilder: (context, i) {
+          final game = games[i];
+          final String scoreDocId = _getKboGameId(
+            _selectedDate,
+            game['away'],
+            game['home'],
+          );
+          return StreamBuilder<DocumentSnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('kbo_scoreboards')
+                .doc(scoreDocId)
+                .snapshots(),
+            builder: (context, snapshot) {
+              Map<String, dynamic>? scoreData =
+                  snapshot.data?.data() as Map<String, dynamic>?;
+              String awayScore = "0", homeScore = "0";
+              bool isFinished = scoreData?['status'] == 'FINISHED';
+              if (scoreData != null && scoreData['scoreboard'] != null) {
+                final list = scoreData['scoreboard'] as List<dynamic>;
+                if (list.length >= 2) {
+                  awayScore = list[0]['R']?.toString() ?? "0";
+                  homeScore = list[1]['R']?.toString() ?? "0";
+                }
+              }
+              bool hasScore =
+                  isFinished ||
+                  (scoreData != null && scoreData['scoreboard'] != null);
+              int a = int.tryParse(awayScore) ?? 0,
+                  h = int.tryParse(homeScore) ?? 0;
+
+              const Color strongRed = Color(0xFFCC0000);
+
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          LineupScreen(game: game, themeColor: Colors.grey),
                     ),
+                  );
+                },
+                child: Container(
+                  width: 160,
+                  margin: const EdgeInsets.only(right: 15, bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: Colors.grey.shade100),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  Image.asset(
-                    _getLogo(games[i]['home']),
-                    width: 35,
-                    height: 35,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        isFinished
+                            ? '종료'
+                            : "${game['stadium']} | ${game['time']}",
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: isFinished ? Colors.grey : Colors.grey,
+                          fontWeight: isFinished
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Image.asset(
+                            _getLogo(game['away']),
+                            width: 35,
+                            height: 35,
+                          ),
+                          if (hasScore)
+                            Row(
+                              children: [
+                                Text(
+                                  awayScore,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: a > h
+                                        ? strongRed
+                                        : (a < h ? Colors.grey : Colors.black),
+                                  ),
+                                ),
+                                const Text(
+                                  ' vs ',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Text(
+                                  homeScore,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: h > a
+                                        ? strongRed
+                                        : (h < a ? Colors.grey : Colors.black),
+                                  ),
+                                ),
+                              ],
+                            )
+                          else
+                            const Text(
+                              'VS',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black12,
+                              ),
+                            ),
+                          Image.asset(
+                            _getLogo(game['home']),
+                            width: 35,
+                            height: 35,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${game['away']} : ${game['home']}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${games[i]['away']} : ${games[i]['home']}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12,
                 ),
-              ),
-            ],
-          ),
-        ),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -756,80 +940,17 @@ class _HomeTabState extends State<HomeTab> {
       child: FutureBuilder<List<NaverNewsArticle>>(
         future: _newsFuture,
         builder: (context, snap) {
-          if (snap.connectionState != ConnectionState.done) {
-            return Container(
+          if (snap.connectionState != ConnectionState.done)
+            return const SizedBox(
               height: 180,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: const Center(child: CircularProgressIndicator()),
+              child: Center(child: CircularProgressIndicator()),
             );
-          }
-
-          if (snap.hasError) {
-            return Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '구단 소식을 불러오지 못했어요.',
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${snap.error}',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    height: 40,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.team.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _newsFuture = NaverNewsService.fetchTeamNews(
-                            teamNameOrId: widget.team.nameKo,
-                            start: 1,
-                            display: 2,
-                            sort: 'date',
-                          );
-                        });
-                      },
-                      child: const Text('다시 시도'),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
           final list = snap.data ?? [];
-          if (list.isEmpty) {
-            return Container(
+          if (list.isEmpty)
+            return const SizedBox(
               height: 180,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: const Center(child: Text('표시할 구단 소식이 없어요.')),
+              child: Center(child: Text('소식이 없어요.')),
             );
-          }
-
           return Column(
             children: [
               for (final a in list) ...[
@@ -862,20 +983,17 @@ class _NaverNewsPreviewCard extends StatelessWidget {
   final NaverNewsArticle article;
   final Color themeColor;
   final VoidCallback onTap;
-
   const _NaverNewsPreviewCard({
     required this.article,
     required this.themeColor,
     required this.onTap,
   });
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
@@ -918,11 +1036,7 @@ class _NaverNewsPreviewCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    _domainText(
-                      article.originallink.isNotEmpty
-                          ? article.originallink
-                          : article.link,
-                    ),
+                    article.originallink,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -939,11 +1053,5 @@ class _NaverNewsPreviewCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _domainText(String url) {
-    final uri = Uri.tryParse(url);
-    if (uri == null) return url;
-    return uri.host.replaceFirst('www.', '');
   }
 }

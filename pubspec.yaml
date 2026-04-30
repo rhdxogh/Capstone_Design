@@ -53,6 +53,17 @@ flutter:
     - assets/stadium_img/
     - assets/view_img/
     - assets/lineup_img/
+    - assets/lineup_img/background.png
+    - assets/lineup_img/1b.png
+    - assets/lineup_img/2b.png
+    - assets/lineup_img/3b.png
+    - assets/lineup_img/c.png
+    - assets/lineup_img/cf.png
+    - assets/lineup_img/dh.png
+    - assets/lineup_img/lf.png
+    - assets/lineup_img/rf.png
+    - assets/lineup_img/sp.png
+    - assets/lineup_img/ss.png
     - assets/etc/
     - assets/data/
     - assets/weather_img/
