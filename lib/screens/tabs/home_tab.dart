@@ -664,7 +664,7 @@ class _HomeTabState extends State<HomeTab> {
                 fontWeight: FontWeight.w900,
                 color: a > h
                     ? strongRed
-                    : (a < h ? Colors.grey : Colors.black87),
+                    : (a < h ? Colors.black : Colors.black87),
               ),
             ),
             const Padding(
@@ -675,7 +675,7 @@ class _HomeTabState extends State<HomeTab> {
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   fontStyle: FontStyle.italic,
-                  color: Colors.black,
+                  color: Colors.black45,
                 ),
               ),
             ),
@@ -686,7 +686,7 @@ class _HomeTabState extends State<HomeTab> {
                 fontWeight: FontWeight.w900,
                 color: h > a
                     ? strongRed
-                    : (h < a ? Colors.grey : Colors.black87),
+                    : (h < a ? Colors.black : Colors.black87),
               ),
             ),
           ],
@@ -715,7 +715,7 @@ class _HomeTabState extends State<HomeTab> {
             fontSize: 28,
             fontWeight: FontWeight.w900,
             fontStyle: FontStyle.italic,
-            color: Colors.black87,
+            color: Colors.black,
           ),
         ),
         const SizedBox(height: 4),
@@ -875,7 +875,7 @@ class _HomeTabState extends State<HomeTab> {
                                     fontWeight: FontWeight.w900,
                                     color: a > h
                                         ? strongRed
-                                        : (a < h ? Colors.grey : Colors.black),
+                                        : (a < h ? Colors.black : Colors.black),
                                   ),
                                 ),
                                 const Text(
@@ -884,7 +884,7 @@ class _HomeTabState extends State<HomeTab> {
                                     fontSize: 10,
                                     fontWeight: FontWeight.w900,
                                     fontStyle: FontStyle.italic,
-                                    color: Colors.black,
+                                    color: Colors.black45,
                                   ),
                                 ),
                                 Text(
@@ -894,7 +894,7 @@ class _HomeTabState extends State<HomeTab> {
                                     fontWeight: FontWeight.w900,
                                     color: h > a
                                         ? strongRed
-                                        : (h < a ? Colors.grey : Colors.black),
+                                        : (h < a ? Colors.black : Colors.black),
                                   ),
                                 ),
                               ],
@@ -905,7 +905,7 @@ class _HomeTabState extends State<HomeTab> {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w900,
-                                color: Colors.black12,
+                                color: Colors.black45,
                               ),
                             ),
                           Image.asset(

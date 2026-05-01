@@ -32,7 +32,9 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
   }
 
   void _refresh() {
-    setState(() => _future = WeatherService.fetchAll());
+    setState(() {
+      _future = WeatherService.fetchAll();
+    });
   }
 
   StadiumLoc _findStadium(String id) {
@@ -390,7 +392,7 @@ class _MarkerCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: themeColor.withOpacity(0.25)),
+            border: Border.all(color: Colors.grey.shade300),
             boxShadow: [
               BoxShadow(
                 blurRadius: 8,

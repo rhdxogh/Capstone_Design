@@ -123,6 +123,7 @@ class _LineupScreenState extends State<LineupScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
+      //backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           "${widget.game['date']} 경기 정보",
@@ -210,7 +211,7 @@ class _LineupScreenState extends State<LineupScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
-                        color: Colors.black38,
+                        color: Colors.black45,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
