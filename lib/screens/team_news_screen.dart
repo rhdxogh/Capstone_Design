@@ -22,7 +22,9 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
   final _scrollCtrl = ScrollController();
   final List<NaverNewsArticle> _items = [];
 
-  static const int _display = 5;
+  static const int _display = 20;
+  static const int _minInitialItems = 5;
+  static const int _maxAutoFillAttempts = 3;
   int _start = 1;
 
   bool _loading = false;
@@ -78,7 +80,7 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
   }
 
   Future<void> _loadFirst() async {
-    if (_loading) return; // 데이터 꼬임 방지
+    if (_loading) return;
 
     setState(() {
       _items.clear();
@@ -86,13 +88,30 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
       _hasMore = true;
       _error = null;
     });
+
     await _loadChunk(start: 1);
+    await _fillUntilEnoughItems();
   }
+
 
   Future<void> _loadMore() async {
     if (_loading || !_hasMore) return;
     await _loadChunk(start: _start);
   }
+
+  Future<void> _fillUntilEnoughItems() async {
+    var attempts = 0;
+
+    while (mounted &&
+        _hasMore &&
+        _items.length < _minInitialItems &&
+        attempts < _maxAutoFillAttempts) {
+      attempts++;
+
+      await _loadChunk(start: _start);
+    }
+  }
+
 
   Future<void> _loadChunk({required int start}) async {
     if (start > 1000) {
@@ -141,7 +160,8 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
       setState(() {
         _items.addAll(deduped);
         _start = start + _display;
-        _hasMore = deduped.length >= (_display ~/ 2) && _start <= 1000;
+        _hasMore = fallback.isNotEmpty && _start <= 1000;
+
       });
     } catch (e) {
       if (!mounted) return; // 화면 종료 시 에러 방지
