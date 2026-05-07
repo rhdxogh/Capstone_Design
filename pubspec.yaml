@@ -79,6 +79,8 @@ flutter:
     - assets/overlays/JAMSIL/
     - assets/overlays/SAJIK/
     - assets/overlays/SUWON/
+    - assets/overlays/ULSAN/
+
     # Foods
     - assets/food_img/
     - assets/food_img/MUNHAK/

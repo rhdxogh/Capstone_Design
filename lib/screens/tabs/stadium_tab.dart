@@ -49,13 +49,18 @@ class _StadiumTabState extends State<StadiumTab> {
     ),
     _StadiumItem(
       id: 'changwon',
-      nameKo: '창원NC파크',
+      nameKo: '창원 NC 파크',
       asset: 'assets/stadium_img/changwon.png',
     ),
     _StadiumItem(
       id: 'gwangju',
       nameKo: '광주-기아 챔피언스필드',
       asset: 'assets/stadium_img/gwangju.png',
+    ),
+    _StadiumItem(
+      id: 'ulsan',
+      nameKo: '울산 문수 야구장',
+      asset: 'assets/stadium_img/ulsan.png',
     ),
   ];
 
