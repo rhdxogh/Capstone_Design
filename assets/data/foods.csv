@@ -1,297 +1,289 @@
-﻿stadiumId,foodId,name,location,floor,tags,food_img
-MUNHAK,burgerwonders,버거원더스,1루,1층,"#햄버거, #피자, #맥주",assets/food_img/MUNHAK/burgerwonders.png
-MUNHAK,dream_bhc,드림마켓(BHC),1루,1층,"#치킨, #오징어",assets/food_img/MUNHAK/bhc.png
-MUNHAK,mimi,우리동네 미미네 ,1루,1층,"#치킨, #떡볶이, #크림새우, #오징어",assets/food_img/MUNHAK/mimi.png
-MUNHAK,kukdae,국대떡볶이,1루,1층,"#치킨, #떡볶이, #크림새우",assets/food_img/MUNHAK/kukdae.png
-MUNHAK,pickme31,픽미31,1루,1층,#주류,assets/food_img/MUNHAK/default.png
-MUNHAK,starbucks,스타벅스,1루,1층,"#음료, #카페",assets/food_img/MUNHAK/starbucks.png
-MUNHAK,aloha,알로하커피앤바,1루,1층,"#음료, #주류",assets/food_img/MUNHAK/aloha.png
-MUNHAK,emart24_1f,이마트24,1루,1층,#편의점,assets/food_img/MUNHAK/emart24.png
-MUNHAK,dream,드림마켓,1루,1층,#오징어,assets/food_img/MUNHAK/default.png
-MUNHAK,t_mart,T-MART,1루,1층,#오징어,assets/food_img/MUNHAK/default.png
-MUNHAK,nobrand,노브랜드버거,1루,2층,"#버거, #치킨",assets/food_img/MUNHAK/nobrand.png
-MUNHAK,heogal,허갈닭강정(문학철판삼겹),1루,2층,"#치킨, #떡볶이, #주류",assets/food_img/MUNHAK/heogal.png
-MUNHAK,norang,노랑통닭,1루,2층,"#치킨, #주류, #떡볶이",assets/food_img/MUNHAK/norang.png
-MUNHAK,monchip,몬칩팩토리,1루,2층,"#치킨, #오징어",assets/food_img/MUNHAK/default.png
-MUNHAK,ssinnanda,씬난다 스테이크 & 마라새우,1루,2층,"#스테이크, #크림새우, #주류",assets/food_img/MUNHAK/default.png
-MUNHAK,station,STATION,1루,2층,"#크림새우, #마라새우, #주류",assets/food_img/MUNHAK/station.png
-MUNHAK,family_bhc,패밀리푸드존(BHC),1루,2층,"#치킨, #떡볶이",assets/food_img/MUNHAK/bhc.png
-MUNHAK,starbucks_2f,스타벅스,1루,2층,"#음료, #카페",assets/food_img/MUNHAK/starbucks.png
-MUNHAK,curving,커빙,1루,2층,"#빙수, #음료",assets/food_img/MUNHAK/default.png
-MUNHAK,minyoung,민영활어공장,3루,1층,"#초밥, #물회",assets/food_img/MUNHAK/minyoung.png
-MUNHAK,osaka,오사카 야키(그루터기),3루,1층,"#닭강정, #야끼",assets/food_img/MUNHAK/default.png
-MUNHAK,oreo,오레오츄러스,3루,1층,#츄러스,assets/food_img/MUNHAK/oreo.png
-MUNHAK,bookchon,북촌손만두,3루,1층,"#만두, #냉면, #닭강정",assets/food_img/MUNHAK/bookchon.png
-MUNHAK,kyochon,교촌치킨,3루,1층,"#치킨, #크림새우",assets/food_img/MUNHAK/kyochon.png
-MUNHAK,ssambba,쌈빠치킨,3루,2층,"#치킨, #멘보샤",assets/food_img/MUNHAK/default.png
-MUNHAK,kingkong,킹콩떡볶이,3루,2층,"#떡볶이, #순대",assets/food_img/MUNHAK/kingkong.png
-MUNHAK,emart24_2f,이마트24,3루,2층,#편의점,assets/food_img/MUNHAK/emart24.png
-MUNHAK,mimi_2f,우리동네 미미네 ,내야,4층,"#치킨, #떡볶이, #크림새우, #오징어",assets/food_img/MUNHAK/mimi.png
-MUNHAK,papa,파파존스,내야,4층,"#피자, #브라우니",assets/food_img/MUNHAK/papa.png
-MUNHAK,sunsal,순살싸다리,외야,단층,"#치킨, #크림새우",assets/food_img/MUNHAK/default.png
-MUNHAK,didim,디딤푸드코트,외야,단층,#컵밥,assets/food_img/MUNHAK/default.png
-MUNHAK,lovebb_bhc,야구사랑(BHC),외야,단층,"#치킨, #오징어",assets/food_img/MUNHAK/bhc.png
-MUNHAK,myeongin,명인만두(만두오향족발),외야,단층,"#만두, #족발, #냉면",assets/food_img/MUNHAK/myeongin.png
-MUNHAK,norang_of,노랑통닭,외야,단층,"#치킨, #주류, #떡볶이",assets/food_img/MUNHAK/norang.png
-CHANGWON,seven_1,세븐일레븐,1루,1층,#편의점,assets/food_img/CHANGWON/seven.png
-CHANGWON,cheil,제일버거,1루,1층,"#햄버거, #핫도그",assets/food_img/CHANGWON/cheil.png
-CHANGWON,chungdo,청도미나리식당,1루,1층,"#삼겹살, #도시락, #새우전",assets/food_img/CHANGWON/chungdo.png
-CHANGWON,banolim,반올림피자,1루,1층,"#피자, #치즈볼",assets/food_img/CHANGWON/banolim.png
-CHANGWON,altong_1,알통떡강정,1루,1층,"#떡강정, #치킨",assets/food_img/CHANGWON/altong.png
-CHANGWON,happycheese,해피치즈스마일,1루,1층,"#떡볶이, #순대, #야채곱창",assets/food_img/CHANGWON/happycheese.png
-CHANGWON,street,스트릿츄러스,1루,1층,"#츄러스, #아이스크림",assets/food_img/CHANGWON/street.png
-CHANGWON,altong_2,알통떡강정,중앙,1층,"#떡강정, #치킨",assets/food_img/CHANGWON/altong.png
-CHANGWON,seven_2,세븐일레븐,중앙,1층,#편의점,assets/food_img/CHANGWON/seven.png
-CHANGWON,bhc,bhc,중앙,1층,"#치킨, #주류",assets/food_img/CHANGWON/bhc.png
-CHANGWON,bookchon,북촌손만두,3루,1층,"#만두, #냉면, #닭강정",assets/food_img/CHANGWON/bookchon.png
-CHANGWON,norang,노랑통닭,3루,1층,"#치킨, #주류",assets/food_img/CHANGWON/norang.png
-CHANGWON,menya,멘야파이토,3루,1층,"#라멘, #주류",assets/food_img/CHANGWON/menya.png
-CHANGWON,shrimp,쉬림프셰프,3루,1층,"#크림새우, #칠리새우",assets/food_img/CHANGWON/shrimp.png
-CHANGWON,koa,코아양과,3루,1층,"#밀크셰이크, #십원빵",assets/food_img/CHANGWON/koa.png
-CHANGWON,seven_3,세븐일레븐,3루,1층,#편의점,assets/food_img/CHANGWON/seven.png
-CHANGWON,banolim_2,반올림피자,3루,1층,"#피자, #치즈볼",assets/food_img/CHANGWON/banolim.png
-CHANGWON,starbucks,스타벅스,3루,1층,"#음료, #카페",assets/food_img/CHANGWON/starbucks.png
-CHANGWON,manjae,만재네,외야,1층,#고기,assets/food_img/CHANGWON/manjae.png
-CHANGWON,bhc_2,bhc,외야,1층,"#치킨, #주류",assets/food_img/CHANGWON/bhc.png
-CHANGWON,sunae,수내닭꼬치,외야,1층,#닭꼬치,assets/food_img/CHANGWON/sunae.png
-CHANGWON,brussels,브뤼셀프라이,외야,1층,#감자튀김,assets/food_img/CHANGWON/brussels.png
-CHANGWON,beerbat,비어배트,외야,1층,"#생맥주, #주류",assets/food_img/CHANGWON/beerbat.png
-CHANGWON,workster,윅스터,외야,1층,"#차오미엔, #치킨",assets/food_img/CHANGWON/workster.png
-CHANGWON,yogurtworld,요거트월드,외야,1층,#아이스크림,assets/food_img/CHANGWON/yogurtworld.png
-CHANGWON,starbucks_2f,스타벅스,3루,2층,"#음료, #카페",assets/food_img/CHANGWON/starbucks.png
-CHANGWON,seven_4,세븐일레븐,중앙,2층,#편의점,assets/food_img/CHANGWON/seven.png
-CHANGWON,bhc_3,bhc,1루,2층,"#치킨, #주류",assets/food_img/CHANGWON/bhc.png
-DAEJEON,masung,마성떡볶이,3루,1층,"#떡볶이, #순대",assets/food_img/DAEJEON/masung.png
-DAEJEON,gurudak,구르닭,3루,1층,"#닭목살구이, #닭유린기, #초계국수",assets/food_img/DAEJEON/gurudak.png
-DAEJEON,yogurtworld,요아정,3루,1층,#아이스크림,assets/food_img/DAEJEON/yogurtworld.png
-DAEJEON,brussels,브뤼셀프라이,3루,1층,#감자튀김,assets/food_img/DAEJEON/brussels.png
-DAEJEON,paiksbakery,빽다방빵연구소,3루,1층,"#빵, #베이커리",assets/food_img/DAEJEON/paiksbakery.png
-DAEJEON,nogsim,농심가락,3루,1층,"#떡볶이, #잔치국수",assets/food_img/DAEJEON/default.png
-DAEJEON,gs25_1,GS25,3루,1층,#편의점,assets/food_img/DAEJEON/gs25.png
-DAEJEON,jadam_1,자담치킨,중앙,1층,#치킨,assets/food_img/DAEJEON/jadam.png
-DAEJEON,bbq_1,BBQ치킨,중앙,1층,"#치킨, #주류",assets/food_img/DAEJEON/bbq.png
-DAEJEON,wanmi,완미족발,중앙,1층,"#족발, #막국수",assets/food_img/DAEJEON/wanmi.png
-DAEJEON,gongcha,공차,중앙,1층,"#음료, #카페",assets/food_img/DAEJEON/gongcha.png
-DAEJEON,gs25_2,GS25,중앙,1층,#편의점,assets/food_img/DAEJEON/gs25.png
-DAEJEON,banolim,반올림피자,중앙,1층,#피자,assets/food_img/DAEJEON/banolim.png
-DAEJEON,eungubi,은구비커피,중앙,1층,"#음료, #카페",assets/food_img/DAEJEON/eungubi.png
-DAEJEON,baro,바로그집,1루,1층,"#떡볶이, #오뎅",assets/food_img/DAEJEON/baro.png
-DAEJEON,sunbi,선비꼬마김밥,1루,1층,"#김밥, #라면",assets/food_img/DAEJEON/sunbi.png
-DAEJEON,bookchon,북촌손만두,1루,1층,"#만두, #육회",assets/food_img/DAEJEON/bookchon.png
-DAEJEON,myeongrang,명랑핫도그,1루,1층,"#핫도그, #소떡소떡",assets/food_img/DAEJEON/myeongrang.png
-DAEJEON,eaglesbrewers,이글스브루어리,1루,1층,"#생맥주, #주류",assets/food_img/DAEJEON/default.png
-DAEJEON,jadam_2,자담치킨,1루,1층,"#치킨, #주류",assets/food_img/DAEJEON/jadam.png
-DAEJEON,bbq_2,BBQ치킨,1루,1층,"#치킨, #주류",assets/food_img/DAEJEON/bbq.png
-DAEJEON,yeokjun,역전우동,3루,2층,#우동,assets/food_img/DAEJEON/yeokjun.png
-DAEJEON,yeondon,연돈볼카츠,3루,2층,#카츠,assets/food_img/DAEJEON/yeondon.png
-DAEJEON,paiksbeer,빽스비어,3루,2층,"#생맥주, #주류",assets/food_img/DAEJEON/paiksbeer.png
-DAEJEON,saemaeul,새마을식당,3루,2층,#고기,assets/food_img/DAEJEON/saemaeul.png
-DAEJEON,paikboypizza,빽보이피자,3루,2층,#피자,assets/food_img/DAEJEON/paikboypizza.png
-DAEJEON,gotowork,고투웍,3루,2층,"#크림새우, #깐풍새우",assets/food_img/DAEJEON/gotowork.png
-DAEJEON,hanshin,한신포차,3루,2층,#닭발,assets/food_img/DAEJEON/hanshin.png
-DAEJEON,1985innings,1985이닝스,1루,2층,"#펍, #주류",assets/food_img/DAEJEON/1985innings.png
-DAEJEON,bbq_3,BBQ치킨,중앙,2층,#치킨,assets/food_img/DAEJEON/bbq.png
-DAEJEON,jadam_3,자담치킨,중앙,2층,#치킨,assets/food_img/DAEJEON/jadam.png
-DAEJEON,gs25_3,GS25,단층,3층,#편의점,assets/food_img/DAEJEON/gs25.png
-DAEJEON,splashzone,스플래쉬ZONE,단층,4층,"#슬러쉬, #오징어, #주류",assets/food_img/DAEJEON/default.png
-DAEGU,cu_1,CU,외부,1층,#편의점,assets/food_img/DAEGU/cu.png
-DAEGU,butterwood,버터우드,외부,1층,"#음료, #카페",assets/food_img/DAEGU/butterwood.png
-DAEGU,altong_1,알통떡강정,외부,1층,"#떡강정, #치킨",assets/food_img/DAEGU/altong.png
-DAEGU,street_1,스트릿츄러스,외부,1층,"#츄러스, #아이스크림",assets/food_img/DAEGU/street.png
-DAEGU,lapakbarbeque,라팍바베큐하우스,외부,1층,#감자튀김,assets/food_img/DAEGU/default.png
-DAEGU,workster,웍스터,외부,2층,"#차오미엔, #볶음밥, #수프",assets/food_img/DAEGU/workster.png
-DAEGU,momstouch,맘스터치,외부,2층,#햄버거,assets/food_img/DAEGU/momstouch.png
-DAEGU,sangha,상하목장&팝콘,외부,2층,#아이스크림,assets/food_img/DAEGU/sangha.png
-DAEGU,brussels,브뤼셀프라이,외부,2층,#감자튀김,assets/food_img/DAEGU/brussels.png
-DAEGU,mongblang,몽블랑더파리,외야,2층,#아이스크림,assets/food_img/DAEGU/mongblang.png
-DAEGU,manjae,만재네,외야,2층,"#고기, #치킨, #소시지",assets/food_img/DAEGU/manjae.png
-DAEGU,beerbat_1,비어배트,외야,2층,"#생맥주, #주류",assets/food_img/DAEGU/bearbat.png
-DAEGU,papa,파파존스,푸드스트리트,2층,#피자,assets/food_img/DAEGU/papa.png
-DAEGU,realkitchenhong,리얼키친더홍,푸드스트리트,2층,"#족발, #치킨, #우동, 튀김",assets/food_img/DAEGU/realkitchenhong.png
-DAEGU,bookchon,북촌손만두,푸드스트리트,2층,"#만두, #냉면, #닭강정",assets/food_img/DAEGU/bookchon.png
-DAEGU,happycheese_1,해피치즈스마일,푸드스트리트,2층,"#떡볶이, #슬러쉬",assets/food_img/DAEGU/happycheese.png
-DAEGU,norang,노랑통닭,내야석,3층,"#치킨, #주류",assets/food_img/DAEGU/norang.png
-DAEGU,realpig,리얼피그,내야석,3층,"#치킨, #오징어, #슬러쉬",assets/food_img/DAEGU/default.png
-DAEGU,bluedong,블루도그,내야석,3층,"#타코, #핫도그",assets/food_img/DAEGU/bluedong.png
-DAEGU,happycrepe,해피크레페,내야석,3층,"#와플, #슬러쉬, #소시지, #나초",assets/food_img/DAEGU/default.png
-DAEGU,legendsnack,전설스낵,내야석,3층,"#핫도그, #골뱅이, #옥수수",assets/food_img/DAEGU/default.png
-DAEGU,bookchon,북촌손만두,내야석,3층,"#만두, #냉면, #닭강정",assets/food_img/DAEGU/bookchon.png
-DAEGU,legendkkochi,전설꼬치,내야석,3층,"#닭꼬치, #소세지, #음료",assets/food_img/DAEGU/default.png
-DAEGU,altong_2,알통떡강정,내야석,3층,"#떡강정, #치킨",assets/food_img/DAEGU/altong.png
-DAEGU,5tteokbokki_1,5직떡볶이,내야석,3층,"#떡볶이, #모둠튀김, #빙수",assets/food_img/DAEGU/5tteokbokki.png
-DAEGU,happychheese_2,해피치즈스마일,내야석,3층,"#떡볶이, #아이스크림, #순대",assets/food_img/DAEGU/happycheese.png
-DAEGU,realnoodle,리얼누들,내야석,3층,"#샐러드파스타, #우동, #국수",assets/food_img/DAEGU/realnoodle.png
-DAEGU,beerbat_2,비어배트,내야석,3층,"#생맥주, #주류",assets/food_img/DAEGU/bearbat.png
-DAEGU,cu_2,CU,스카이프리,5층,#편의점,assets/food_img/DAEGU/cu.png
-DAEGU,gcova,지코바,스카이프리,5층,#치킨,assets/food_img/DAEGU/gcova.png
-DAEGU,station,STATION,스카이프리,5층,"#크림새우, #칠리새우",assets/food_img/DAEGU/station.png
-DAEGU,beerbooth,맥주부스,스카이프리,5층,#주류,assets/food_img/DAEGU/default.png
-DAEGU,street_2,스트릿츄러스_블루팡팡,스카이프리,5층,#츄러스,assets/food_img/DAEGU/street.png
-DAEGU,5tteokbokki_2,5직떡볶이_장여사나뭇잎만두,스카이프리,5층,#떡볶이,assets/food_img/DAEGU/5tteokbokki.png
-DAEGU,bingsu,빙수집,스카이프리,5층,"#빙수, #음료",assets/food_img/DAEGU/default.png
-DAEGU,yogurtworld,요아정,스카이프리,5층,#아이스크림,assets/food_img/DAEGU/yogurtworld.png
-SAJIK,gaon,가온밀면,1루,2층,"#밀면, #만두",assets/food_img/SAJIK/gaon.png
-SAJIK,namdo_1,남도포차,1루,2층,"#삼겹살, #순대, #어묵",assets/food_img/SAJIK/namdo.png
-SAJIK,namdo_2,남도포차,3루,2층,"#삼겹살, #순대, #어묵",assets/food_img/SAJIK/namdo.png
-SAJIK,dari_1,다리집,1루,3층,"#떡볶이, #오징어튀김",assets/food_img/SAJIK/dari.png
-SAJIK,dari_2,다리집,3루,2층,"#떡볶이, #오징어튀김",assets/food_img/SAJIK/dari.png
-SAJIK,ddangddang_1,땅땅치킨,1루,2층,"#치킨, #맥주",assets/food_img/SAJIK/ddangddang.png
-SAJIK,ddangddang_2,땅땅치킨,3루,3층,"#치킨, #맥주",assets/food_img/SAJIK/ddangddang.png
-SAJIK,ddangddang_3,땅땅치킨,중앙,1층,"#치킨, #맥주",assets/food_img/SAJIK/ddangddang.png
-SAJIK,milak,밀락당,1루,2층,"#멜론빵, #슬러쉬",assets/food_img/SAJIK/milak.png
-SAJIK,burgershop,버거샵,1루,3층,"#수제버거, #프라이",assets/food_img/SAJIK/burgershop.png
-SAJIK,steff,스테프핫도그,3루,3층,"#핫도그, #소떡소떡",assets/food_img/SAJIK/steff.png
-SAJIK,jungsun,정선수제닭강정,1루,3층,"#닭강정, #후라이드",assets/food_img/SAJIK/jungsun.png
-SAJIK,crispy,크리스피크림도넛,1루,2층,"#도넛, #아이스크림",assets/food_img/SAJIK/crispy.png
-SAJIK,treasures,트레져스,1루,3층,#스페셜티커피,assets/food_img/SAJIK/treasures.png
-SAJIK,podobakers,포도X베이커,1루,3층,"#와인슬러시, #빵",assets/food_img/SAJIK/podobakers.png
-SAJIK,frutofruta,프루토프루타,1루,3층,"#주스, #과일",assets/food_img/SAJIK/frutofruta.png
-SAJIK,seven,세븐일레븐,1루,2층,#편의점,assets/food_img/SAJIK/seven.png
-SAJIK,banhal,반할새우,1루,2층,#크림새우,assets/food_img/SAJIK/banhal.png
-SAJIK,bulldog,불독스테이크,1루,2층,"#스테이크, #크림새우, #주류",assets/food_img/SAJIK/bulldog.png
-SAJIK,tudari,투다리,1루,2층,#김치우동,assets/food_img/SAJIK/tudari.png
-SAJIK,cocamome,코카모메,1루,2층,"#텐동, #냉모밀",assets/food_img/SAJIK/cocamome.png
-SAJIK,papa,파파존스,1루,2층,#피자,assets/food_img/SAJIK/papa.png
-SAJIK,simbada,심바다,3루,3층,"#초밥, #회",assets/food_img/SAJIK/simbada.png
-SAJIK,boyoung,보영만두,3루,2층,"#쫄면, #군만두",assets/food_img/SAJIK/boyoung.png
-JAMSIL,bhc_1,BHC,외야,1층,"#치킨, #치즈볼",assets/food_img/JAMSIL/bhc.png
-JAMSIL,mrpizza_1,Mr.pizza,외야,1층,#피자,assets/food_img/JAMSIL/mrpizza.png
-JAMSIL,jamsiloneshot_1,잠실원샷,외야,1층,"#콜팝, #크림새우, #치킨",assets/food_img/JAMSIL/jamsiloneshot.png
-JAMSIL,gs25_1,GS25,외야,1층,#편의점,assets/food_img/JAMSIL/gs25.png
-JAMSIL,hansikbunsik,한식분식,외야,1층,"#분식, #김밥, #라면, #식사",assets/food_img/JAMSIL/default.png
-JAMSIL,frank_1,프랭크버거,외야,1층,#햄버거,assets/food_img/JAMSIL/frank.png
-JAMSIL,bbq_1,BBQ치킨,외야,1층,"#치킨, #주류",assets/food_img/JAMSIL/bbq.png
-JAMSIL,domino,도미노피자,외야,1층,#피자,assets/food_img/JAMSIL/domino.png
-JAMSIL,gwangjang,광장식당,외야,1층,"#분식, #김밥, #라면, #식사",assets/food_img/JAMSIL/default.png
-JAMSIL,koko,꼬꼬닭,외야,1층,"#강정, #치킨",assets/food_img/JAMSIL/default.png
-JAMSIL,homerunmart,홈런마트,외야,1층,#마트,assets/food_img/JAMSIL/default.png
-JAMSIL,sunae_1,수내닭꼬치,외야,1층,#닭꼬치,assets/food_img/JAMSIL/sunae.png
-JAMSIL,myeongin_1,명인만두,외야,1층,"#만두, #오만떡",assets/food_img/JAMSIL/myeongin.png
-JAMSIL,frank_2,프랭크버거,외야,1층,#햄버거,assets/food_img/JAMSIL/frank.png
-JAMSIL,bbq_2,BBQ치킨,외야,1층,"#치킨, #주류",assets/food_img/JAMSIL/bbq.png
-JAMSIL,bhc_2,BHC,3루,2층,"#치킨, #치즈볼",assets/food_img/JAMSIL/bhc.png
-JAMSIL,cafeground,카페그라운드,3루,2층,"#음료, #카페",assets/food_img/JAMSIL/cafeground.png
-JAMSIL,pizzahut_1,피자헛,3루,2층,#피자,assets/food_img/JAMSIL/pizzahut.png
-JAMSIL,yogurtworld,요아정,3루,2층,#아이스크림,assets/food_img/JAMSIL/yogurtworld.png
-JAMSIL,jaws,죠스떡볶이,3루,2층,"#떡볶이, #순대, #오뎅",assets/food_img/JAMSIL/jaws.png
-JAMSIL,tongbbab,통빱,3루,2층,"#삼겹살, #순대볶음, #정식",assets/food_img/JAMSIL/tongbbab.png
-JAMSIL,dalkomm_1,달콤커피,3루,2층,"#음료, #카페",assets/food_img/JAMSIL/dalkomm.png
-JAMSIL,wafpang_1,와팡,3루,2층,"#와플, #아이스크림, #음료",assets/food_img/JAMSIL/wafpang.png
-JAMSIL,kfc_1,KFC,3루,2층,"#치킨, #햄버거",assets/food_img/JAMSIL/kfc.png
-JAMSIL,bbq_3,BBQ치킨,3루,2층,"#치킨, #주류",assets/food_img/JAMSIL/bbq.png
-JAMSIL,gs25_3,GS25,3루,2층,#편의점,assets/food_img/JAMSIL/gs25.png
-JAMSIL,gs25_4,GS25,1루,2층,#편의점,assets/food_img/JAMSIL/gs25.png
-JAMSIL,bbq_4,BBQ치킨,1루,2층,"#치킨, #주류",assets/food_img/JAMSIL/bbq.png
-JAMSIL,frank_3,프랭크버거,1루,2층,#햄버거,assets/food_img/JAMSIL/frank.png
-JAMSIL,kokodak,꼬꼬닭카페,1루,2층,"#음료, #오징어, #주류",assets/food_img/JAMSIL/default.png
-JAMSIL,gabdori,갑또리닭강정,1루,2층,#닭강정,assets/food_img/JAMSIL/gabdori.png
-JAMSIL,jamsiloneshot_2,잠실원샷,1루,2층,"#콜팝, #크림새우, #치킨",assets/food_img/JAMSIL/jamsiloneshot.png
-JAMSIL,sincheolpan,신철판,1루,2층,"#철판, #삼겹살, #곱창",assets/food_img/JAMSIL/default.png
-JAMSIL,dalkomm_2,달콤커피,1루,2층,"#음료, #카페",assets/food_img/JAMSIL/dalkomm.png
-JAMSIL,myeongin_2,명인만두,1루,2층,"#만두, #오만떡",assets/food_img/JAMSIL/myeongin.png
-JAMSIL,baekmidang,백미당,1루,2층,#아이스크림,assets/food_img/JAMSIL/baekmidang.png
-JAMSIL,igane,이가네떡볶이,1루,2층,"#떡볶이, #순대, #음료",assets/food_img/JAMSIL/igane.png
-JAMSIL,auntieannes,앤티앤스프레즐,1루,2층,"#크림치즈스틱, #핫도그, #음료",assets/food_img/JAMSIL/auntieannes.png
-JAMSIL,pizzahut_2,피자헛,1루,2층,#피자,assets/food_img/JAMSIL/pizzahut.png
-JAMSIL,bhc_3,BHC,1루,2층,"#치킨, #치즈볼",assets/food_img/JAMSIL/bhc.png
-JAMSIL,sunae_2,수내닭꼬치,1루,2층,#닭꼬치,assets/food_img/JAMSIL/sunae.png
-JAMSIL,mrpizza_2,Mr.pizza,1루,2층,#피자,assets/food_img/JAMSIL/mrpizza.png
-JAMSIL,xoxo,XOXO핫도그,1루,2층,"#핫도그, #음료",assets/food_img/JAMSIL/xoxo.png
-JAMSIL,jamsiloneshot_3,잠실원샷,1루,2층,"#콜팝, #크림새우, #치킨",assets/food_img/JAMSIL/jamsiloneshot.png
-JAMSIL,gs25_5,GS25,3루,3층,#편의점,assets/food_img/JAMSIL/gs25.png
-JAMSIL,steff_1,스테프핫도그,3루,3층,"#핫도그, #사이드, #음료",assets/food_img/JAMSIL/steff.png
-JAMSIL,kfc_2,KFC,3루,3층,"#치킨, #햄버거",assets/food_img/JAMSIL/kfc.png
-JAMSIL,wafpang_2,와팡,3루,3층,"#와플, #아이스크림, #음료",assets/food_img/JAMSIL/wafpang.png
-JAMSIL,bbq_5,BBQ치킨,1루,3층,"#치킨, #주류",assets/food_img/JAMSIL/bbq.png
-JAMSIL,gs25_6,GS25,1루,3층,#편의점,assets/food_img/JAMSIL/gs25.png
-JAMSIL,frank_4,프랭크버거,1루,3층,#햄버거,assets/food_img/JAMSIL/frank.png
-JAMSIL,steff_2,스테프핫도그,1루,3층,"#핫도그, #사이드, #음료",assets/food_img/JAMSIL/steff.png
-GOCHEOK,bhc_1,BHC,내야,2층,"#치킨, #치즈볼",assets/food_img/GOCHEOK/bhc.png
-GOCHEOK,bbq,BBQ치킨,내야,2층,#치킨,assets/food_img/GOCHEOK/bbq.png
-GOCHEOK,pyunmeal,편밀밀,내야,2층,"#만두, #감자, #소시지",assets/food_img/GOCHEOK/pyunmeal.png
-GOCHEOK,mawang,마왕족발,내야,2층,"#족발, #김치전, #만두",assets/food_img/GOCHEOK/mawang.png
-GOCHEOK,chozang,초장집,내야,2층,"#초밥, #회",assets/food_img/GOCHEOK/chozang.png
-GOCHEOK,momstouch,맘스터치,내야,2층,#햄버거,assets/food_img/GOCHEOK/momstouch.png
-GOCHEOK,jadam_1,자담치킨,내야,2층,"#치킨, #치즈볼",assets/food_img/GOCHEOK/jadam.png
-GOCHEOK,alltokk_1,ALLtokk,내야,2층,"#떡볶이, #순대, #오뎅",assets/food_img/GOCHEOK/alltokk.png
-GOCHEOK,yubu_1,유부빚는마을,내야,2층,#유부초밥,assets/food_img/GOCHEOK/yubu.png
-GOCHEOK,steff_1,스테프핫도그,내야,2층,"#핫도그, #사이드, #음료, #피자",assets/food_img/GOCHEOK/steff.png
-GOCHEOK,conven,편의점,내야,2층,#편의점,assets/food_img/GOCHEOK/default.png
-GOCHEOK,mammoth_1,매머드카페,내야,2층,"#음료, #카페",assets/food_img/GOCHEOK/mammoth.png
-GOCHEOK,street_1,스트릿츄러스,내야,2층,"#츄러스, #아이스크림",assets/food_img/GOCHEOK/street.png
-GOCHEOK,mexicana_1,멕시카나닭강정(요거트),내야,2층,"#치킨, #사이드, #주류",assets/food_img/GOCHEOK/mexicana.png
-GOCHEOK,shrimp_1,쉬림프셰프,내야,2층,"#크림새우, #마라새우, #주류",assets/food_img/GOCHEOK/shrimp.png
-GOCHEOK,bksburger_1,BK'sburger,내야,2층,#햄버거,assets/food_img/GOCHEOK/bksburger..png
-GOCHEOK,bksburger_2,BK'sburger,내야,4층,#햄버거,assets/food_img/GOCHEOK/bksburger..png
-GOCHEOK,herotokk,히어로떡볶이,내야,4층,"#떡볶이, #분식",assets/food_img/GOCHEOK/default.png
-GOCHEOK,conven_2,편의점,내야,4층,#편의점,assets/food_img/GOCHEOK/default.png
-GOCHEOK,mammoth_2,매머드커피,내야,4층,"#음료, #카페",assets/food_img/GOCHEOK/mammoth.png
-GOCHEOK,bhc_2,BHC,내야,4층,"#치킨, #치즈볼",assets/food_img/GOCHEOK/bhc.png
-GOCHEOK,bbqmomstouch_1,bbq&맘스터치,내야,4층,"#햄버거, #순살치킨",assets/food_img/GOCHEOK/bbqmomstouch.png
-GOCHEOK,tomntoms,탐앤탐스,내야,4층,"#음료, #카페",assets/food_img/GOCHEOK/tomntoms.png
-GOCHEOK,menya_1,멘야파이토,내야,4층,#라멘,assets/food_img/GOCHEOK/menya.png
-GOCHEOK,jadam_2,자담치킨,내야,4층,"#치킨, #치즈볼",assets/food_img/GOCHEOK/jadam.png
-GOCHEOK,jadam_3,자담치킨,외야,2층,"#치킨, #치즈볼",assets/food_img/GOCHEOK/jadam.png
-GOCHEOK,menya_2,멘야파이토,외야,2층,#라멘,assets/food_img/GOCHEOK/menya.png
-GOCHEOK,bhc_3,BHC,외야,2층,"#치킨, #치즈볼",assets/food_img/GOCHEOK/bhc.png
-GOCHEOK,alltokk_2,ALLtokk,외야,2층,"#떡볶이, #순대, #오뎅",assets/food_img/GOCHEOK/alltokk.png
-GOCHEOK,bbqmomstouch_2,bbq&맘스터치,외야,2층,"#햄버거, #순살치킨",assets/food_img/GOCHEOK/bbqmomstouch.png
-GOCHEOK,conven_3,편의점(한강라면),외야,2층,"#편의점, #한강라면",assets/food_img/GOCHEOK/default.png
-GOCHEOK,mammoth_3,매머드카페,외야,2층,"#음료, #카페",assets/food_img/GOCHEOK/mammoth.png
-GOCHEOK,street_2,스트릿츄러스,외야,2층,"#츄러스, #아이스크림",assets/food_img/GOCHEOK/street.png
-GOCHEOK,yubu_2,유부빚는마을,외야,2층,#유부초밥,assets/food_img/GOCHEOK/yubu.png
-GOCHEOK,steff_2,스테프핫도그,외야,2층,"#핫도그, #사이드, #음료",assets/food_img/GOCHEOK/steff.png
-GOCHEOK,mexicana_2,멕시카나닭강정(요거트),외야,4층,"#치킨, #사이드, #주류",assets/food_img/GOCHEOK/mexicana.png
-GOCHEOK,shrimp_2,쉬림프셰프,외야,4층,"#크림새우, #마라새우, #주류",assets/food_img/GOCHEOK/shrimp.png
-GOCHEOK,yogurtworld,요거트월드,외야,4층,#아이스크림,assets/food_img/GOCHEOK/yogurtworld.png
-GOCHEOK,bksburger_3,BK'sburger,외야,4층,#햄버거,assets/food_img/GOCHEOK/bksburger..png
-SUWON,jeongob,전설의곱창,중앙,2층/상단,"#곱창순대, #불막창, #족발",assets/food_img/SUWON/jeongob.png
-SUWON,wanmi,완미족발,중앙,2층/상단,"#족발, #막국수",assets/food_img/SUWON/wanmi.png
-SUWON,sammi,삼미제빵소,중앙,2층/상단,"#빵, #베이커리",assets/food_img/SUWON/sammi.png
-SUWON,street,스트릿츄러스,중앙,2층/상단,"#츄러스, #아이스크림",assets/food_img/SUWON/street.png
-SUWON,workster,웍스터,중앙,2층/상단,"#차오미엔, #볶음밥, #수프",assets/food_img/SUWON/workster.png
-SUWON,madonna,마돈나,중앙,2층/상단,"#돈가스, #와인, #카나페",assets/food_img/SUWON/default.png
-SUWON,yogurtworld,요거트월드,중앙,2층/하단,#아이스크림,assets/food_img/SUWON/yogurtworld.png
-SUWON,jinmi,진미통닭,중앙,2층/하단,#치킨,assets/food_img/SUWON/jinmi.png
-SUWON,boyoung,보영만두,중앙,2층/하단,"#쫄면, #군만두",assets/food_img/SUWON/boyoung.png
-SUWON,bonsuwon,본수원갈비,중앙,2층/하단,"#갈비, #갈비꼬치",assets/food_img/SUWON/bonsuwon.png
-SUWON,jungjiyoung,정지영커피로스터즈,중앙,2층/하단,"#커피, #크로플, #음료, #카페",assets/food_img/SUWON/jungjiyoung.png
-SUWON,ohcho,오늘의초밥,중앙,2층/하단,"#초밥, #물회, #유부초밥",assets/food_img/SUWON/ohcho.png
-SUWON,brussels,브뤼셀프라이,중앙,2층/하단,#감자튀김,assets/food_img/SUWON/brussels.png
-SUWON,bhc,BHC,중앙,2층/하단,"#치킨, #맥주",assets/food_img/SUWON/bhc.png
-SUWON,samgusamjin,삼구삼진휴게소,3루,2층/상단,"#스낵, #오징어, #핫도그, #감자",assets/food_img/SUWON/default.png
-SUWON,salaria,샐러리아,3루,2층/상단,"#포케, #샌드위치",assets/food_img/SUWON/salaria.png
-SUWON,seven_1,세븐일레븐,3루,2층/하단,#편의점,assets/food_img/SUWON/seven.png
-SUWON,homerunbunsik,홈런분식,3루,2층/하단,"#떡볶이, #순대, #오뎅",assets/food_img/SUWON/default.png
-SUWON,shrimp,쉬림프셰프,3루,2층/하단,"#크림새우, #칠리새우",assets/food_img/SUWON/shrimp.png
-SUWON,ddori_1,또리펍3루점,3루,2층/하단,"#생맥주, #주류",assets/food_img/SUWON/default.png
-SUWON,vic_1,빅카페3루점,3루,2층/하단,"#음료, #카페",assets/food_img/SUWON/default.png
-SUWON,papa,파파존스,1루,2층/상단,#피자,assets/food_img/SUWON/papa.png
-SUWON,lotteria,롯데리아,1루,2층/상단,#햄버거,assets/food_img/SUWON/lotteria.png
-SUWON,ddori_2,또리펍1루점,1루,2층/하단,"#생맥주, #주류",assets/food_img/SUWON/default.png
-SUWON,vic_2,빅카페1루점,1루,2층/하단,"#음료, #카페",assets/food_img/SUWON/default.png
-SUWON,tongsam,이대로통삼겹,1루,2층/하단,"#삼겹살, #통삼겹",assets/food_img/SUWON/default.png
-SUWON,kkiburiddo,끼부리또,1루,2층/하단,"#부리또, #타코, #나쵸, #소시지",assets/food_img/SUWON/default.png
-SUWON,seven_2,세븐일레븐,1루,2층/하단,#편의점,assets/food_img/SUWON/seven.png
-GWANGJU,CU_1,CU,중앙,1층,#편의점,assets/food_img/GWANGJU/cu.png
-GWANGJU,CU_2,CU,외야,2층,#편의점,assets/food_img/GWANGJU/cu.png
-GWANGJU,yogurtworld,요아정,3루,3층,#아이스크림,assets/food_img/GWANGJU/yogurtworld.png
-GWANGJU,frank_1,프랭크버거,3루,3층,#햄버거,assets/food_img/GWANGJU/frank.png
-GWANGJU,bhc_1,BHC,3루,3층,#치킨,assets/food_img/GWANGJU/bhc.png
-GWANGJU,masung_1,마성떡볶이,3루,3층,"#떡볶이, #순대, #핫도그, #소세지",assets/food_img/GWANGJU/masung.png
-GWANGJU,street_1,스트릿츄러스,3루,3층,"#츄러스, #아이스크림",assets/food_img/GWANGJU/street.png
-GWANGJU,gwangjuoneshot_1,광주원샷,3루,3층,"#치킨, #맥주, #치즈볼, #원샷",assets/food_img/GWANGJU/gwangjuoneshot.png
-GWANGJU,papa,파파존스,1루,3층,#피자,assets/food_img/GWANGJU/papa.png
-GWANGJU,mawang,마왕족발,1루,3층,"#족발, #김치전, #만두",assets/food_img/GWANGJU/mawang.png
-GWANGJU,masung_2,마성떡볶이,1루,3층,"#떡볶이, #순대, #핫도그, #소세지",assets/food_img/GWANGJU/masung.png
-GWANGJU,CU_3,CU,1루,3층,#편의점,assets/food_img/GWANGJU/cu.png
-GWANGJU,xoxo_1,XOXO핫도그,1루,3층,"#핫도그, #감자튀김, #생맥주",assets/food_img/GWANGJU/xoxo.png
-GWANGJU,station,스테이션,1루,3층,"#크림새우, #칠리새우",assets/food_img/GWANGJU/station.png
-GWANGJU,bhc_2,BHC,1루,3층,#치킨,assets/food_img/GWANGJU/bhc.png
-GWANGJU,street_2,스트릿츄러스,1루,3층,"#츄러스, #아이스크림",assets/food_img/GWANGJU/street.png
-GWANGJU,gwangjuoneshot_2,광주원샷,3루,4층,"#치킨, #맥주, #치즈볼, #원샷",assets/food_img/GWANGJU/gwangjuoneshot.png
-GWANGJU,jamunbak_1,자문밖,3루,4층,"#삼겹살정식, #삼겹살, #김치국수",assets/food_img/GWANGJU/jamunbak.png
-GWANGJU,frank_2,프랭크버거,3루,4층,#햄버거,assets/food_img/GWANGJU/frank.png
-GWANGJU,xoxo_2,XOXO핫도그,1루,4층,"#핫도그, #감자튀김, #생맥주",assets/food_img/GWANGJU/xoxo.png
-GWANGJU,gwangjuoneshot_3,광주원샷,1루,4층,"#치킨, #맥주, #치즈볼, #원샷",assets/food_img/GWANGJU/gwangjuoneshot.png
-GWANGJU,jamunbak_2,자문밖,1루,4층,"#삼겹살정식, #삼겹살, #김치국수",assets/food_img/GWANGJU/jamunbak.png
+﻿stadiumId,foodId,name,location,floor,tags,food_img,map_x,map_y
+MUNHAK,burgerwonders,버거원더스,1루,1층,"#햄버거, #피자, #맥주",assets/food_img/MUNHAK/burgerwonders.png,0.8236,0.4805
+MUNHAK,dream_bhc,드림마켓(BHC),1루,1층,"#치킨, #오징어",assets/food_img/MUNHAK/bhc.png,0.7897,0.6204
+MUNHAK,mimi,우리동네 미미네 ,1루,1층,"#치킨, #떡볶이, #크림새우, #오징어",assets/food_img/MUNHAK/mimi.png,0.7634,0.6527
+MUNHAK,kukdae,국대떡볶이,1루,1층,"#치킨, #떡볶이, #크림새우",assets/food_img/MUNHAK/kukdae.png,0.6701,0.7638
+MUNHAK,pickme31,픽미31,1루,1층,#주류,assets/food_img/MUNHAK/default.png,0.8312,0.5331
+MUNHAK,starbucks,스타벅스,1루,1층,"#음료, #카페",assets/food_img/MUNHAK/starbucks.png,0.7337,0.6934
+MUNHAK,aloha,알로하커피앤바,1루,1층/지하,"#음료, #주류",assets/food_img/MUNHAK/aloha.png,0.4996,0.6807
+MUNHAK,emart24_1f,이마트24,1루,1층,#편의점,assets/food_img/MUNHAK/emart24.png,0.8507,0.4415
+MUNHAK,dream,드림마켓,1루,1층,#오징어,assets/food_img/MUNHAK/default.png,0.8193,0.5763
+MUNHAK,t_mart,T-MART,1루,1층,#오징어,assets/food_img/MUNHAK/default.png,0.6938,0.74
+MUNHAK,nobrand,노브랜드버거,1루,2층,"#버거, #치킨",assets/food_img/MUNHAK/nobrand.png,0.8516,0.4169
+MUNHAK,heogal,허갈닭강정(문학철판삼겹),1루,2층,"#치킨, #떡볶이, #주류",assets/food_img/MUNHAK/heogal.png,0.8321,0.5441
+MUNHAK,norang,노랑통닭,1루,2층,"#치킨, #주류, #떡볶이",assets/food_img/MUNHAK/norang.png,0.905,0.5602
+MUNHAK,monchip,몬칩팩토리,1루,2층,"#치킨, #오징어",assets/food_img/MUNHAK/default.png,0.8041,0.5916
+MUNHAK,ssinnanda,씬난다 스테이크 & 마라새우,1루,2층,"#스테이크, #크림새우, #주류",assets/food_img/MUNHAK/default.png,0.7523,0.6705
+MUNHAK,station,STATION,1루,2층,"#크림새우, #마라새우, #주류",assets/food_img/MUNHAK/station.png,0.7184,0.7146
+MUNHAK,family_bhc,패밀리푸드존(BHC),1루,2층,"#치킨, #떡볶이",assets/food_img/MUNHAK/bhc.png,0.6965,0.757
+MUNHAK,starbucks_2f,스타벅스,1루,2층,"#음료, #카페",assets/food_img/MUNHAK/starbucks.png,0.8473,0.4593
+MUNHAK,curving,커빙,1루,2층,"#빙수, #음료",assets/food_img/MUNHAK/default.png,0.8338,0.5017
+MUNHAK,minyoung,민영활어공장,3루,1층,"#초밥, #물회",assets/food_img/MUNHAK/minyoung.png,0.1628,0.4839
+MUNHAK,osaka,오사카 야키(그루터기),3루,1층,"#닭강정, #야끼",assets/food_img/MUNHAK/default.png,0.207,0.6035
+MUNHAK,oreo,오레오츄러스,3루,1층,#츄러스,assets/food_img/MUNHAK/oreo.png,0.24,0.6561
+MUNHAK,bookchon,북촌손만두,3루,1층,"#만두, #냉면, #닭강정",assets/food_img/MUNHAK/bookchon.png,0.274,0.7078
+MUNHAK,kyochon,교촌치킨,3루,1층,"#치킨, #크림새우",assets/food_img/MUNHAK/kyochon.png,0.3096,0.7519
+MUNHAK,ssambba,쌈빠치킨,3루,2층,"#치킨, #멘보샤",assets/food_img/MUNHAK/default.png,0.2163,0.6196
+MUNHAK,kingkong,킹콩떡볶이,3루,2층,"#떡볶이, #순대",assets/food_img/MUNHAK/kingkong.png,0.2502,0.6747
+MUNHAK,emart24_2f,이마트24,3루,2층,#편의점,assets/food_img/MUNHAK/emart24.png,0.1883,0.5712
+MUNHAK,mimi_2f,우리동네 미미네 ,내야,4층,"#치킨, #떡볶이, #크림새우, #오징어",assets/food_img/MUNHAK/mimi.png,0.7795,0.6366
+MUNHAK,papa,파파존스,내야,4층,"#피자, #브라우니",assets/food_img/MUNHAK/papa.png,0.7074,0.7332
+MUNHAK,sunsal,순살싸다리,외야,단층,"#치킨, #크림새우",assets/food_img/MUNHAK/default.png,0.7574,0.2557
+MUNHAK,didim,디딤푸드코트,외야,단층,#컵밥,assets/food_img/MUNHAK/default.png,0.7082,0.2082
+MUNHAK,lovebb_bhc,야구사랑(BHC),외야,단층,"#치킨, #오징어",assets/food_img/MUNHAK/bhc.png,0.6412,0.1701
+MUNHAK,myeongin,명인만두(만두오향족발),외야,단층,"#만두, #족발, #냉면, #육회",assets/food_img/MUNHAK/myeongin.png,0.3783,0.1607
+MUNHAK,norang_of,노랑통닭,외야,단층,"#치킨, #주류, #떡볶이",assets/food_img/MUNHAK/norang.png,0.2994,0.1947
+CHANGWON,seven_1,세븐일레븐,1루,1층,#편의점,assets/food_img/CHANGWON/seven.png,0.8533,0.363
+CHANGWON,habanero,하바네로 타코,1루,1층,"#타코, #타코샐러드",assets/food_img/CHANGWON/habanero.png,0.8533,0.4347
+CHANGWON,manjae,만재네,1루,1층,"#고기, #김치말이국수",assets/food_img/CHANGWON/manjae.png,0.8533,0.4656
+CHANGWON,banolim,반올림피자,1루,1층,"#피자, #치즈볼",assets/food_img/CHANGWON/banolim.png,0.8524,0.4864
+CHANGWON,altong_1,알통떡강정,1루,1층,"#떡강정, #치킨",assets/food_img/CHANGWON/altong.png,0.8906,0.5314
+CHANGWON,ooirak,우이락,1루,1층,#고추튀김,assets/food_img/CHANGWON/ooirak.png,0.7303,0.7443
+CHANGWON,bingdongdang,빙동댕,1루,1층,"#빙수, #음료",assets/food_img/CHANGWON/bingdongdang.png,0.6421,0.8138
+CHANGWON,altong_2,알통떡강정,중앙,1층,"#떡강정, #치킨",assets/food_img/CHANGWON/altong.png,0.4182,0.8673
+CHANGWON,seven_2,세븐일레븐,중앙,1층,#편의점,assets/food_img/CHANGWON/seven.png,0.4869,0.8732
+CHANGWON,bhc,bhc,중앙,1층,"#치킨, #주류",assets/food_img/CHANGWON/bhc.png,0.3562,0.8825
+CHANGWON,bookchon,북촌손만두,3루,1층,"#만두, #냉면, #닭강정",assets/food_img/CHANGWON/bookchon.png,0.3003,0.88
+CHANGWON,norang,노랑통닭,3루,1층,"#치킨, #주류",assets/food_img/CHANGWON/norang.png,0.2689,0.8511
+CHANGWON,honam,호남원조식당,3루,1층,"#육전, #무침",assets/food_img/CHANGWON/honam.png,0.3011,0.7926
+CHANGWON,station,스테이션,3루,1층,"#크림새우, #칠리새우",assets/food_img/CHANGWON/station.png,0.2841,0.7799
+CHANGWON,koa,코아양과,3루,1층,"#밀크셰이크, #십원빵",assets/food_img/CHANGWON/koa.png,0.2494,0.74
+CHANGWON,seven_3,세븐일레븐,3루,1층,#편의점,assets/food_img/CHANGWON/seven.png,0.2061,0.6968
+CHANGWON,banolim_2,반올림피자,3루,1층,"#피자, #치즈볼",assets/food_img/CHANGWON/banolim.png,0.1679,0.6357
+CHANGWON,starbucks,스타벅스,3루,1층,"#음료, #카페",assets/food_img/CHANGWON/starbucks.png,0.1272,0.5721
+CHANGWON,manjae,만재네,외야,1층,"#고기, #김치말이국수",assets/food_img/CHANGWON/manjae.png,0.2316,0.1925
+CHANGWON,bhc_2,bhc,외야,1층,"#치킨, #주류",assets/food_img/CHANGWON/bhc.png,0.2519,0.1735
+CHANGWON,sunae,수내닭꼬치,외야,1층,#닭꼬치,assets/food_img/CHANGWON/sunae.png,0.3554,0.0776
+CHANGWON,brussels,브뤼셀프라이,외야,1층,#감자튀김,assets/food_img/CHANGWON/brussels.png,0.3834,0.064
+CHANGWON,beerbat,비어배트,외야,1층,"#생맥주, #주류",assets/food_img/CHANGWON/beerbat.png,0.2316,0.1925
+CHANGWON,sanghaimara,상하이 마라꼬치,외야,1층,"#컵마라꼬치, #컵꿔바로우",assets/food_img/CHANGWON/sanghaimara.png,0.3181,0.1158
+CHANGWON,yogurtworld,요거트월드,외야,1층,#아이스크림,assets/food_img/CHANGWON/yogurtworld.png,0.3011,0.1327
+CHANGWON,starbucks_2f,스타벅스,3루,2층,"#음료, #카페",assets/food_img/CHANGWON/starbucks.png,0.0933,0.5975
+CHANGWON,seven_4,세븐일레븐,중앙,2층,#편의점,assets/food_img/CHANGWON/seven.png,0.4877,0.9394
+CHANGWON,bhc_3,bhc,1루,2층,"#치킨, #주류",assets/food_img/CHANGWON/bhc.png,0.7481,0.7943
+DAEJEON,gudoro,구도로떡볶이,3루,1층,"#떡볶이, #순대",assets/food_img/DAEJEON/gudoro.png,0.246,0.5759
+DAEJEON,gurudak,구르닭,3루,1층,"#닭목살구이, #닭유린기, #초계국수",assets/food_img/DAEJEON/gurudak.png,0.246,0.5759
+DAEJEON,yogurtworld,요아정,3루,1층,#아이스크림,assets/food_img/DAEJEON/yogurtworld.png,0.246,0.5759
+DAEJEON,brussels,브뤼셀프라이,3루,1층,#감자튀김,assets/food_img/DAEJEON/brussels.png,0.246,0.5759
+DAEJEON,nogsim,농심가락,3루,1층,"#떡볶이, #잔치국수",assets/food_img/DAEJEON/nogsim.png,0.246,0.5759
+DAEJEON,gs25_1,GS25,3루,1층,#편의점,assets/food_img/DAEJEON/gs25.png,0.246,0.5759
+DAEJEON,jadam_1,자담치킨,중앙,1층,#치킨,assets/food_img/DAEJEON/jadam.png,0.4775,0.6976
+DAEJEON,bbq_1,BBQ치킨,중앙,1층,"#치킨, #주류",assets/food_img/DAEJEON/bbq.png,0.4775,0.6976
+DAEJEON,wanmi,완미족발,중앙,1층,"#족발, #막국수",assets/food_img/DAEJEON/wanmi.png,0.4775,0.6976
+DAEJEON,gongcha,공차,중앙,1층,"#음료, #카페",assets/food_img/DAEJEON/gongcha.png,0.4775,0.6976
+DAEJEON,gs25_2,GS25,중앙,1층,#편의점,assets/food_img/DAEJEON/gs25.png,0.4775,0.6976
+DAEJEON,banolim,반올림피자,중앙,1층,#피자,assets/food_img/DAEJEON/banolim.png,0.4775,0.6976
+DAEJEON,eungubi,은구비커피,중앙,1층,"#음료, #카페",assets/food_img/DAEJEON/eungubi.png,0.4775,0.6976
+DAEJEON,baro,바로그집,1루,1층,"#떡볶이, #오뎅",assets/food_img/DAEJEON/baro.png,0.7116,0.5687
+DAEJEON,sunbi,선비꼬마김밥,1루,1층,"#김밥, #라면",assets/food_img/DAEJEON/sunbi.png,0.7116,0.5687
+DAEJEON,bookchon,북촌손만두,1루,1층,"#만두, #육회",assets/food_img/DAEJEON/bookchon.png,0.7116,0.5687
+DAEJEON,myeongrang,명랑핫도그,1루,1층,"#핫도그, #소떡소떡",assets/food_img/DAEJEON/myeongrang.png,0.7116,0.5687
+DAEJEON,eagles,이글스브루어리,1루,1층,"#생맥주, #주류",assets/food_img/DAEJEON/eagles.png,0.7116,0.5687
+DAEJEON,jadam_2,자담치킨,1루,1층,"#치킨, #주류",assets/food_img/DAEJEON/jadam.png,0.7116,0.5687
+DAEJEON,bbq_2,BBQ치킨,1루,1층,"#치킨, #주류",assets/food_img/DAEJEON/bbq.png,0.7116,0.5687
+DAEJEON,yeokjun,역전우동,3루,2층,#우동,assets/food_img/DAEJEON/yeokjun.png,0.2036,0.4457
+DAEJEON,yeondon,연돈볼카츠,3루,2층,#카츠,assets/food_img/DAEJEON/yeondon.png,0.2036,0.4457
+DAEJEON,paiksbeer,빽스비어,3루,2층,"#생맥주, #주류",assets/food_img/DAEJEON/paiksbeer.png,0.2036,0.4457
+DAEJEON,saemaeul,새마을식당,3루,2층,#고기,assets/food_img/DAEJEON/saemaeul.png,0.2036,0.4457
+DAEJEON,paikboypizza,빽보이피자,3루,2층,#피자,assets/food_img/DAEJEON/paikboypizza.png,0.2036,0.4457
+DAEJEON,gotowork,고투웍,3루,2층,"#크림새우, #깐풍새우",assets/food_img/DAEJEON/gotowork.png,0.2036,0.4457
+DAEJEON,hanshin,한신포차,3루,2층,#닭발,assets/food_img/DAEJEON/hanshin.png,0.2036,0.4457
+DAEJEON,1985innings,1985이닝스,1루,2층,"#펍, #주류",assets/food_img/DAEJEON/1985innings.png,0.2036,0.4457
+DAEJEON,bbq_3,BBQ치킨,중앙,2층,#치킨,assets/food_img/DAEJEON/bbq.png,0.2036,0.4457
+DAEJEON,jadam_3,자담치킨,중앙,2층,#치킨,assets/food_img/DAEJEON/jadam.png,0.2036,0.4457
+DAEJEON,gs25_3,GS25,단층,3층,#편의점,assets/food_img/DAEJEON/gs25.png,0.7176,0.6662
+DAEJEON,splashzone,스플래쉬ZONE,단층,4층,"#슬러쉬, #오징어, #주류",assets/food_img/DAEJEON/splash.png,0.2409,0.7349
+DAEGU,cu_1,CU,외부,1층,#편의점,assets/food_img/DAEGU/cu.png,0.4529,0.1018
+DAEGU,butterwood,버터우드,외부,2층,"#음료, #카페",assets/food_img/DAEGU/butterwood.png,0.4563,0.8766
+DAEGU,butterwood_2,버터우드,내야석,3층,"#음료, #카페",assets/food_img/DAEGU/butterwood.png,0.2112,0.584
+DAEGU,house,하우스오브라이온즈,외부,1층,"#떡강정, #치킨",assets/food_img/DAEGU/default.png,0.3469,0.1421
+DAEGU,mara,샤오마라,외부,2층,#감자튀김,assets/food_img/DAEGU/mara.png,0.5199,0.8783
+DAEGU,momstouch,맘스터치,외부,2층,#햄버거,assets/food_img/DAEGU/momstouch.png,0.3978,0.8791
+DAEGU,brussels,브뤼셀프라이,외부,2층,#감자튀김,assets/food_img/DAEGU/brussels.png,0.5751,0.8774
+DAEGU,yeonmac,연막창,외야,2층,#아이스크림,assets/food_img/DAEGU/yeonmac.png,0.6166,0.1455
+DAEGU,manjae,만재네,외야,2층,"#고기, #김치말이국수",assets/food_img/DAEGU/manjae.png,0.4538,0.1327
+DAEGU,beerbat_1,비어배트,외야,2층,"#생맥주, #주류",assets/food_img/DAEGU/bearbat.png,0.6785,0.2218
+DAEGU,papa,파파존스,푸드스트리트,2층,#피자,assets/food_img/DAEGU/papa.png,0.1968,0.4313
+DAEGU,realkitchenhong,리얼키친더홍,푸드스트리트,2층,"#족발, #치킨, #우동, 튀김",assets/food_img/DAEGU/realkitchenhong.png,0.1951,0.3813
+DAEGU,bookchon,북촌손만두,푸드스트리트,2층,"#만두, #냉면, #닭강정",assets/food_img/DAEGU/bookchon.png,0.1951,0.3813
+DAEGU,happycheese_1,해피치즈스마일,푸드스트리트,2층,"#떡볶이, #슬러쉬",assets/food_img/DAEGU/happycheese.png,0.1951,0.3813
+DAEGU,norang,노랑통닭,내야석,3층,"#치킨, #주류",assets/food_img/DAEGU/norang.png,0.1993,0.5119
+DAEGU,realpig,대신땅콩빵,내야석,3층,"#빵, #베이커리",assets/food_img/DAEGU/default.png,0.3723,0.718
+DAEGU,happycrepe,서문빙수/장여사만두,내야석,3층,"#빙수, #만두, #음료",assets/food_img/DAEGU/default.png,0.3062,0.6612
+DAEGU,bookchon,북촌손만두,내야석,3층,"#만두, #냉면, #닭강정",assets/food_img/DAEGU/bookchon.png,0.3478,0.6959
+DAEGU,legendkkochi,전설꼬치,내야석,3층,"#닭꼬치, #소세지, #음료",assets/food_img/DAEGU/default.png,0.24,0.6001
+DAEGU,yeokjun,역전우동,내야석,3층,#우동,assets/food_img/DAEGU/yeokjun.png,0.2595,0.6179
+DAEGU,altong_2,알통떡강정,내야석,3층,"#떡강정, #치킨",assets/food_img/DAEGU/altong.png,0.2791,0.6391
+DAEGU,happychheese_2,해피치즈스마일,내야석,3층,"#떡볶이, #아이스크림, #순대",assets/food_img/DAEGU/happycheese.png,0.1968,0.5628
+DAEGU,soft,소프텔리어,내야석,3층,"#빙수, #아이스크림",assets/food_img/DAEGU/default.png,0.6192,0.7197
+DAEGU,honam,호남원조식당,내야석,3층,"#육전, #무침",assets/food_img/DAEGU/honam.png,0.6506,0.6866
+DAEGU,cu_4,CU,내야석,3층,"#생맥주, #주류",assets/food_img/DAEGU/cu.png,0.7439,0.6162
+DAEGU,norang_2,노랑통닭,내야석,3층,"#치킨, #주류",assets/food_img/DAEGU/norang.png,0.7981,0.5636
+DAEGU,habanero,하바네로 타코,내야석,3층,"#타코, #타코샐러드",assets/food_img/DAEGU/habanero.png,0.7998,0.4211
+DAEGU,cu_2,CU,스카이프리,5층,#편의점,assets/food_img/DAEGU/cu.png,0.1544,0.5
+DAEGU,jackson,잭슨 프라이드 치킨,스카이프리,5층,#치킨,assets/food_img/DAEGU/default.png,0.212,0.6578
+DAEGU,station,STATION,스카이프리,5층,"#크림새우, #칠리새우",assets/food_img/DAEGU/station.png,0.3206,0.7434
+DAEGU,sulbing,설빙,스카이프리,5층,#빙수,assets/food_img/DAEGU/sulbing.png,0.447,0.8316
+DAEGU,bobae,보배반점,스카이프리,5층,#떡볶이,assets/food_img/DAEGU/bobae.png,0.5479,0.8325
+DAEGU,monnaini,몬나니떡볶이,스카이프리,5층,#떡볶이,assets/food_img/DAEGU/default.png,0.7651,0.679
+DAEGU,yogurtworld,요아정,스카이프리,5층,#아이스크림,assets/food_img/DAEGU/yogurtworld.png,0.6675,0.7587
+SAJIK,gaon,가온밀면,1루,2층,"#밀면, #만두",assets/food_img/SAJIK/gaon.png,0.7345,0.5708
+SAJIK,namdo_1,남도포차,1루,2층,"#삼겹살, #순대, #어묵",assets/food_img/SAJIK/namdo.png,0.7506,0.4228
+SAJIK,namdo_2,남도포차,3루,2층,"#삼겹살, #순대, #어묵",assets/food_img/SAJIK/namdo.png,0.4826,0.8045
+SAJIK,dari_1,다리집,1루,3층,"#떡볶이, #오징어튀김",assets/food_img/SAJIK/dari.png,0.687,0.6824
+SAJIK,dari_2,다리집,3루,2층,"#떡볶이, #오징어튀김",assets/food_img/SAJIK/dari.png,0.302,0.6187
+SAJIK,ddangddang_1,땅땅치킨,1루,2층,"#치킨, #맥주",assets/food_img/SAJIK/ddangddang.png,0.7498,0.4491
+SAJIK,ddangddang_2,땅땅치킨,3루,3층,"#치킨, #맥주",assets/food_img/SAJIK/ddangddang.png,0.3715,0.7222
+SAJIK,ddangddang_3,땅땅치킨,중앙,1층,"#치킨, #맥주",assets/food_img/SAJIK/ddangddang.png,0.4436,0.9063
+SAJIK,milak,밀락당,1루,2층,"#멜론빵, #슬러쉬",assets/food_img/SAJIK/milak.png,0.7082,0.5975
+SAJIK,burgershop,버거샵,1루,3층,"#수제버거, #프라이",assets/food_img/SAJIK/burgershop.png,0.5598,0.7451
+SAJIK,steff,스테프핫도그,3루,3층,"#핫도그, #소떡소떡",assets/food_img/SAJIK/steff.png,0.2833,0.6501
+SAJIK,jungsun,정선수제닭강정,1루,3층,"#닭강정, #후라이드",assets/food_img/SAJIK/jungsun.png,0.7108,0.6586
+SAJIK,crispy,크리스피크림도넛,1루,2층,"#도넛, #아이스크림",assets/food_img/SAJIK/crispy.png,0.7489,0.4958
+SAJIK,treasures,트레져스,1루,3층,#스페셜티커피,assets/food_img/SAJIK/treasures.png,0.5284,0.7536
+SAJIK,podobakers,포도X베이커,1루,3층,"#와인슬러시, #빵",assets/food_img/SAJIK/podobakers.png,0.5869,0.74
+SAJIK,frutofruta,프루토프루타,1루,3층,"#주스, #과일",assets/food_img/SAJIK/frutofruta.png,0.6607,0.6976
+SAJIK,seven,세븐일레븐,1루,2층,#편의점,assets/food_img/SAJIK/seven.png,0.3282,0.6925
+SAJIK,banhal,반할새우,1루,2층,#크림새우,assets/food_img/SAJIK/banhal.png,0.7413,0.5237
+SAJIK,banhal_2,반할새우,3루,외야,#크림새우,assets/food_img/SAJIK/banhal.png,0.3299,0.2405
+SAJIK,sanghaimara,상하이마라꼬치,1루,외야,"#컵마라꼬치, #컵꿔바로우",assets/food_img/SAJIK/sanghaimara.png,0.687,0.2684
+SAJIK,gaeranclub,계란빵클럽,1루,2층,"#계란빵, #음료",assets/food_img/SAJIK/gaeranclub.png,0.2774,0.5789
+SAJIK,cocamome,코카모메,1루,외야,"#텐동, #냉모밀",assets/food_img/SAJIK/cocamome.png,0.5997,0.2031
+SAJIK,papa,파파존스,1루,2층,#피자,assets/food_img/SAJIK/papa.png,0.7464,0.4746
+SAJIK,simbada,심바다,3루,3층,"#초밥, #회",assets/food_img/SAJIK/simbada.png,0.2986,0.6679
+SAJIK,boyoung_2,보영만두,3루,2층,"#쫄면, #군만두",assets/food_img/SAJIK/boyoung.png,0.2477,0.4822
+SAJIK,seven_2,세븐일레븐,중앙,1층,#편의점,assets/food_img/SAJIK/seven.png,0.4962,0.9109
+SAJIK,stenbrew,스탠브루,중앙,1층,"#브루잉커피, #밀크티",assets/food_img/SAJIK/stenbrew.png,0.5454,0.9105
+SAJIK,boyoung,보영만두,3루,외야,"#쫄면, #군만두",assets/food_img/SAJIK/boyoung.png,0.3961,0.1942
+JAMSIL,bhc_2,BHC,3루,2층,"#치킨, #치즈볼",assets/food_img/JAMSIL/bhc.png,0.8804,0.4279
+JAMSIL,cafeground,카페그라운드,3루,2층,"#음료, #카페",assets/food_img/JAMSIL/cafeground.png,0.1272,0.472
+JAMSIL,pizzahut_1,피자헛,3루,2층,#피자,assets/food_img/JAMSIL/pizzahut.png,0.8626,0.5047
+JAMSIL,yogurtworld,요아정,3루,2층,#아이스크림,assets/food_img/JAMSIL/yogurtworld.png,0.1951,0.4864
+JAMSIL,jaws,죠스떡볶이,3루,2층,"#떡볶이, #순대, #오뎅",assets/food_img/JAMSIL/jaws.png,0.1705,0.5628
+JAMSIL,tongbbab,통빱,3루,2층,"#삼겹살, #순대볶음, #정식",assets/food_img/JAMSIL/tongbbab.png,0.2519,0.6815
+JAMSIL,dalkomm_1,달콤커피,3루,2층,"#음료, #카페",assets/food_img/JAMSIL/dalkomm.png,0.2782,0.7146
+JAMSIL,wafpang_1,와팡,3루,2층,"#와플, #아이스크림, #음료",assets/food_img/JAMSIL/wafpang.png,0.3036,0.7511
+JAMSIL,kfc_1,KFC,3루,2층,"#치킨, #햄버거",assets/food_img/JAMSIL/kfc.png,0.2163,0.6383
+JAMSIL,bbq_3,BBQ치킨,3루,2층,"#치킨, #주류",assets/food_img/JAMSIL/bbq.png,0.2689,0.6535
+JAMSIL,bbq_4,BBQ치킨,1루,2층,"#치킨, #주류",assets/food_img/JAMSIL/bbq.png,0.7108,0.7358
+JAMSIL,frank_3,프랭크버거,1루,2층,#햄버거,assets/food_img/JAMSIL/frank.png,0.732,0.7087
+JAMSIL,kokodak,꼬꼬닭카페,1루,2층,"#음료, #오징어, #주류",assets/food_img/JAMSIL/default.png,0.7337,0.7892
+JAMSIL,gabdori,갑또리닭강정,1루,2층,#닭강정,assets/food_img/JAMSIL/gabdori.png,0.7973,0.8155
+JAMSIL,jamsiloneshot_2,잠실원샷,1루,2층,"#콜팝, #크림새우, #치킨",assets/food_img/JAMSIL/jamsiloneshot.png,0.8711,0.7205
+JAMSIL,sincheolpan,신철판,1루,2층,"#철판, #삼겹살, #곱창",assets/food_img/JAMSIL/default.png,0.8422,0.7689
+JAMSIL,dalkomm_2,달콤커피,1루,2층,"#음료, #카페",assets/food_img/JAMSIL/dalkomm.png,0.9288,0.634
+JAMSIL,myeongin_2,명인만두,1루,2층,"#만두, #오만떡",assets/food_img/JAMSIL/myeongin.png,0.855,0.6586
+JAMSIL,baekmidang,백미당,1루,2층,#아이스크림,assets/food_img/JAMSIL/baekmidang.png,0.8651,0.5857
+JAMSIL,igane,이가네떡볶이,1루,2층,"#떡볶이, #순대, #음료",assets/food_img/JAMSIL/igane.png,0.8227,0.5797
+JAMSIL,auntieannes,앤티앤스프레즐,1루,2층,"#크림치즈스틱, #핫도그, #음료",assets/food_img/JAMSIL/auntieannes.png,0.8414,0.5466
+JAMSIL,pizzahut_2,피자헛,1루,2층,#피자,assets/food_img/JAMSIL/pizzahut.png,0.0975,0.4559
+JAMSIL,bhc_3,BHC,1루,2층,"#치킨, #치즈볼",assets/food_img/JAMSIL/bhc.png,0.0687,0.4008
+JAMSIL,sunae_2,수내닭꼬치,1루,2층,#닭꼬치,assets/food_img/JAMSIL/sunae.png,0.0797,0.6612
+JAMSIL,mrpizza_2,Mr.pizza,1루,2층,#피자,assets/food_img/JAMSIL/mrpizza.png,0.095,0.7078
+JAMSIL,xoxo,XOXO핫도그,1루,2층,"#핫도그, #음료",assets/food_img/JAMSIL/xoxo.png,0.1323,0.7443
+JAMSIL,jamsiloneshot_3,잠실원샷,1루,2층,"#콜팝, #크림새우, #치킨",assets/food_img/JAMSIL/jamsiloneshot.png,0.229,0.8291
+JAMSIL,steff_1,스테프핫도그,3루,3층,"#핫도그, #사이드, #음료",assets/food_img/JAMSIL/steff.png,0.1637,0.617
+JAMSIL,kfc_2,KFC,3루,3층,"#치킨, #햄버거",assets/food_img/JAMSIL/kfc.png,0.218,0.6327
+JAMSIL,wafpang_2,와팡,3루,3층,"#와플, #아이스크림, #음료",assets/food_img/JAMSIL/wafpang.png,0.2494,0.6722
+JAMSIL,bbq_5,BBQ치킨,1루,3층,"#치킨, #주류",assets/food_img/JAMSIL/bbq.png,0.8083,0.6145
+JAMSIL,gs25_6,GS25,1루,3층,#편의점,assets/food_img/JAMSIL/gs25.png,,
+JAMSIL,frank_4,프랭크버거,1루,3층,#햄버거,assets/food_img/JAMSIL/frank.png,0.8295,0.5704
+JAMSIL,steff_2,스테프핫도그,1루,3층,"#핫도그, #사이드, #음료",assets/food_img/JAMSIL/steff.png,0.6785,0.7706
+GOCHEOK,pyunmeal,편밀밀,내야,2층,"#만두, #감자, #소시지",assets/food_img/GOCHEOK/pyunmeal.png,0.7065,0.7307
+GOCHEOK,mawang,마왕족발,내야,2층,"#족발, #김치전, #만두",assets/food_img/GOCHEOK/mawang.png,0.3172,0.645
+GOCHEOK,chozang,초장집,내야,2층,"#초밥, #회",assets/food_img/GOCHEOK/chozang.png,0.2765,0.5806
+GOCHEOK,myeongrang,명량핫도그,내야,2층,"#핫도그, #음료",assets/food_img/GOCHEOK/myeongrang.png,0.581,0.8452
+GOCHEOK,ddangddang_1,땅땅치킨,내야,2층,"#치킨, #치즈볼, #허브순살치킨",assets/food_img/GOCHEOK/ddangddang.png,0.6921,0.6416
+GOCHEOK,ddangddang_2,땅땅치킨,내야,2층,"#치킨, #치즈볼, #허브순살치킨",assets/food_img/GOCHEOK/ddangddang.png,0.3028,0.6069
+GOCHEOK,alltokk_1,ALLtokk,내야,2층,"#떡볶이, #순대, #오뎅",assets/food_img/GOCHEOK/alltokk.png,0.7328,0.6917
+GOCHEOK,alltokk_3,ALLtokk,내야,2층,"#떡볶이, #순대, #오뎅",assets/food_img/GOCHEOK/alltokk.png,0.2807,0.7044
+GOCHEOK,kkochi,꼬치닭,내야,2층,"#닭꼬치, #꼬치",assets/food_img/GOCHEOK/default.png,0.6446,0.8121
+GOCHEOK,steff_1,스테프핫도그,내야,2층,"#핫도그, #사이드, #음료, #피자",assets/food_img/GOCHEOK/steff.png,0.1874,0.5687
+GOCHEOK,conven,편의점,내야,2층,#편의점,assets/food_img/GOCHEOK/default.png,0.2154,0.6052
+GOCHEOK,mammoth_1,매머드카페,내야,2층,"#음료, #카페",assets/food_img/GOCHEOK/mammoth.png,0.7082,0.6145
+GOCHEOK,mammoth_2,매머드카페,내야,2층,"#음료, #카페",assets/food_img/GOCHEOK/mammoth.png,0.2451,0.5288
+GOCHEOK,street_1,스트릿츄러스,내야,2층,"#츄러스, #아이스크림",assets/food_img/GOCHEOK/street.png,0.3053,0.7383
+GOCHEOK,mexicana_1,멕시카나닭강정(요거트),내야,2층,"#치킨, #사이드, #주류",assets/food_img/GOCHEOK/mexicana.png,0.8159,0.5623
+GOCHEOK,shrimp_1,쉬림프셰프,내야,2층,"#크림새우, #마라새우, #주류",assets/food_img/GOCHEOK/shrimp.png,0.732,0.5848
+GOCHEOK,bksburger_1,BK'sburger,내야,2층,#햄버거,assets/food_img/GOCHEOK/bksburger.png,0.7583,0.5483
+GOCHEOK,bksburger_2,BK'sburger,내야,4층,#햄버거,assets/food_img/GOCHEOK/bksburger.png,0.6107,0.8774
+GOCHEOK,herotokk,히어로떡볶이,내야,4층,"#떡볶이, #분식",assets/food_img/GOCHEOK/default.png,0.7574,0.7252
+GOCHEOK,conven_2,편의점,내야,4층,#편의점,assets/food_img/GOCHEOK/default.png,0.7786,0.6934
+GOCHEOK,brussels,브리쉘프라이,내야,4층,#감자튀김,assets/food_img/GOCHEOK/brussels.png,0.4826,0.8851
+GOCHEOK,katsumama,카츄마마,내야,4층,"#돈카츠, #카츠정식 ",assets/food_img/GOCHEOK/bhc.png,0.3528,0.8571
+GOCHEOK,bbqmomstouch_1,bbq&맘스터치,내야,4층,"#햄버거, #순살치킨",assets/food_img/GOCHEOK/bbqmomstouch.png,0.5089,0.8885
+GOCHEOK,tomntoms,탐앤탐스,내야,4층,"#음료, #카페",assets/food_img/GOCHEOK/tomntoms.png,0.6862,0.8147
+GOCHEOK,ooirak,우이락,내야,4층,#고추튀김,assets/food_img/GOCHEOK/ooirak.png,0.3206,0.8257
+GOCHEOK,jadam_2,자담치킨,내야,4층,"#치킨, #치즈볼",assets/food_img/GOCHEOK/jadam.png,0.2969,0.7799
+GOCHEOK,ddangddang_5,땅땅치킨,외야,3층,"#치킨, #치즈볼",assets/food_img/GOCHEOK/ddangddang.png,0.5445,0.0963
+GOCHEOK,pellydom,펠리돔,외야,3층,"#타코, #젤라또아이스크림",assets/food_img/GOCHEOK/default.png,0.5089,0.1022
+GOCHEOK,bhc_3,BHC,외야,3층,"#치킨, #치즈볼",assets/food_img/GOCHEOK/bhc.png,0.6573,0.1217
+GOCHEOK,alltokk_2,ALLtokk,외야,3층,"#떡볶이, #순대, #오뎅",assets/food_img/GOCHEOK/alltokk.png,0.4623,0.0946
+GOCHEOK,bbqmomstouch_2,bbq&맘스터치,외야,3층,"#햄버거, #순살치킨",assets/food_img/GOCHEOK/bbqmomstouch.png,0.6277,0.1098
+GOCHEOK,conven_3,편의점(한강라면),외야,3층,"#편의점, #한강라면",assets/food_img/GOCHEOK/default.png,0.726,0.1616
+GOCHEOK,mammoth_3,매머드카페,외야,3층,"#음료, #카페",assets/food_img/GOCHEOK/mammoth.png,0.4003,0.1175
+GOCHEOK,street_2,스트릿츄러스,외야,3층,"#츄러스, #아이스크림",assets/food_img/GOCHEOK/street.png,0.6921,0.1412
+GOCHEOK,brussels_2,브리쉘프라이,외야,3층,"#홈런세트, #안타세트",assets/food_img/GOCHEOK/brussels.png,0.3113,0.1455
+GOCHEOK,steff_2,스테프핫도그,외야,3층,"#핫도그, #사이드, #음료",assets/food_img/GOCHEOK/steff.png,0.3528,0.1277
+GOCHEOK,mexicana_2,멕시카나닭강정(요거트),외야,4층,"#치킨, #사이드, #주류",assets/food_img/GOCHEOK/mexicana.png,0.6064,0.0802
+GOCHEOK,shrimp_2,쉬림프셰프,외야,4층,"#크림새우, #마라새우, #주류",assets/food_img/GOCHEOK/shrimp.png,0.6896,0.1395
+GOCHEOK,jadam_4,자담치킨,외야,4층,"#치킨, #주류",assets/food_img/GOCHEOK/jadam.png,0.3486,0.0988
+SUWON,mega,메가닭꼬치&닭갈비,중앙,2층/상단,"#닭꼬치, #소금구이, #깻잎쌈",assets/food_img/SUWON/default.png,0.3274,0.6883
+SUWON,wanmi,완미족발,중앙,2층/상단,"#족발, #막국수",assets/food_img/SUWON/wanmi.png,0.6616,0.7201
+SUWON,katsumama,카츄마마,중앙,2층/상단,"#돈카츠, #카츠정식 ",assets/food_img/SUWON/katsumama.png,0.3478,0.718
+SUWON,street,스트릿츄러스,중앙,2층/상단,"#츄러스, #아이스크림",assets/food_img/SUWON/street.png,0.6828,0.6858
+SUWON,workster,웍스터,중앙,2층/상단,"#차오미엔, #볶음밥, #수프",assets/food_img/SUWON/workster.png,0.7006,0.6467
+SUWON,popsmile,팝스마일 팝콘,중앙,2층/상단,"#팝콘, #카라멜맛팝콘",assets/food_img/SUWON/default.png,0.3087,0.6637
+SUWON,yogurtworld,요거트월드,중앙,2층/하단,#아이스크림,assets/food_img/SUWON/yogurtworld.png,0.3367,0.7027
+SUWON,jinmi,진미통닭,중앙,2층/하단,#치킨,assets/food_img/SUWON/jinmi.png,0.3503,0.7282
+SUWON,boyoung,보영만두,중앙,2층/하단,"#쫄면, #군만두",assets/food_img/SUWON/boyoung.png,0.3757,0.7646
+SUWON,bonsuwon,본수원갈비,중앙,2층/하단,"#갈비, #갈비꼬치",assets/food_img/SUWON/bonsuwon.png,0.4122,0.7994
+SUWON,jungjiyoung,정지영커피로스터즈,중앙,2층/하단,"#커피, #크로플, #음료, #카페",assets/food_img/SUWON/jungjiyoung.png,0.4563,0.8134
+SUWON,ohcho,오늘의초밥,중앙,2층/하단,"#초밥, #물회, #유부초밥",assets/food_img/SUWON/ohcho.png,0.531,0.8138
+SUWON,brussels,브뤼셀프라이,중앙,2층/하단,#감자튀김,assets/food_img/SUWON/brussels.png,0.5776,0.7986
+SUWON,masung,마성떡볶이&마성스낵,중앙,2층/하단,"#떡볶이, #순대, #핫도그, #소세지",assets/food_img/SUWON/masung.png,0.6684,0.707
+SUWON,bhc,BHC,중앙,2층/하단,"#치킨, #맥주",assets/food_img/SUWON/bhc.png,0.6539,0.7324
+SUWON,toriero,토리메로,중앙,2층/하단,"#이자카야, #꼬치, #맥주",assets/food_img/SUWON/toriero.png,0.6226,0.768
+SUWON,mara,샤오마라,3루,2층/상단,"#컵마라탕, #컵꿔바로우, #마라꼬치",assets/food_img/SUWON/mara.png,0.2307,0.5123
+SUWON,salaria,샐러리아,3루,2층/상단,"#포케, #샌드위치",assets/food_img/SUWON/salaria.png,0.274,0.5958
+SUWON,dongkyeong,작은동경,3루,2층/상단,#타코야끼,assets/food_img/SUWON/default.png,0.2511,0.5551
+SUWON,seven_1,세븐일레븐,3루,2층/하단,#편의점,assets/food_img/SUWON/seven.png,0.2273,0.5136
+SUWON,myeongrang,명랑핫도그,3루,2층/하단,#핫도그,assets/food_img/SUWON/myeongrang.png,0.2816,0.422
+SUWON,shrimp,쉬림프셰프,3루,2층/하단,"#크림새우, #칠리새우",assets/food_img/SUWON/shrimp.png,0.274,0.511
+SUWON,ddori_1,또리펍3루점,3루,2층/하단,"#생맥주, #주류",assets/food_img/SUWON/default.png,0.302,0.461
+SUWON,vic_1,빅카페3루점,3루,2층/하단,"#음료, #카페",assets/food_img/SUWON/default.png,0.2935,0.5433
+SUWON,papa,파파존스,1루,2층/상단,#피자,assets/food_img/SUWON/papa.png,0.7388,0.5551
+SUWON,lotteria,롯데리아,1루,2층/상단,#햄버거,assets/food_img/SUWON/lotteria.png,0.7625,0.5017
+SUWON,ddori_2,또리펍1루점,1루,2층/하단,"#생맥주, #주류",assets/food_img/SUWON/default.png,0.6785,0.489
+SUWON,vic_2,빅카페1루점,1루,2층/하단,"#음료, #카페",assets/food_img/SUWON/default.png,0.6921,0.5636
+SUWON,tongsam,이대로통삼겹,1루,2층/하단,"#삼겹살, #통삼겹",assets/food_img/SUWON/default.png,0.7506,0.5314
+SUWON,kkiburiddo,끼부리또,1루,2층/하단,"#부리또, #타코, #나쵸, #소시지",assets/food_img/SUWON/default.png,0.7218,0.5153
+SUWON,seven_2,세븐일레븐,1루,2층/하단,#편의점,assets/food_img/SUWON/seven.png,0.7735,0.4805
+GWANGJU,CU_1,CU,중앙,3층,#편의점,assets/food_img/GWANGJU/cu.png,0.4775,0.2116
+GWANGJU,CU_2,CU,3루,3층,#편의점,assets/food_img/GWANGJU/cu.png,0.2646,0.6959
+GWANGJU,yogurtworld,요아정,3루,3층,#아이스크림,assets/food_img/GWANGJU/yogurtworld.png,0.1874,0.5551
+GWANGJU,frank_1,프랭크버거,1루,3층,#햄버거,assets/food_img/GWANGJU/frank.png,0.6132,0.768
+GWANGJU,bhc_1,BHC,3루,3층,#치킨,assets/food_img/GWANGJU/bhc.png,0.2409,0.651
+GWANGJU,gamtan,감탄떡볶이,3루,3층,"#떡볶이, #순대, #핫도그, #소세지",assets/food_img/GWANGJU/gamtan.png,0.2875,0.7282
+GWANGJU,gamtan_2,감탄떡볶이,1루,3층,"#떡볶이, #순대, #핫도그, #소세지",assets/food_img/GWANGJU/gamtan.png,0.6582,0.7265
+GWANGJU,gamtan_3,감탄떡볶이,1루,5층,"#떡볶이, #순대, #핫도그, #소세지",assets/food_img/GWANGJU/gamtan.png,0.1942,0.7341
+GWANGJU,street_1,스트릿츄러스,3루,3층,"#츄러스, #아이스크림",assets/food_img/GWANGJU/street.png,0.3062,0.7468
+GWANGJU,gwangjuoneshot_1,원샷치킨,3루,3층,"#치킨, #맥주, #치즈볼, #원샷",assets/food_img/GWANGJU/gwangjuoneshot.png,0.3342,0.7714
+GWANGJU,papa,파파존스,1루,3층,#피자,assets/food_img/GWANGJU/papa.png,0.5878,0.7918
+GWANGJU,papa_2,파파존스,1루,5층,#피자,assets/food_img/GWANGJU/papa.png,0.7532,0.7545
+GWANGJU,tacoit,타코잇,1루,3층,#타코,assets/food_img/GWANGJU/default.png,0.7125,0.6544
+GWANGJU,CU_3,CU,1루,3층,#편의점,assets/food_img/GWANGJU/cu.png,0.6802,0.6993
+GWANGJU,xoxo_1,XOXO핫도그,3루,3층,"#핫도그, #감자튀김, #생맥주",assets/food_img/GWANGJU/xoxo.png,0.173,0.5242
+GWANGJU,station,스테이션,1루,3층,"#크림새우, #칠리새우",assets/food_img/GWANGJU/station.png,0.7532,0.5746
+GWANGJU,boyoung,보영만두,3루,3층,"#쫄면, #군만두",assets/food_img/GWANGJU/boyoung.png,0.201,0.5848
+GWANGJU,bhc_2,BHC,1루,3층,#치킨,assets/food_img/GWANGJU/bhc.png,0.7701,0.5399
+GWANGJU,bhc_3,BHC,3루,3층,#치킨,assets/food_img/GWANGJU/bhc.png,0.3613,0.7935
+GWANGJU,bhc_4,BHC,1루,5층,#치킨,assets/food_img/GWANGJU/bhc.png,0.6031,0.8927
+GWANGJU,street_2,스트릿츄러스,1루,3층,"#츄러스, #아이스크림",assets/food_img/GWANGJU/street.png,0.7854,0.5093
+GWANGJU,gwangjuoneshot_2,원샷치킨,3루,4층,"#치킨, #맥주, #치즈볼, #원샷",assets/food_img/GWANGJU/gwangjuoneshot.png,0.1645,0.5089
+GWANGJU,jamunbak_1,자문밖,3루,4층,"#삼겹살정식, #삼겹살, #김치국수",assets/food_img/GWANGJU/jamunbak.png,0.1645,0.5089
+GWANGJU,frank_2,프랭크버거,3루,4층,#햄버거,assets/food_img/GWANGJU/frank.png,0.788,0.5102
+GWANGJU,tacoit_2,타코잇,1루,4층,#타코,assets/food_img/GWANGJU/default.png,0.1645,0.5089
+GWANGJU,gwangjuoneshot_3,원샷치킨,1루,4층,"#치킨, #맥주, #치즈볼, #원샷",assets/food_img/GWANGJU/gwangjuoneshot.png,0.788,0.5102
+GWANGJU,jamunbak_2,자문밖,1루,4층,"#삼겹살정식, #삼겹살, #김치국수",assets/food_img/GWANGJU/jamunbak.png,0.788,0.5102
+GWANGJU,CU_7,CU,3루,5층,#편의점,assets/food_img/GWANGJU/cu.png,0.3121,0.8571

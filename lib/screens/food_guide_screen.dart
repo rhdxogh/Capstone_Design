@@ -2,10 +2,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'food_detail_screen.dart';
+// ✅ 좌표 추출 화면 import 복구
+import 'coordinate_picker_screen.dart';
+
+// 앱 전체 공통 빨간색
+const Color appMainRed = Color(0xFFC41212);
 
 class FoodGuideScreen extends StatefulWidget {
-  final String stadiumId; // 예: 'munhak'
-  final String stadiumName; // 예: '인천 SSG 랜더스 필드'
+  final String stadiumId;
+  final String stadiumName;
   final Color themeColor;
 
   const FoodGuideScreen({
@@ -41,11 +46,9 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
 
   Future<void> _load() async {
     setState(() => loading = true);
-
-    // ✅ CSV 파일 경로
     final csv = await rootBundle.loadString('assets/data/foods.csv');
-
     final rows = _parseCsv(csv);
+
     if (rows.isEmpty) {
       setState(() {
         loading = false;
@@ -55,9 +58,7 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
       return;
     }
 
-    // 헤더 인덱스 찾기
     final header = rows.first.map((e) => e.trim()).toList();
-
     int idx(String name) => header.indexOf(name);
 
     final iStadiumId = idx('stadiumId');
@@ -67,8 +68,9 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
     final iFloor = idx('floor');
     final iTags = idx('tags');
     final iFoodImg = idx('food_img');
+    final iMapX = idx('map_x');
+    final iMapY = idx('map_y');
 
-    // 헤더가 없으면 방어
     if ([
       iStadiumId,
       iFoodId,
@@ -77,6 +79,8 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
       iFloor,
       iTags,
       iFoodImg,
+      iMapX,
+      iMapY,
     ].any((i) => i < 0)) {
       setState(() {
         loading = false;
@@ -86,10 +90,9 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
       return;
     }
 
-    // stadiumId는 CSV에 대문자(MUNHAK)로 들어있을 가능성이 높아서
     final target = widget.stadiumId.toUpperCase();
-
     final items = <FoodItem>[];
+
     for (int r = 1; r < rows.length; r++) {
       final row = rows[r];
       if (row.length <= iFoodImg) continue;
@@ -108,6 +111,8 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
           floor: clean(row[iFloor]),
           tagsRaw: clean(row[iTags]),
           foodImg: clean(row[iFoodImg]),
+          mapX: double.tryParse(clean(row[iMapX])) ?? 0.0,
+          mapY: double.tryParse(clean(row[iMapY])) ?? 0.0,
         ),
       );
     }
@@ -153,44 +158,43 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
           widget.stadiumName,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
+        // ✅ 스패너 아이콘 다시 추가
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.build),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CoordinatePickerScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: loading
             ? const Center(child: CircularProgressIndicator())
             : Column(
                 children: [
-                  // 상단 제목/검색 영역
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        /*
-                  const Text(
-                    '랜필 먹거리',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-                  ),
-                   */
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: _searchCtrl,
-                          decoration: InputDecoration(
-                            hintText: 'Search',
-                            prefixIcon: const Icon(Icons.search),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
-                            ),
-                          ),
+                    child: TextField(
+                      controller: _searchCtrl,
+                      decoration: InputDecoration(
+                        hintText: 'Search',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                      ),
                     ),
                   ),
-
-                  // 리스트
                   Expanded(
                     child: filtered.isEmpty
                         ? Center(
@@ -208,7 +212,6 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
                               final f = filtered[i];
                               return _FoodTile(
                                 item: f,
-                                themeColor: widget.themeColor,
                                 stadiumName: widget.stadiumName,
                               );
                             },
@@ -225,10 +228,12 @@ class FoodItem {
   final String stadiumId;
   final String foodId;
   final String name;
-  final String location; // 예: 1루
-  final String floor; // 예: 1층
-  final String tagsRaw; // 예: #햄버거, #피자
-  final String foodImg; // 예: assets/food_img/MUNHAK/burgerwonders.png
+  final String location;
+  final String floor;
+  final String tagsRaw;
+  final String foodImg;
+  final double mapX;
+  final double mapY;
 
   FoodItem({
     required this.stadiumId,
@@ -238,10 +243,11 @@ class FoodItem {
     required this.floor,
     required this.tagsRaw,
     required this.foodImg,
+    required this.mapX,
+    required this.mapY,
   });
 
   List<String> get tags {
-    // "#햄버거, #피자" / "#햄버거 #피자" 둘 다 대응
     final t = tagsRaw.replaceAll(',', ' ').split(' ');
     return t.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
   }
@@ -249,14 +255,9 @@ class FoodItem {
 
 class _FoodTile extends StatelessWidget {
   final FoodItem item;
-  final Color themeColor;
   final String stadiumName;
 
-  const _FoodTile({
-    required this.item,
-    required this.themeColor,
-    required this.stadiumName,
-  });
+  const _FoodTile({required this.item, required this.stadiumName});
 
   @override
   Widget build(BuildContext context) {
@@ -267,9 +268,9 @@ class _FoodTile extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (_) => FoodDetailScreen(
-              stadiumId: item.stadiumId.toLowerCase(), // 'MUNHAK' -> 'munhak'
+              stadiumId: item.stadiumId.toLowerCase(),
               stadiumName: stadiumName,
-              themeColor: themeColor,
+              themeColor: appMainRed,
               food: item,
             ),
           ),
@@ -291,7 +292,6 @@ class _FoodTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // ✅ 좌측: 음식 이미지
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Container(
@@ -309,15 +309,11 @@ class _FoodTile extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(width: 12),
-
-            // ✅ 중앙: 텍스트 정보
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 매장명
                   Text(
                     item.name,
                     style: const TextStyle(
@@ -326,16 +322,11 @@ class _FoodTile extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-
-                  // 위치 / 층
                   Text(
                     '${item.location} · ${item.floor}',
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                   ),
-
                   const SizedBox(height: 6),
-
-                  // 태그
                   Wrap(
                     spacing: 6,
                     runSpacing: -6,
@@ -343,9 +334,9 @@ class _FoodTile extends StatelessWidget {
                       final tag = t.trim();
                       return Text(
                         tag.startsWith('#') ? tag : '#$tag',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 11,
-                          color: themeColor,
+                          color: appMainRed,
                           fontWeight: FontWeight.w600,
                         ),
                       );
@@ -354,8 +345,6 @@ class _FoodTile extends StatelessWidget {
                 ],
               ),
             ),
-
-            // ✅ 우측 화살표
             const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
           ],
         ),
@@ -364,11 +353,10 @@ class _FoodTile extends StatelessWidget {
   }
 }
 
-/// 매우 단순 CSV 파서 (따옴표 포함/쉼표 포함까지 “완벽”하진 않지만 일반적인 데이터는 잘 됨)
+// CSV 파서 및 헬퍼 함수들 (기존과 동일)
 List<List<String>> _parseCsv(String csv) {
   final lines = const LineSplitter().convert(csv);
   if (lines.isEmpty) return [];
-
   final rows = <List<String>>[];
   for (final line in lines) {
     if (line.trim().isEmpty) continue;
@@ -381,24 +369,19 @@ List<String> _splitCsvLine(String line) {
   final out = <String>[];
   final buf = StringBuffer();
   bool inQuotes = false;
-
   for (int i = 0; i < line.length; i++) {
     final c = line[i];
-
     if (c == '"') {
       inQuotes = !inQuotes;
       continue;
     }
-
     if (c == ',' && !inQuotes) {
       out.add(buf.toString());
       buf.clear();
       continue;
     }
-
     buf.write(c);
   }
-
   out.add(buf.toString());
   return out;
 }
