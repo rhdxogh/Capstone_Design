@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'food_detail_screen.dart';
-// ✅ 좌표 추출 화면 import 복구
-import 'coordinate_picker_screen.dart';
 
 // 앱 전체 공통 빨간색
 const Color appMainRed = Color(0xFFC41212);
@@ -158,20 +156,7 @@ class _FoodGuideScreenState extends State<FoodGuideScreen> {
           widget.stadiumName,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        // ✅ 스패너 아이콘 다시 추가
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.build),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CoordinatePickerScreen(),
-                ),
-              );
-            },
-          ),
-        ],
+        // 💡 스패너 아이콘(actions)이 제거되었습니다.
       ),
       body: SafeArea(
         child: loading
