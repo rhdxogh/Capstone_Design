@@ -78,4 +78,11 @@ const stadiumLocations = <StadiumLoc>[
     lat: 35.1683,
     lon: 126.8893,
   ),
+  StadiumLoc(
+    id: 'ulsan',
+    nameKo: '울산 문수 야구장',
+    address: '울산광역시 남구 문수로 44',
+    lat: 35.5325,
+    lon: 129.2652,
+  ),
 ];

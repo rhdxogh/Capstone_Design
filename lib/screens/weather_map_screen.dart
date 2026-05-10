@@ -55,6 +55,7 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
     if (fullName.contains('창원')) return '창원';
     if (fullName.contains('사직') || fullName.contains('부산')) return '사직';
     if (fullName.contains('광주')) return '광주';
+    if (fullName.contains('울산')) return '울산';
     return fullName;
   }
 
@@ -86,8 +87,8 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
 
     'daejeon': Offset(0, 0),
     'daegu': Offset(0, 0),
-    'changwon': Offset(0, 0),
-    'sajik': Offset(0, 0),
+    'changwon': Offset(-10, 0),
+    'sajik': Offset(10, 10),
     'gwangju': Offset(0, 0),
   };
 
@@ -335,6 +336,7 @@ class _WeatherMapScreenState extends State<WeatherMapScreen> {
       make(stadiumId: 'daegu', dx: 0.62, dy: 0.48),
       make(stadiumId: 'changwon', dx: 0.55, dy: 0.63),
       make(stadiumId: 'sajik', dx: 0.70, dy: 0.66),
+      make(stadiumId: 'ulsan', dx: 0.64, dy: 0.60),
       make(stadiumId: 'gwangju', dx: 0.16, dy: 0.60),
     ];
 

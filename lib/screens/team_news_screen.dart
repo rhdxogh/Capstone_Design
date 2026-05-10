@@ -265,10 +265,12 @@ class _TeamNewsScreenState extends State<TeamNewsScreen> {
                       ),
 
                     if (_items.isEmpty && _error == null && _loading)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 60),
-                        child: Center(child: CircularProgressIndicator()),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 80),
+                        child: _NewsLoadingView(themeColor: widget.themeColor),
                       ),
+
+
 
                     if (_items.isEmpty && _error == null && !_loading)
                       const Padding(
@@ -536,3 +538,116 @@ class _ErrorBox extends StatelessWidget {
     );
   }
 }
+
+class _NewsLoadingView extends StatefulWidget {
+  final Color themeColor;
+
+  const _NewsLoadingView({required this.themeColor});
+
+  @override
+  State<_NewsLoadingView> createState() => _NewsLoadingViewState();
+}
+
+class _NewsLoadingViewState extends State<_NewsLoadingView>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _progress;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 12),
+    )..forward();
+
+    _progress = Tween<double>(
+      begin: 0.03,
+      end: 0.92,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        children: [
+          Icon(
+            Icons.article_outlined,
+            size: 56,
+            color: widget.themeColor.withOpacity(0.85),
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            '뉴스를 불러오는 중이에요...',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 14),
+          AnimatedBuilder(
+            animation: _progress,
+            builder: (context, _) {
+              final percent = (_progress.value * 100).round();
+
+              return Column(
+                children: [
+                  SizedBox(
+                    width: 220,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(99),
+                      child: LinearProgressIndicator(
+                        value: _progress.value,
+                        minHeight: 10,
+                        backgroundColor: widget.themeColor.withOpacity(0.12),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          widget.themeColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '$percent%',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: widget.themeColor,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '최신 구단 소식을 모으고 있어요.',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+
+
