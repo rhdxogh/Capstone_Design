@@ -91,22 +91,24 @@ class StadiumDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            _MenuCard(
-              iconPath: 'assets/etc/chicken.png',
-              title: '먹거리정보',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => FoodGuideScreen(
-                      stadiumId: stadiumId,
-                      stadiumName: stadiumName,
-                      themeColor: themeColor,
+            if (stadiumId.toLowerCase() != 'ulsan')
+              _MenuCard(
+                iconPath: 'assets/etc/chicken.png',
+                title: '먹거리정보',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => FoodGuideScreen(
+                        stadiumId: stadiumId,
+                        stadiumName: stadiumName,
+                        themeColor: themeColor,
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
+
 
             const SizedBox(height: 12),
 
