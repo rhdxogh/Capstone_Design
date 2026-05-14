@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/auth_service.dart';
+import 'main_shell.dart';
 
 import '../app_colors.dart';
 import 'login_screen.dart';
@@ -102,6 +104,118 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
+  Future<DocumentSnapshot<Map<String, dynamic>>> _getUserDoc(String uid) async {
+    return FirebaseFirestore.instance.collection('users').doc(uid).get();
+  }
+
+  Future<String?> _getTeamId(String uid) async {
+    final doc = await _getUserDoc(uid);
+    if (!doc.exists) return null;
+    final teamId = doc.data()?['teamId'];
+    if (teamId is String && teamId.isNotEmpty) return teamId;
+    return null;
+  }
+
+  Future<String?> _getNickname(String uid) async {
+    final doc = await _getUserDoc(uid);
+    if (!doc.exists) return null;
+    final nickname = doc.data()?['nickname'];
+    if (nickname is String && nickname.isNotEmpty) return nickname;
+    return null;
+  }
+
+  Future<void> _saveTeamId(String uid, String teamId) async {
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'teamId': teamId,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> _saveDefaultProfile(String uid, User user) async {
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'email': user.email,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'createdAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  // 구글 연동 후 닉네임/팀 선택 혹은 메인 화면으로 보내주는 공통 로직
+  Future<void> _goAfterLogin(User user) async {
+    final uid = user.uid;
+    await _saveDefaultProfile(uid, user);
+
+    String? nickname = await _getNickname(uid);
+    if (!mounted) return;
+
+    if (nickname == null || nickname.isEmpty) {
+      final savedNickname = await Navigator.push<String?>(
+        context,
+        MaterialPageRoute(builder: (_) => NicknameSetupScreen(uid: uid)),
+      );
+      if (!mounted) return;
+      if (savedNickname == null || savedNickname.isEmpty) {
+        _toast('닉네임 설정이 취소되었어요.');
+        return;
+      }
+      nickname = savedNickname;
+    }
+
+    final teamId = await _getTeamId(uid);
+    if (!mounted) return;
+
+    if (teamId != null) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MainShell(uid: uid, teamId: teamId),
+        ),
+        (_) => false,
+      );
+      return;
+    }
+
+    final selectedTeamId = await Navigator.push<String?>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TeamSelectScreen(uid: uid, returnSelectedTeamId: true),
+      ),
+    );
+
+    if (!mounted) return;
+    if (selectedTeamId == null || selectedTeamId.isEmpty) {
+      _toast('팀 선택이 취소되었어요.');
+      return;
+    }
+
+    await _saveTeamId(uid, selectedTeamId);
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MainShell(uid: uid, teamId: selectedTeamId),
+      ),
+      (_) => false,
+    );
+  }
+
+  Future<void> _googleLogin() async {
+    setState(() => loading = true);
+    try {
+      final cred = await AuthService.signInWithGoogle();
+      final user = cred.user;
+      if (user == null) {
+        _toast('구글 로그인에 실패했어요.');
+        return;
+      }
+      await _goAfterLogin(user);
+    } catch (e) {
+      _toast('구글 로그인 실패: $e');
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -173,6 +287,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                         )
                       : const Text('Sign Up'),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    elevation: 1,
+                    side: BorderSide(color: Colors.grey.shade300),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.login), // 로그인 화면과 동일한 아이콘 사용
+                  label: const Text('Google로 시작하기'), // 텍스트 변경
+                  onPressed: loading
+                      ? null
+                      : _googleLogin, // 회원가입 화면의 구글 로그인 함수 연결
                 ),
               ),
               const SizedBox(height: 12),
