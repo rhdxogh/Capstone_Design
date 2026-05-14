@@ -174,7 +174,7 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                 const SizedBox(height: 10),
 
                 SizedBox(
-                  height: 116,
+                  height: 126,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: todaySlots.length,
