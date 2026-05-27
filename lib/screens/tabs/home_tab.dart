@@ -540,7 +540,10 @@ class _HomeTabState extends State<HomeTab> {
 
         String awayScore = "0";
         String homeScore = "0";
+
+        // 🔥 크롤러에서 만든 상태값 가져오기
         bool isFinished = scoreData?['status'] == 'FINISHED';
+        bool isCancelled = scoreData?['status'] == 'CANCELLED_OR_UNPLAYED';
 
         if (scoreData != null && scoreData['scoreboard'] != null) {
           final scoreboardList = scoreData['scoreboard'] as List<dynamic>;
@@ -555,15 +558,20 @@ class _HomeTabState extends State<HomeTab> {
             (scoreData != null && scoreData['scoreboard'] != null);
 
         return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    LineupScreen(game: game, themeColor: widget.team.primary),
-              ),
-            );
-          },
+          // 🔥 우천 취소 시 클릭(onTap) 무효화
+          onTap: isCancelled
+              ? null
+              : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => LineupScreen(
+                        game: game,
+                        themeColor: widget.team.primary,
+                      ),
+                    ),
+                  );
+                },
           child: Container(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
             decoration: BoxDecoration(
@@ -582,7 +590,28 @@ class _HomeTabState extends State<HomeTab> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (isActuallyToday)
+                    // 🔥 상태 뱃지 로직 (취소 -> 종료 -> Today 순으로 우선순위)
+                    if (isCancelled)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              Colors.blueGrey.shade500, // 👈 빨간색에서 블루그레이로 변경!
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          '경기 취소',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    else if (isActuallyToday)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -619,7 +648,10 @@ class _HomeTabState extends State<HomeTab> {
                   children: [
                     Expanded(child: _teamInfo(game['away'])),
 
-                    if (hasScore)
+                    // 🔥 가운데 영역 로직 분기
+                    if (isCancelled)
+                      _cancelledArea()
+                    else if (hasScore)
                       _scoreArea(
                         awayScore,
                         homeScore,
@@ -640,6 +672,245 @@ class _HomeTabState extends State<HomeTab> {
           ),
         );
       },
+    );
+  }
+
+  // 🚫 우천 취소 표시 영역 (새로 추가!)
+  Widget _cancelledArea() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '우천 취소',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            color: Colors.blueGrey.shade800, // 👈 블루그레이 (어두운 톤)
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.blueGrey.shade50, // 👈 배경은 아주 연한 블루그레이
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            'CANCELLED',
+            style: TextStyle(
+              color: Colors.blueGrey.shade700, // 👈 텍스트는 약간 진한 블루그레이
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================
+  // ⭐️ 타구단 경기 리스트
+  // ==========================================
+  Widget _buildOtherGamesList(List<dynamic> games) {
+    if (games.isEmpty)
+      return const SizedBox(
+        height: 100,
+        child: Center(child: Text("경기 정보가 없습니다.")),
+      );
+    return SizedBox(
+      height: 145,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: games.length,
+        itemBuilder: (context, i) {
+          final game = games[i];
+          final String scoreDocId = _getKboGameId(
+            _selectedDate,
+            game['away'],
+            game['home'],
+          );
+          return StreamBuilder<DocumentSnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('kbo_scoreboards')
+                .doc(scoreDocId)
+                .snapshots(),
+            builder: (context, snapshot) {
+              Map<String, dynamic>? scoreData =
+                  snapshot.data?.data() as Map<String, dynamic>?;
+              String awayScore = "0", homeScore = "0";
+
+              // 🔥 크롤러에서 만든 상태값 가져오기
+              bool isFinished = scoreData?['status'] == 'FINISHED';
+              bool isCancelled =
+                  scoreData?['status'] == 'CANCELLED_OR_UNPLAYED';
+
+              if (scoreData != null && scoreData['scoreboard'] != null) {
+                final list = scoreData['scoreboard'] as List<dynamic>;
+                if (list.length >= 2) {
+                  awayScore = list[0]['R']?.toString() ?? "0";
+                  homeScore = list[1]['R']?.toString() ?? "0";
+                }
+              }
+              bool hasScore =
+                  isFinished ||
+                  (scoreData != null && scoreData['scoreboard'] != null);
+              int a = int.tryParse(awayScore) ?? 0,
+                  h = int.tryParse(homeScore) ?? 0;
+
+              const Color strongRed = Color(0xFFCC0000);
+
+              return GestureDetector(
+                // 🔥 우천 취소 시 클릭 무효화
+                onTap: isCancelled
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => LineupScreen(
+                              game: game,
+                              themeColor: Colors.grey,
+                            ),
+                          ),
+                        );
+                      },
+                child: Container(
+                  width: 160,
+                  margin: const EdgeInsets.only(right: 15, bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    // 취소된 경기는 카드를 살짝 투명하게 처리해서 죽어보이게 함
+                    color: isCancelled ? Colors.grey.shade50 : Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: Colors.grey.shade100),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04), // 👈 경고 해결
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 🔥 상단 상태 텍스트
+                      Text(
+                        isCancelled
+                            ? '우천취소'
+                            : (isFinished
+                                  ? '종료'
+                                  : "${game['stadium']} | ${game['time']}"),
+                        style: TextStyle(
+                          fontSize: 10,
+                          // 👈 취소 시 블루그레이로 차분하게 변경
+                          color: isCancelled
+                              ? Colors.blueGrey.shade600
+                              : Colors.grey,
+                          fontWeight: (isFinished || isCancelled)
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // 취소 시 로고도 흑백/투명도 효과를 주고 싶다면 투명도 추가
+                          Opacity(
+                            opacity: isCancelled ? 0.5 : 1.0,
+                            child: Image.asset(
+                              _getLogo(game['away']),
+                              width: 35,
+                              height: 35,
+                            ),
+                          ),
+
+                          // 🔥 가운데 영역
+                          if (isCancelled)
+                            Text(
+                              '취소',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                color: Colors
+                                    .blueGrey
+                                    .shade700, // 👈 블루그레이 적용 (const 제거 필요)
+                              ),
+                            )
+                          else if (hasScore)
+                            Row(
+                              children: [
+                                Text(
+                                  awayScore,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: a > h
+                                        ? strongRed
+                                        : (a < h ? Colors.black : Colors.black),
+                                  ),
+                                ),
+                                const Text(
+                                  ' vs ',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.black45,
+                                  ),
+                                ),
+                                Text(
+                                  homeScore,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: h > a
+                                        ? strongRed
+                                        : (h < a ? Colors.black : Colors.black),
+                                  ),
+                                ),
+                              ],
+                            )
+                          else
+                            const Text(
+                              'VS',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black45,
+                              ),
+                            ),
+
+                          Opacity(
+                            opacity: isCancelled ? 0.5 : 1.0,
+                            child: Image.asset(
+                              _getLogo(game['home']),
+                              width: 35,
+                              height: 35,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${game['away']} : ${game['home']}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          color: isCancelled ? Colors.grey : Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -764,173 +1035,6 @@ class _HomeTabState extends State<HomeTab> {
           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
         ),
       ],
-    );
-  }
-
-  // ==========================================
-  // ⭐️ 타구단 경기 리스트
-  // ==========================================
-  Widget _buildOtherGamesList(List<dynamic> games) {
-    if (games.isEmpty)
-      return const SizedBox(
-        height: 100,
-        child: Center(child: Text("경기 정보가 없습니다.")),
-      );
-    return SizedBox(
-      height: 145,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: games.length,
-        itemBuilder: (context, i) {
-          final game = games[i];
-          final String scoreDocId = _getKboGameId(
-            _selectedDate,
-            game['away'],
-            game['home'],
-          );
-          return StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('kbo_scoreboards')
-                .doc(scoreDocId)
-                .snapshots(),
-            builder: (context, snapshot) {
-              Map<String, dynamic>? scoreData =
-                  snapshot.data?.data() as Map<String, dynamic>?;
-              String awayScore = "0", homeScore = "0";
-              bool isFinished = scoreData?['status'] == 'FINISHED';
-              if (scoreData != null && scoreData['scoreboard'] != null) {
-                final list = scoreData['scoreboard'] as List<dynamic>;
-                if (list.length >= 2) {
-                  awayScore = list[0]['R']?.toString() ?? "0";
-                  homeScore = list[1]['R']?.toString() ?? "0";
-                }
-              }
-              bool hasScore =
-                  isFinished ||
-                  (scoreData != null && scoreData['scoreboard'] != null);
-              int a = int.tryParse(awayScore) ?? 0,
-                  h = int.tryParse(homeScore) ?? 0;
-
-              const Color strongRed = Color(0xFFCC0000);
-
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          LineupScreen(game: game, themeColor: Colors.grey),
-                    ),
-                  );
-                },
-                child: Container(
-                  width: 160,
-                  margin: const EdgeInsets.only(right: 15, bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.grey.shade100),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        isFinished
-                            ? '종료'
-                            : "${game['stadium']} | ${game['time']}",
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: isFinished ? Colors.grey : Colors.grey,
-                          fontWeight: isFinished
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Image.asset(
-                            _getLogo(game['away']),
-                            width: 35,
-                            height: 35,
-                          ),
-                          if (hasScore)
-                            Row(
-                              children: [
-                                Text(
-                                  awayScore,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w900,
-                                    color: a > h
-                                        ? strongRed
-                                        : (a < h ? Colors.black : Colors.black),
-                                  ),
-                                ),
-                                const Text(
-                                  ' vs ',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    fontStyle: FontStyle.italic,
-                                    color: Colors.black45,
-                                  ),
-                                ),
-                                Text(
-                                  homeScore,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w900,
-                                    color: h > a
-                                        ? strongRed
-                                        : (h < a ? Colors.black : Colors.black),
-                                  ),
-                                ),
-                              ],
-                            )
-                          else
-                            const Text(
-                              'VS',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.black45,
-                              ),
-                            ),
-                          Image.asset(
-                            _getLogo(game['home']),
-                            width: 35,
-                            height: 35,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${game['away']} : ${game['home']}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
     );
   }
 
